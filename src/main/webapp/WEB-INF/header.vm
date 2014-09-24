@@ -12,7 +12,7 @@
         #end
      </div>
     
-    <select id="langSelector" onchange="K5.i18n.askForDictionary( $('#langSelector').val() )">
+    <select style="display:none;" id="langSelector" onchange="K5.i18n.askForDictionary( $('#langSelector').val() )">
         <option #if($i18n.language == 'cs')selected="selected" #end>cs</option>
         <option #if($i18n.language == 'en')selected="selected" #end>en</option>
     </select>

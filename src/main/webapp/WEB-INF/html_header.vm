@@ -1,5 +1,5 @@
 <head>
-    <title><fmt:message key="application.title" /></title>
+    <title>$i18n.application.title</title>
     <link rel="icon" href="img/favicon.ico" />
     <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon" />
     <!--
@@ -39,9 +39,6 @@
             vdk.user = '$logControl.loggedName';
             vdk.userOpts();
             #end
-            <c:if test="${!empty pageContext.request.remoteUser}">
-                
-            </c:if>
             
         });
     </script>

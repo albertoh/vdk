@@ -6,8 +6,6 @@
   version="1.0">
     <xsl:output method="html"/>
     <xsl:param name="locale" select="'locale'" />
-    <xsl:param name="q" select="q" />
-    <xsl:param name="collapseBy" select="collapseBy" />
     <xsl:variable name="i18n" select="rb:getBundle('labels', $locale)"/>
     <xsl:template match="/">
         <ul>

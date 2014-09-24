@@ -12,7 +12,9 @@
         <tool class="org.apache.velocity.tools.view.ParameterTool" />
         
         <tool key="i18n" class="cz.incad.vdk.vdkcr_client.tools.LanguageTool" bundles="labels" />
-       <tool key="logControl" class="cz.incad.vdk.vdkcr_client.tools.LoggedController" />
+        <tool key="logControl" class="cz.incad.vdk.vdkcr_client.tools.LoggedController" />
+        <tool key="xslt" class="cz.incad.vdk.vdkcr_client.tools.XSLTool" />
+        <tool key="search" class="cz.incad.vdk.vdkcr_client.tools.Search" />
 <!--
         <tool class="cz.incad.kramerius.client.tools.CSSTool"
               bundles="res.css"
