@@ -1,0 +1,20 @@
+<div id="header">
+    <div class="title"  style="float:left;">
+        <a href="./"><span style="font-size:32px;color:black;font-weight:bold;">$i18n.application.title</span></a>
+        <br/>
+        <div class="subtitle" >$i18n.header.title</div>
+    </div>
+    <div style="float:right;">
+        #if($logControl.logged)
+                <a href="logout.jsp?redirectURL=index.jsp" title="logout">user: $logControl.loggedName </a>
+        #else
+            <a href="redirect.jsp?redirectURL=index.jsp">login</a>
+        #end
+     </div>
+    
+    <select id="langSelector" onchange="K5.i18n.askForDictionary( $('#langSelector').val() )">
+        <option #if($i18n.language == 'cs')selected="selected" #end>cs</option>
+        <option #if($i18n.language == 'en')selected="selected" #end>en</option>
+    </select>
+    
+</div>

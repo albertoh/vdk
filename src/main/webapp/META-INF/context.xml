@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Context antiJARLocking="true" path="/vdkcr_client">
+  &gt;
+    <Resource auth="Container" driverClassName="org.postgresql.Driver" maxActive="100" maxIdle="30" maxWait="10000" name="jdbc/vdk" password="vdk" type="javax.sql.DataSource" url="jdbc:postgresql://localhost:5432/vdk" username="vdk"/>
+    
+</Context>
