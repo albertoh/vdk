@@ -6,9 +6,9 @@
     </div>
     <div style="float:right;">
         #if($logControl.logged)
-                <a href="logout.jsp?redirectURL=index.jsp" title="logout">user: $logControl.loggedName </a>
+                <a href="logout.vm?redirectURL=index.vm" title="logout">user: $logControl.loggedName </a>
         #else
-            <a href="redirect.jsp?redirectURL=index.jsp">login</a>
+            <a href="redirect.vm?redirectURL=$esc.url($request.queryString)">login</a>
         #end
      </div>
     

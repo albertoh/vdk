@@ -1,4 +1,4 @@
-package cz.incad.vdk.vdkcr_client;
+package cz.incad.vdk.client;
 
 import cz.incad.vdkcommon.Slouceni;
 import cz.incad.vdkcommon.SolrIndexerCommiter;
@@ -636,7 +636,7 @@ public class DbOperations extends HttpServlet {
                                 ps.setString(2, query);
                                 ps.setInt(3, idKnihovna);
                                 ps.setBoolean(4, isGlobal);
-                                ps.setInt(4, idPohled);
+                                ps.setInt(5, idPohled);
                                 ps.executeUpdate();
                             } else {
 

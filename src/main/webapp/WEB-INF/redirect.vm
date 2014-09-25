@@ -1,0 +1,5 @@
+#set($reqAddr = "index.vm")
+#if($params.redirectURL)
+    #set($reqAddr = "?$params.redirectURL")
+#end
+$response.sendRedirect($reqAddr)

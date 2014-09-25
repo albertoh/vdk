@@ -16,7 +16,7 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  */
 
-package cz.incad.vdk.vdkcr_client.tools;
+package cz.incad.vdk.client.tools;
 import cz.incad.vdkcommon.Options;
 import java.util.Map;
 import java.util.logging.Level;

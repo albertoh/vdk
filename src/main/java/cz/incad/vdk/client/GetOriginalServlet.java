@@ -2,7 +2,7 @@
  * To change this template, choose Tools | Templates
  * and open the template in the editor.
  */
-package cz.incad.vdk.vdkcr_client;
+package cz.incad.vdk.client;
 
 import cz.incad.vdkcommon.solr.IndexerQuery;
 import java.io.File;

@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package cz.incad.vdk.vdkcr_client.tools;
+package cz.incad.vdk.client.tools;
 
 import cz.incad.vdkcommon.Options;
 import cz.incad.vdkcommon.solr.IndexerQuery;
@@ -46,23 +46,16 @@ public class Search {
     public static final Logger LOGGER = Logger.getLogger(Search.class.getName());
 
     private HttpServletRequest req;
-    private LanguageTool i18n;
-    private String host;
     private Options opts;
-
-    private String facets;
-    private final String groupedParams = "&group.field=root_pid&group.type=normal&group.threshold=1"
-            + "&group.facet=false&group=true&group.truncate=true&group.ngroups=true";
-    private final String hlParams = "&hl=true&hl.fl=text_ocr&hl.mergeContiguous=true&hl.snippets=2";
+    private boolean hasFilters = false;
 
     public void configure(Map props) {
         try {
             req = (HttpServletRequest) props.get("request");
             ViewToolContext vc = (ViewToolContext) props.get("velocityContext");
             opts = Options.getInstance();
-            host = opts.getString("app.host", "");
-            facets = "&facet.mincount=1&facet.field=a";
-            
+            //host = opts.getString("app.host", "");
+            //facets = "&facet.mincount=1&facet.field=a";
 
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, e.getMessage(), e);
@@ -70,9 +63,9 @@ public class Search {
             LOGGER.log(Level.SEVERE, e.getMessage(), e);
         }
     }
-    
-    public String getAsXML(){
-        
+
+    public String getAsXML() {
+
         try {
 
             String q = req.getParameter("q");
@@ -81,24 +74,58 @@ public class Search {
             } else {
                 q = URLEncoder.encode(q, "UTF-8");
             }
-            
+
             SolrQuery query = new SolrQuery(q);
             query.setFacet(true);
             query.setStart(getStart());
             query.setRows(getRows());
-            
             query.addFacetField(opts.getStrings("facets"));
-            
-            
+            addFilters(query);
+
             return IndexerQuery.xml(query);
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, null, ex);
             return null;
-        } 
-        
-        
+        }
+    }
+
+    private void addFilters(SolrQuery query) {
+        if (req.getParameterValues("zdroj") != null) {
+            for (String zdroj : req.getParameterValues("zdroj")) {
+                if(zdroj.startsWith("-")){
+                    query.addFilterQuery("-zdroj:\"" + zdroj.substring(1) + "\"");
+                }else{
+                    query.addFilterQuery("zdroj:\"" + zdroj + "\"");
+                }
+            }
+            hasFilters = true;
+        }
+
+        if (req.getParameterValues("exs") != null) {
+            for (String ex : req.getParameterValues("exs")) {
+                query.addFilterQuery("-" + ex);
+            }
+            hasFilters = true;
+        }
+        if (req.getParameterValues("fq") != null) {
+            for (String fq : req.getParameterValues("fq")) {
+                query.addFilterQuery(fq);
+                if (req.getParameterValues("zdroj") != null && fq.contains("pocet_exemplaru")) {
+                    String[] parts = fq.split(":");
+                    for (String zdroj : req.getParameterValues("zdroj")) {
+                        if (!zdroj.startsWith("-")) {
+                            query.addFilterQuery("pocet_ex_" + zdroj + ":" + parts[1]);
+                        }
+                    }
+                }
+            }
+            hasFilters = true;
+        }
     }
     
+    public boolean getHasFilters(){
+        return hasFilters;
+    }
 
     private void usedFilter(Map<String, String> map, String param) {
         String p = req.getParameter(param);
@@ -143,30 +170,4 @@ public class Search {
         return Integer.parseInt(rows);
     }
 
-    private String getSort() throws UnsupportedEncodingException {
-        String res;
-        String sort = req.getParameter("sort");
-        String asis = req.getParameter("asis");
-        String q = req.getParameter("q");
-        boolean fieldedSearch = false;
-        if (sort != null && !sort.equals("") && asis != null) {
-            res = sort;
-        } else if (sort != null && !sort.equals("")) {
-            res = sort;
-        } else if (sort != null && !sort.equals("")) {
-            res = "level asc, " + sort;
-        } else if ((q == null || q.equals(""))) {
-            res = "title_sort asc";
-        } else if (q != null && !q.equals("")) {
-            res = "score desc, title_sort asc";
-        } else if (fieldedSearch) {
-            res = "level asc, title_sort asc, score desc";
-        } else if (q == null || q.equals("")) {
-            res = "level asc, title_sort asc, score desc";
-        } else {
-            res = "score desc";
-        }
-
-        return "&sort=" + URLEncoder.encode(res, "UTF-8");
-    }
 }

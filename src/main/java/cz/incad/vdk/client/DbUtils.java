@@ -1,6 +1,6 @@
 
 
-package cz.incad.vdk.vdkcr_client;
+package cz.incad.vdk.client;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
