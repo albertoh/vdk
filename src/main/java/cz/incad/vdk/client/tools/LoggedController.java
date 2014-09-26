@@ -16,7 +16,9 @@
  */
 package cz.incad.vdk.client.tools;
 
+import java.sql.SQLException;
 import java.util.Map;
+import javax.naming.NamingException;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -58,5 +60,9 @@ public class LoggedController {
         }
     }
     
+    public void setKnihovna() throws NamingException, SQLException{
+        cz.incad.vdk.client.Knihovna kn = new cz.incad.vdk.client.Knihovna(req.getRemoteUser());
+        req.getSession().setAttribute("knihovna", kn);
+    }
     
 }

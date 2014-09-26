@@ -35,6 +35,10 @@
         <servlet-name>velocity</servlet-name>
         <url-pattern>*.css</url-pattern>
     </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>velocity</servlet-name>
+        <url-pattern>*.csv</url-pattern>
+    </servlet-mapping>
     <servlet>
         <servlet-name>GetOriginalServlet</servlet-name>
         <servlet-class>cz.incad.vdk.client.GetOriginalServlet</servlet-class>

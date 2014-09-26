@@ -1,3 +1,6 @@
+#if($logControl.logged)
+    $logControl.setKnihovna()
+#end
 #set($reqAddr = "index.vm")
 #if($params.redirectURL)
     #set($reqAddr = "?$params.redirectURL")

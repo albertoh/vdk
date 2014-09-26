@@ -238,7 +238,7 @@ Views.prototype = {
         if (!this.loaded) {
             this.dialog = $("<div/>", {title: dict['select.view']});
             $("body").append(this.dialog);
-            this.dialog.load("view.jsp");
+            this.dialog.load("forms/view.vm");
             this.loaded = true;
         }
         this.dialog.dialog({modal: true, width: 400, height: 300});
@@ -247,8 +247,7 @@ Views.prototype = {
         if ($("#viewName").val() === ""){
             return;
         }
-        var url = "db?action=SAVEVIEW&name=" + name + "&q=" + $("#q").val();
-        url = "db?action=SAVEVIEW&" + $('#viewForm').serialize() + "&" + $('#searchForm').serialize();
+        var url = "db?action=SAVEVIEW&" + $('#viewForm').serialize() + "&" + $('#searchForm').serialize();
         $.get(url, function(data) {
             alert(data);
         });
@@ -265,7 +264,7 @@ Nabidka.prototype = {
         if (!this.loaded) {
             this.dialog = $("<div/>", {title: dict['select.offer']});
             $("body").append(this.dialog);
-            this.dialog.load("nabidka.jsp", function(){
+            this.dialog.load("nabidka.vm", function(){
                 vdk.getUserOffers();
             });
             this.loaded = true;
@@ -292,7 +291,7 @@ function Export() {
 
 Export.prototype = {
     open: function() {
-        var url = "export.jsp" + window.location.search + "&rows=10000";
+        var url = "csv/export.vm" + window.location.search + "&rows=10000";
         window.open(url, "export");
 //        if(!this.loaded){
 //            this.dialog = $("<div/>", {id: 'export', title: 'export'});

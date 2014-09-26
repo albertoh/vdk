@@ -610,18 +610,19 @@ public class DbOperations extends HttpServlet {
                         String query = req.getQueryString().replace("action=SAVEVIEW&", "");
                         String name = req.getParameter("viewName");
                         boolean isGlobal = "on".equals(req.getParameter("viewGlobal"));
-                        String user = req.getRemoteUser();
-
+                        
                         Connection conn = null;
 
                         Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
                         int idKnihovna = 0;
                         if (kn != null) {
                             idKnihovna = kn.getId();
+                        }else{
+                            out.println("Operation not allowed. Not logged.");
+                            return;
                         }
                         try {
                             conn = DbUtils.getConnection();
-                            boolean oracle = true;
                             if (isOracle(conn)) {
                                 String sql1 = "select Pohled_ID_SQ.nextval from dual";
                                 ResultSet rs = conn.prepareStatement(sql1).executeQuery();

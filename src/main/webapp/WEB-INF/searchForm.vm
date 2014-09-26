@@ -3,10 +3,8 @@
         #if(${params.wanted})
             <input name="wanted" id="wanted" type="hidden" value="${params.wanted}" />
         #end
-        <input name="core" id="core" type="hidden" value="${core}" />
         <input name="offset" id="offset" type="hidden" value="$!{params.offset}" />
         <input name="hits" id="hits" type="hidden" value="$!{params.hits}" />
-        <input name="kn" id="kn" type="hidden" value="${kn}" />
         <input name="q" id="q" type="text" value="$!esc.html(${params.q})" size="40" style="float:left; border-right: none;" />
         <input value="$i18n.form.search" type="submit" onclick="doSearch();" />
 #if(${params.onlyOffers})
@@ -16,8 +14,8 @@
     <input type="hidden" name="offer" id="offer_${offer}" value="${offer}" />
 #end
 
-#foreach($filter in $search.usedFilters.entrySet())   
-    <input type="hidden" name="$filter.key" value="$esc.html($filter.value)" />
+#foreach($fq in $params.getStrings('fq'))
+    <input type="hidden" name="fq" id="fq${foreach.index}" value="$esc.html($fq)" />
 #end
 
 #foreach($ex in $params.getStrings('exs'))  

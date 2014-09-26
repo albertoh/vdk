@@ -22,7 +22,7 @@
                     <span class="label">od <xsl:value-of select="./int[position()=1]/@name" /> - do <xsl:value-of select="./int[position()=last()]/@name" /></span>
                     <span class="go" style="float:right;">go</span>
                 </div>
-                <div id="pocet_range">
+                <div id="pocet_range" style="margin:0px 10px;">
                     <xsl:attribute name="data-min"><xsl:value-of select="./int[position()=1]/@name" /></xsl:attribute>
                     <xsl:attribute name="data-max"><xsl:value-of select="./int[position()=last()]/@name" /></xsl:attribute>
                 </div>
@@ -34,7 +34,7 @@
                     <span class="label">od <xsl:value-of select="./int[position()=1]/@name" /> - do <xsl:value-of select="./int[position()=last()]/@name" /></span>
                     <span class="go" style="float:right;">go</span>
                 </div>
-                <div id="rokvydani_range">
+                <div id="rokvydani_range" style="margin:0px 10px;">
                     <xsl:attribute name="data-min"><xsl:value-of select="./int[position()=1]/@name" /></xsl:attribute>
                     <xsl:attribute name="data-max"><xsl:value-of select="./int[position()=last()]/@name" /></xsl:attribute>
                 </div>
@@ -55,13 +55,13 @@
                             :: <xsl:value-of select="rb:getString($i18n,./@name,'all')" />
                         </a></li>
                     </ul>
-                    <xsl:call-template name="navigator">
+                    <xsl:call-template name="facet">
                         <xsl:with-param name="navName"  select="./@name" />
                         <xsl:with-param name="content"  select="." />
                     </xsl:call-template>
                 </xsl:when>
                 <xsl:otherwise>
-                    <xsl:call-template name="navigator">
+                    <xsl:call-template name="facet">
                         <xsl:with-param name="navName"  select="./@name" />
                         <xsl:with-param name="content"  select="." />
                     </xsl:call-template>
@@ -71,7 +71,7 @@
         </xsl:for-each>
     </xsl:template>
 
-    <xsl:template name="navigator">
+    <xsl:template name="facet">
         <xsl:param name="navName" />
         <xsl:param name="content" />
         <ul>

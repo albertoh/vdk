@@ -17,13 +17,12 @@
 package cz.incad.vdk.client.tools;
 
 import cz.incad.vdkcommon.Options;
+import static cz.incad.vdkcommon.Options.LOGGER;
 import cz.incad.vdkcommon.solr.IndexerQuery;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -32,7 +31,6 @@ import org.apache.solr.client.solrj.SolrQuery;
 
 import org.apache.velocity.tools.config.DefaultKey;
 import org.apache.velocity.tools.view.ViewToolContext;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -64,7 +62,7 @@ public class Search {
         }
     }
 
-    public String getAsXML() {
+    public String getAsXML() throws JSONException {
 
         try {
 
@@ -80,6 +78,22 @@ public class Search {
             query.setStart(getStart());
             query.setRows(getRows());
             query.addFacetField(opts.getStrings("facets"));
+            query.setFacetMinCount(1);
+            
+            JSONObject others  = opts.getJSONObject("otherParams");
+            Iterator keys = others.keys();
+            while (keys.hasNext() ) {
+                String key = (String) keys.next();
+                Object val = others.get(key);
+                if(val instanceof Integer){
+                    query.set(key, (Integer)val);
+                }else if(val instanceof String){
+                    query.set(key, (String)val);
+                }else if(val instanceof Boolean){
+                    query.set(key, (Boolean)val);
+                }
+                
+            }
             addFilters(query);
 
             return IndexerQuery.xml(query);
@@ -125,33 +139,6 @@ public class Search {
     
     public boolean getHasFilters(){
         return hasFilters;
-    }
-
-    private void usedFilter(Map<String, String> map, String param) {
-        String p = req.getParameter(param);
-        if (p != null && !p.equals("")) {
-            map.put(param, p);
-        }
-    }
-
-    private void usedFilter(Map<String, String> map, String param, String field) {
-        String p = req.getParameter(param);
-        if (p != null && !p.equals("")) {
-            map.put(param, p);
-        }
-    }
-
-    public Map<String, String> getUsedFilters() {
-        Map<String, String> map = new HashMap<String, String>();
-        usedFilter(map, "author");
-        usedFilter(map, "udc", "mdt");
-        usedFilter(map, "ddc", "ddt");
-        usedFilter(map, "rok");
-        usedFilter(map, "keywords");
-        usedFilter(map, "collection");
-        usedFilter(map, "dostupnost", "dostupnost");
-        usedFilter(map, "issn");
-        return map;
     }
 
     private int getStart() throws UnsupportedEncodingException {
