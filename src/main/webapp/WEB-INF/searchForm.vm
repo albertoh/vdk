@@ -14,6 +14,14 @@
     <input type="hidden" name="offer" id="offer_${offer}" value="${offer}" />
 #end
 
+#foreach($offer in $params.getStrings('offer'))
+    <input type="hidden" name="offer" id="offer${foreach.index}" value="$offer" />
+#end
+
+#foreach($demand in $params.getStrings('demand'))
+    <input type="hidden" name="demand" id="demand${foreach.index}" value="$demand" />
+#end
+
 #foreach($fq in $params.getStrings('fq'))
     <input type="hidden" name="fq" id="fq${foreach.index}" value="$esc.html($fq)" />
 #end

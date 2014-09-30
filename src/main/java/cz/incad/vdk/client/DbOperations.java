@@ -102,6 +102,30 @@ public class DbOperations extends HttpServlet {
 
     }
 
+    public static int insertDemandPg(Connection conn, String name, int idKnihovna) throws Exception {
+        int retVal = 0;
+        String sql = "insert into DEMAND (nazev, knihovna, update_timestamp, closed) values (?,?, NOW(), false) returning demand_id";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setString(1, name);
+        ps.setInt(2, idKnihovna);
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            return rs.getInt(1);
+        } else {
+            return 0;
+        }
+
+    }
+
+    public static int closeDemand(Connection conn, int id) throws Exception {
+
+        String sql = "update DEMAND set closed=? where demand_id=?";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setBoolean(1, true);
+        ps.setInt(2, id);
+        return ps.executeUpdate();
+    }
+
     public static int closeOffer(Connection conn, int offerid) throws Exception {
 
         String sql = "update OFFER set closed=? where offer_id=?";
@@ -119,51 +143,128 @@ public class DbOperations extends HttpServlet {
             retVal = rs.getInt(1);
         }
 
-        String sql = "insert into OFFER (nazev, bdata, knihovna, update_timestamp, offer_id, closed) values (?,?,?, NOW(), ?, false) returning offer_id";
+        String sql = "insert into OFFER (nazev, knihovna, update_timestamp, offer_id, closed) values (?,?, sysdate, ?, 0)";
+        LOGGER.log(Level.INFO, "executing " + sql + "\nparams: {0}, {1}, {2}", new Object[]{name,idKnihovna,retVal});
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setString(1, name);
-        if (uploadedStream != null) {
-            ps.setBinaryStream(2, uploadedStream, uploadedStream.available());
-        } else {
-            ps.setNull(2, Types.BINARY);
-        }
-        ps.setInt(3, idKnihovna);
-        ps.setInt(4, retVal);
+//        if (uploadedStream != null) {
+//            ps.setBinaryStream(2, uploadedStream, uploadedStream.available());
+//        } else {
+//            ps.setNull(2, Types.BLOB);
+//        }
+        ps.setInt(2, idKnihovna);
+        ps.setInt(3, retVal);
         ps.executeUpdate();
         return retVal;
 
     }
 
-    public static void insertNabidka(Connection conn, int idKnihovna, String id, String docCode, int idOffer, String line) throws Exception {
+    public static void insertNabidka(Connection conn, int idKnihovna, String zaznam_id, String exemplar_id, String docCode, int idOffer, String line) throws Exception {
 
         if (isOracle(conn)) {
-            String sql1 = "select Nabidky_ID_SQ.nextval from dual";
+            String sql1 = "select ZaznamOffer_ID_SQ.nextval from dual";
             ResultSet rs = conn.prepareStatement(sql1).executeQuery();
             int idW = 1;
             if (rs.next()) {
                 idW = rs.getInt(1);
             }
 
-            String sql = "insert into NABIDKY (uniqueCode, zaznam, knihovna, nabidky_id, offer, fields) values (?,?,?,?,?,?)";
+            String sql = "insert into ZaznamOffer (uniqueCode, zaznam, exemplar, knihovna, ZaznamOffer_id, offer, fields) values (?,?,?,?,?,?,?)";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, docCode);
-            ps.setString(2, id);
-            ps.setInt(3, idKnihovna);
-            ps.setInt(4, idW);
+            ps.setString(2, zaznam_id);
+            if(exemplar_id == null){
+                ps.setNull(3, Types.VARCHAR);
+            }else{
+                ps.setString(3, exemplar_id);
+            }
+            ps.setInt(4, idKnihovna);
+            ps.setInt(5, idW);
+            ps.setInt(6, idOffer);
+            ps.setString(7, line);
+            ps.executeUpdate();
+        } else {
+            String sql = "insert into ZaznamOffer (uniqueCode, zaznam, exemplar, knihovna,offer,fields) values (?,?,?,?,?,?)";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, docCode);
+            ps.setString(2, zaznam_id);
+            if(exemplar_id == null){
+                ps.setNull(3, Types.VARCHAR);
+            }else{
+                ps.setString(3, exemplar_id);
+            }
+            ps.setInt(4, idKnihovna);
             ps.setInt(5, idOffer);
             ps.setString(6, line);
             ps.executeUpdate();
-        } else {
-            String sql = "insert into NABIDKY (uniqueCode, zaznam, knihovna,offer,fields) values (?,?,?,?,?)";
+        }
+        //indexWeOffer(conn, id, docCode, "md5");
+    }
+    
+    public static void insertToDemand(Connection conn, 
+            int idKnihovna, 
+            String zaznam_id, 
+            String exemplar_id, 
+            String docCode, 
+            int id, 
+            String line) throws Exception {
+
+        if (isOracle(conn)) {
+            String sql1 = "select ZaznamDemand_ID_SQ.nextval from dual";
+            ResultSet rs = conn.prepareStatement(sql1).executeQuery();
+            int idW = 1;
+            if (rs.next()) {
+                idW = rs.getInt(1);
+            }
+
+            String sql = "insert into ZaznamDemand (uniqueCode, zaznam, exemplar, knihovna, ZaznamDemand_id, demand, fields) values (?,?,?,?,?,?,?)";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, docCode);
-            ps.setString(2, id);
-            ps.setInt(3, idKnihovna);
-            ps.setInt(4, idOffer);
-            ps.setString(5, line);
+            ps.setString(2, zaznam_id);
+            if(exemplar_id == null){
+                ps.setNull(3, Types.VARCHAR);
+            }else{
+                ps.setString(3, exemplar_id);
+            }
+            ps.setInt(4, idKnihovna);
+            ps.setInt(5, idW);
+            ps.setInt(6, id);
+            ps.setString(7, line);
+            ps.executeUpdate();
+        } else {
+            String sql = "insert into ZaznamDemand (uniqueCode, zaznam, exemplar, knihovna,demand,fields) values (?,?,?,?,?,?)";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, docCode);
+            ps.setString(2, zaznam_id);
+            if(exemplar_id == null){
+                ps.setNull(3, Types.VARCHAR);
+            }else{
+                ps.setString(3, exemplar_id);
+            }
+            ps.setInt(4, idKnihovna);
+            ps.setInt(5, id);
+            ps.setString(6, line);
             ps.executeUpdate();
         }
         //indexWeOffer(conn, id, docCode, "md5");
+    }
+
+    public static int insertDemandOracle(Connection conn, String name, int idKnihovna) throws Exception {
+        int retVal = 1;
+        String sql1 = "select Demand_ID_SQ.nextval from dual";
+        ResultSet rs = conn.prepareStatement(sql1).executeQuery();
+        if (rs.next()) {
+            retVal = rs.getInt(1);
+        }
+
+        String sql = "insert into DEMAND (nazev, knihovna, demand_id, update_timestamp, closed) values (?,?, ?, sysdate, 0)";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setString(1, name);
+        ps.setInt(2, idKnihovna);
+        ps.setInt(3, retVal);
+        ps.executeUpdate();
+        return retVal;
+
     }
 
     public static void processStream(Connection conn, InputStream is, int idKnihovna, int idOffer) throws Exception {
@@ -172,7 +273,7 @@ public class DbOperations extends HttpServlet {
             CSVParser parser = new CSVParser(new InputStreamReader(is), strategy);
             String[] parts = parser.getLine();
             while (parts != null) {
-                String id = parts[0];
+                String zaznam_id = parts[0];
                 String ccnb = parts[1];
                 String line = "";
                 for (String s : parts) {
@@ -184,7 +285,7 @@ public class DbOperations extends HttpServlet {
                 docCode = Slouceni.generateMD5(parts);
                 codeType = "ccnb";
 
-                insertNabidka(conn, idKnihovna, id, docCode, idOffer, line);
+                insertNabidka(conn, idKnihovna, zaznam_id, null,  docCode, idOffer, line);
                 //indexWeOffer(conn, id, docCode, codeType);
                 parts = parser.getLine();
             }
@@ -199,13 +300,13 @@ public class DbOperations extends HttpServlet {
         JSONObject json = new JSONObject();
         try {
             conn = DbUtils.getConnection();
-            String sql = "select * from nabidky where offer=" + id;
+            String sql = "select * from ZaznamOffer where offer=" + id;
             PreparedStatement ps = conn.prepareStatement(sql);
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 JSONObject j = new JSONObject();
-                j.put("nabidkaId", rs.getString("nabidky_id"));
+                j.put("nabidkaId", rs.getString("ZaznamOffer_id"));
                 j.put("zaznam", rs.getString("zaznam"));
                 j.put("fields", rs.getString("fields"));
 
@@ -213,6 +314,43 @@ public class DbOperations extends HttpServlet {
             }
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
+            json.put("error", ex);
+        } finally {
+            if (conn != null && !conn.isClosed()) {
+                conn.close();
+            }
+        }
+        return json;
+    }
+
+    public static JSONObject getDemands() throws Exception {
+
+        Calendar now = Calendar.getInstance();
+        Calendar o = Calendar.getInstance();
+        Connection conn = null;
+        JSONObject json = new JSONObject();
+        try {
+            conn = DbUtils.getConnection();
+            String sql = "select DEMAND.*, KNIHOVNA.code from DEMAND, KNIHOVNA where DEMAND.knihovna=KNIHOVNA.knihovna_id";
+            PreparedStatement ps = conn.prepareStatement(sql);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Date offerDate = rs.getDate("update_timestamp");
+                o.setTime(offerDate);
+                o.add(Calendar.DATE, EXPIRATION_DAYS);
+                JSONObject j = new JSONObject();
+                j.put("id", rs.getString("demand_id"));
+                j.put("nazev", rs.getString("nazev"));
+                j.put("knihovna", rs.getString("code"));
+                j.put("closed", rs.getBoolean("closed"));
+                j.put("date", sdf.format(offerDate));
+                j.put("expires", sdf.format(o.getTime()));
+                j.put("expired", !o.after(now));
+
+                json.put(rs.getString("demand_id"), j);
+            }
+        } catch (Exception ex) {
             json.put("error", ex);
         } finally {
             if (conn != null && !conn.isClosed()) {
@@ -274,98 +412,6 @@ public class DbOperations extends HttpServlet {
         return p.getDatabaseProductName().toLowerCase().contains("oracle");
     }
 
-    private static void indexWanted(Connection conn, String id, String code, String codeType) throws Exception {
-        String sql = "select wants, knihovna, code from WANTED, KNIHOVNA where zaznam=? and knihovna=knihovna_id";
-        PreparedStatement ps = conn.prepareStatement(sql);
-        ps.setString(1, id);
-
-        ResultSet rs = ps.executeQuery();
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("<add><doc>");
-        sb.append("<field name=\"code\">")
-                .append(code)
-                .append("</field>");
-        sb.append("<field name=\"md5\">")
-                .append(code)
-                .append("</field>");
-        sb.append("<field name=\"code_type\">")
-                .append(codeType)
-                .append("</field>");
-        sb.append("<field name=\"chci\" update=\"set\" null=\"true\" />");
-        sb.append("<field name=\"nechci\" update=\"set\" null=\"true\" />");
-        sb.append("</doc></add>");
-        SolrIndexerCommiter.postData(sb.toString());
-        sb = new StringBuilder();
-        sb.append("<add><doc>");
-        sb.append("<field name=\"code\">")
-                .append(code)
-                .append("</field>");
-        sb.append("<field name=\"md5\">")
-                .append(code)
-                .append("</field>");
-        sb.append("<field name=\"code_type\">")
-                .append(codeType)
-                .append("</field>");
-        while (rs.next()) {
-            if (rs.getBoolean(1)) {
-                sb.append("<field name=\"chci\" update=\"set\">")
-                        .append(rs.getString("code"))
-                        .append("</field>");
-            } else {
-                sb.append("<field name=\"nechci\" update=\"set\">")
-                        .append(rs.getString("code"))
-                        .append("</field>");
-            }
-        }
-        sb.append("</doc></add>");
-        SolrIndexerCommiter.postData(sb.toString());
-        SolrIndexerCommiter.postData("<commit/>");
-    }
-
-    private static void indexWeOffer(Connection conn, String id, String docCode, String codeType) throws Exception {
-        String sql = "select knihovna, offer from NABIDKY where zaznam=?";
-        PreparedStatement ps = conn.prepareStatement(sql);
-        ps.setString(1, id);
-
-        ResultSet rs = ps.executeQuery();
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("<add><doc>");
-        sb.append("<field name=\"code\">")
-                .append(docCode)
-                .append("</field>");
-        sb.append("<field name=\"md5\">")
-                .append(docCode)
-                .append("</field>");
-        sb.append("<field name=\"code_type\">")
-                .append(codeType)
-                .append("</field>");
-        sb.append("<field name=\"nabidka\" update=\"set\" null=\"true\" />");
-        sb.append("</doc></add>");
-        SolrIndexerCommiter.postData(sb.toString());
-        SolrIndexerCommiter.postData("<commit/>");
-        sb = new StringBuilder();
-        sb.append("<add><doc>");
-        sb.append("<field name=\"code\">")
-                .append(docCode)
-                .append("</field>");
-        sb.append("<field name=\"md5\">")
-                .append(docCode)
-                .append("</field>");
-        sb.append("<field name=\"code_type\">")
-                .append(codeType)
-                .append("</field>");
-        while (rs.next()) {
-            sb.append("<field name=\"nabidka\" update=\"add\">")
-                    .append(rs.getInt("offer"))
-                    .append("</field>");
-        }
-        sb.append("</doc></add>");
-        SolrIndexerCommiter.postData(sb.toString());
-        SolrIndexerCommiter.postData("<commit/>");
-    }
-
     enum Actions {
 
         GETWEOFFER {
@@ -386,7 +432,7 @@ public class DbOperations extends HttpServlet {
                         try {
                             conn = DbUtils.getConnection();
 
-                            String sql = "select zaznam from NABIDKY where zaznam=? and knihovna=? and exemplar=?";
+                            String sql = "select zaznam from ZaznamOffer where zaznam=? and knihovna=? and exemplar=?";
                             PreparedStatement ps = conn.prepareStatement(sql);
                             ps.setString(1, id);
                             ps.setInt(2, idKnihovna);
@@ -425,13 +471,13 @@ public class DbOperations extends HttpServlet {
                         }
                         try {
                             conn = DbUtils.getConnection();
-                            String sql = "delete from NABIDKY where zaznam=? and knihovna=? and exemplar=?";
+                            String sql = "delete from ZaznamOffer where zaznam=? and knihovna=? and exemplar=?";
                             PreparedStatement ps = conn.prepareStatement(sql);
                             ps.setString(1, id);
                             ps.setInt(2, idKnihovna);
                             ps.setString(3, exem);
                             ps.executeUpdate();
-                            indexWeOffer(conn, id, docCode, "md5");
+                            //indexWeOffer(conn, id, docCode, "md5");
                             LOGGER.log(Level.INFO, id + " deleted");
                             out.println(id + " deleted");
                         } catch (Exception ex) {
@@ -450,7 +496,8 @@ public class DbOperations extends HttpServlet {
                         resp.setContentType("text/plain");
                         PrintWriter out = resp.getWriter();
 
-                        String id = req.getParameter("id");
+                        String zaznam_id = req.getParameter("id");
+                        String exemplar_id = req.getParameter("ex");
                         String docCode = req.getParameter("code");
                         String line = req.getParameter("line");
                         String user = req.getRemoteUser();
@@ -464,8 +511,8 @@ public class DbOperations extends HttpServlet {
                         Connection conn = null;
                         try {
                             conn = DbUtils.getConnection();
-                            insertNabidka(conn, idKnihovna, id, docCode, 0, line);
-                            out.println(id + " added");
+                            insertNabidka(conn, idKnihovna, zaznam_id, exemplar_id, docCode, 0, line);
+                            out.println(zaznam_id + " added");
                         } catch (Exception ex) {
                             LOGGER.log(Level.SEVERE, "Error saving WEOFFER", ex);
                             out.println(ex);
@@ -536,7 +583,7 @@ public class DbOperations extends HttpServlet {
                             ps.setString(2, id);
                             ps.setInt(3, idKnihovna);
                             ps.executeUpdate();
-                            indexWanted(conn, id, code, "md5");
+                            //indexWanted(conn, id, code, "md5");
                             out.println(id + " updated");
                         } catch (Exception ex) {
                             LOGGER.log(Level.SEVERE, "Error updating WANTED", ex);
@@ -590,7 +637,7 @@ public class DbOperations extends HttpServlet {
                                 ps.setBoolean(3, wants);
                                 ps.executeUpdate();
                             }
-                            indexWanted(conn, id, code, "md5");
+                            //indexWanted(conn, id, code, "md5");
                             out.println(id + " added");
                         } catch (Exception ex) {
                             out.println(ex);
@@ -610,14 +657,14 @@ public class DbOperations extends HttpServlet {
                         String query = req.getQueryString().replace("action=SAVEVIEW&", "");
                         String name = req.getParameter("viewName");
                         boolean isGlobal = "on".equals(req.getParameter("viewGlobal"));
-                        
+
                         Connection conn = null;
 
                         Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
                         int idKnihovna = 0;
                         if (kn != null) {
                             idKnihovna = kn.getId();
-                        }else{
+                        } else {
                             out.println("Operation not allowed. Not logged.");
                             return;
                         }
@@ -756,6 +803,76 @@ public class DbOperations extends HttpServlet {
                         }
                     }
                 },
+        CLOSEDEMAND {
+                    @Override
+                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+
+                        resp.setContentType("text/plain");
+                        PrintWriter out = resp.getWriter();
+                        int id = Integer.parseInt(req.getParameter("id"));
+
+                        Connection conn = null;
+                        try {
+                            conn = DbUtils.getConnection();
+                            out.print(closeDemand(conn, id));
+
+                        } catch (Exception ex) {
+                            LOGGER.log(Level.SEVERE, "action failed", ex);
+                            out.println(ex);
+                        } finally {
+                            if (conn != null && !conn.isClosed()) {
+                                conn.close();
+                            }
+                        }
+                    }
+                },
+        NEWDEMAND {
+                    @Override
+                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+
+                        resp.setContentType("text/plain");
+                        PrintWriter out = resp.getWriter();
+                        String name = req.getParameter("name");
+                        Connection conn = null;
+
+                        Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                        int idKnihovna = 0;
+                        if (kn != null) {
+                            idKnihovna = kn.getId();
+                        }
+                        try {
+                            conn = DbUtils.getConnection();
+                            int id = 0;
+                            if (isOracle(conn)) {
+                                id = insertDemandOracle(conn, name, idKnihovna);
+                            } else {
+                                id = insertDemandPg(conn, name, idKnihovna);
+                            }
+
+                            Calendar now = Calendar.getInstance();
+                            Calendar o = Calendar.getInstance();
+                            o.add(Calendar.DATE, EXPIRATION_DAYS);
+                            JSONObject j = new JSONObject();
+                            j.put("id", Integer.toString(id));
+                            j.put("nazev", name);
+                            j.put("knihovna", idKnihovna);
+                            j.put("closed", false);
+                            j.put("date", sdf.format(o.getTime()));
+                            j.put("expires", sdf.format(o.getTime()));
+                            j.put("expired", !o.after(now));
+
+                            out.println(j.toString());
+
+                        } catch (Exception ex) {
+                            LOGGER.log(Level.SEVERE, "upload failed", ex);
+                            out.println(ex);
+                        } finally {
+                            if (conn != null && !conn.isClosed()) {
+                                conn.close();
+                            }
+                        }
+                    }
+                },
         NEWOFFER {
                     @Override
                     void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
@@ -778,7 +895,7 @@ public class DbOperations extends HttpServlet {
                             } else {
                                 idOffer = insertOfferPg(conn, name, idKnihovna, null);
                             }
-                            
+
                             Calendar now = Calendar.getInstance();
                             Calendar o = Calendar.getInstance();
                             o.add(Calendar.DATE, EXPIRATION_DAYS);
@@ -790,7 +907,7 @@ public class DbOperations extends HttpServlet {
                             j.put("date", sdf.format(o.getTime()));
                             j.put("expires", sdf.format(o.getTime()));
                             j.put("expired", !o.after(now));
-                            
+
                             out.println(j.toString());
 
                         } catch (Exception ex) {
@@ -842,7 +959,8 @@ public class DbOperations extends HttpServlet {
                         PrintWriter out = resp.getWriter();
 
                         int idOffer = Integer.parseInt(req.getParameter("idOffer"));
-                        String id = req.getParameter("id");
+                        String zaznam_id = req.getParameter("id");
+                        String exemplar_id = req.getParameter("ex");
                         String docCode = req.getParameter("docCode");
 
                         Connection conn = null;
@@ -853,43 +971,84 @@ public class DbOperations extends HttpServlet {
                             idKnihovna = kn.getId();
                         }
 
-                        Map<String, String> parts = new HashMap<String, String>();
-                        if (docCode == null || "".equals(docCode)) {
-
-                            //String[] parts = new String[11];
-                            parts.put("isbn", req.getParameter("isbn"));
-                            parts.put("issn", req.getParameter("issn"));
-                            parts.put("ccnb", req.getParameter("ccnb"));
-                            parts.put("245a", req.getParameter("titul"));
-                            parts.put("245n", req.getParameter("f245n"));
-                            parts.put("245p", req.getParameter("f245p"));
-                            parts.put("250a", req.getParameter("f250a"));
-                            parts.put("100a", req.getParameter("f100a"));
-                            parts.put("110a", req.getParameter("f110a"));
-                            parts.put("111a", req.getParameter("f111a"));
-                            parts.put("260a", req.getParameter("f260"));
-    //                        parts[1] = req.getParameter("isbn");
-                            //                        parts[2] = req.getParameter("issn");
-                            //                        parts[2] = req.getParameter("ccnb");
-                            //                        parts[3] = req.getParameter("titul");
-                            //                        parts[4] = req.getParameter("f245n");
-                            //                        parts[5] = req.getParameter("f245p");
-                            //                        parts[6] = req.getParameter("f250a");
-                            //                        parts[7] = req.getParameter("f100a");
-                            //                        parts[8] = req.getParameter("f110a");
-                            //                        parts[9] = req.getParameter("f111a");
-                            //                        parts[10] = req.getParameter("f260");
-                            //                        String line = "";
-                            //                        for (String s : parts) {
-                            //                            line += s + "\t";
-                            //                        }
-
-                            docCode = Slouceni.generateMD5(parts);
-                        }
                         try {
                             conn = DbUtils.getConnection();
-                            insertNabidka(conn, idKnihovna, id, docCode, idOffer, (new JSONObject(parts)).toString());
+                            Map<String, String> parts = new HashMap<String, String>();
+                            boolean exists = false;
+                            if (docCode == null || "".equals(docCode)) {
 
+                                //String[] parts = new String[11];
+                                parts.put("isbn", req.getParameter("isbn"));
+                                parts.put("issn", req.getParameter("issn"));
+                                parts.put("ccnb", req.getParameter("ccnb"));
+                                parts.put("245a", req.getParameter("titul"));
+                                parts.put("245n", req.getParameter("f245n"));
+                                parts.put("245p", req.getParameter("f245p"));
+                                parts.put("250a", req.getParameter("f250a"));
+                                parts.put("100a", req.getParameter("f100a"));
+                                parts.put("110a", req.getParameter("f110a"));
+                                parts.put("111a", req.getParameter("f111a"));
+                                parts.put("260a", req.getParameter("f260"));
+                                parts.put("comment", req.getParameter("comment"));
+
+                                docCode = Slouceni.generateMD5(parts);
+                                String sql = "select * from ZAZNAM where uniquecode='" + docCode + "'";
+                                PreparedStatement ps = conn.prepareStatement(sql);
+                                ResultSet rs = ps.executeQuery();
+                                if (rs.next()) {
+                                    exists = true;
+                                }
+                            } else {
+                                parts.put("comment", req.getParameter("comment"));
+                            }
+                            insertNabidka(conn, idKnihovna, zaznam_id, exemplar_id, docCode, idOffer, (new JSONObject(parts)).toString());
+                            if (exists) {
+                                out.println("Nabidka pridana. Generovany kod: " + docCode + " uz existuje");
+                            } else {
+                                out.println("Nabidka pridana. Kod: " + docCode);
+                            }
+                        } catch (Exception ex) {
+                            LOGGER.log(Level.SEVERE, "upload failed", ex);
+                            out.println(ex);
+                        } finally {
+                            if (conn != null && !conn.isClosed()) {
+                                conn.close();
+                            }
+                        }
+                    }
+                },
+        ADDTODEMAND {
+                    @Override
+                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+
+                        resp.setContentType("text/plain");
+                        PrintWriter out = resp.getWriter();
+
+                        int id = Integer.parseInt(req.getParameter("id"));
+                        String zaznam_id = req.getParameter("zaznam");
+                        String exemplar_id = req.getParameter("ex");
+                        String docCode = req.getParameter("docCode");
+
+                        Connection conn = null;
+
+                        Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                        int idKnihovna = 0;
+                        if (kn != null) {
+                            idKnihovna = kn.getId();
+                        }
+
+                        try {
+                            conn = DbUtils.getConnection();
+                            Map<String, String> parts = new HashMap<String, String>();
+                            boolean exists = false;
+                            parts.put("comment", req.getParameter("comment"));
+                            
+                            insertToDemand(conn, idKnihovna, zaznam_id, exemplar_id, docCode, id, (new JSONObject(parts)).toString());
+                            if (exists) {
+                                out.println("Poptavka pridana. Generovany kod: " + docCode + " uz existuje");
+                            } else {
+                                out.println("Poptavka pridana. Kod: " + docCode);
+                            }
                         } catch (Exception ex) {
                             LOGGER.log(Level.SEVERE, "upload failed", ex);
                             out.println(ex);
@@ -1022,6 +1181,21 @@ public class DbOperations extends HttpServlet {
                             if (conn != null && !conn.isClosed()) {
                                 conn.close();
                             }
+                        }
+
+                    }
+                },
+        GETDEMANDS {
+                    @Override
+                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                        resp.setContentType("text/plain");
+                        try {
+                            PrintWriter out = resp.getWriter();
+                            out.println(getDemands().toString());
+
+                        } catch (Exception ex) {
+                            PrintWriter out = resp.getWriter();
+                            out.println(ex);
                         }
 
                     }

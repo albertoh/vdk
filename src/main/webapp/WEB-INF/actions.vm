@@ -4,6 +4,8 @@
         #if($logControl.logged)
                 <a href="javascript:vdk.openNabidka();">nabidky</a>:
                 <select id="activeOffers" onchange="vdk.selectActiveOffer();"></select>
+                <a href="javascript:vdk.demands.open();">poptavky</a>:
+                <select id="activeDemands" onchange="vdk.selectActiveDemand();"></select>
         #end
             <select id="saved_views" onchange="vdk.selectView();">
                 <option>$i18n.select.view</option></select>

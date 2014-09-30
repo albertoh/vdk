@@ -45,14 +45,34 @@ function filterNabidky(nav) {
 
 function filterOffer(id) {
     var i = $("input.fq").length + 1;
-    var input = '<input type="hidden" name="offer" id="offer_' + id + '" class="fq" value="' + id + '" />';
+    var input = '<input type="hidden" name="offer" id="offer' + id + '" class="fq" value="' + id + '" />';
+    $("#searchForm").append(input);
+    $("#offset").val("0");
+    document.getElementById("searchForm").submit();
+}
+
+function filterDemands() {
+    var input = '<input type="hidden" name="onlyDemands" id="onlyDemands" class="fq" value="yes" />';
+    $("#searchForm").append(input);
+    $("#offset").val("0");
+    document.getElementById("searchForm").submit();
+}
+
+function filterDemand(id) {
+    var input = '<input type="hidden" name="demand" id="demand' + id + '" class="fq" value="' + id + '" />';
     $("#searchForm").append(input);
     $("#offset").val("0");
     document.getElementById("searchForm").submit();
 }
 
 function removeOffer(id) {
-    $('#offer_' + id).remove();
+    $('#offer' + id).remove();
+    document.getElementById("offset").value = 0;
+    document.getElementById("searchForm").submit();
+}
+
+function removeDemand(id) {
+    $('#demand' + id).remove();
     document.getElementById("offset").value = 0;
     document.getElementById("searchForm").submit();
 }
@@ -169,7 +189,7 @@ function removeAdvField(field) {
 function getWanted(id, exemplar) {
     var url = "db?action=GETWANTED&id=" + id + "&ex=" + exemplar;
     var jqid = jq(id) + exemplar;
-    $.get(url, function(data) {
+    $.get(url, function (data) {
         if (data == "0")
             return;
         if (data == "true") {
@@ -192,7 +212,7 @@ function saveWanted(id, code, exemplar) {
         action = "UPDATEWANTED";
     }
     var url = "db?action=" + action + "&id=" + id + "&code=" + code + "&wanted=" + wants + "&ex=" + exemplar;
-    $.get(url, function(data) {
+    $.get(url, function (data) {
         alert(data);
     });
 }
@@ -200,7 +220,7 @@ function saveWanted(id, code, exemplar) {
 function getWeOffer(id, exemplar) {
     var url = "db?action=GETWEOFFER&id=" + id + "&ex=" + exemplar;
     var jqid = jq(id) + exemplar;
-    $.get(url, function(data) {
+    $.get(url, function (data) {
         if (data == "0")
             return;
         if (data == "true") {
@@ -219,7 +239,7 @@ function saveWeOffer(id, code, exemplar) {
         action = "DELETEWEOFFER";
     }
     var url = "db?action=" + action + "&id=" + id + "&code=" + code + "&offered=" + offered + "&ex=" + exemplar;
-    $.get(url, function(data) {
+    $.get(url, function (data) {
         alert(data);
     });
 }
@@ -258,7 +278,7 @@ function importOfferDo() {
 
 function autocompleteQ() {
     $("#q").autocomplete({
-        source: function(request, response) {
+        source: function (request, response) {
             $.ajax({
                 url: "suggest.jsp",
                 dataType: "json",
@@ -266,7 +286,7 @@ function autocompleteQ() {
                     maxRows: 12,
                     q: request.term
                 },
-                success: function(data) {
+                success: function (data) {
 
 //            response( $.map( data.response.docs, function( item ) {
 //              return {
@@ -275,7 +295,7 @@ function autocompleteQ() {
 //              }
 //            }));
                     var count = 0;
-                    response($.each(data.facet_counts.facet_fields.title_suggest, function(item) {
+                    response($.each(data.facet_counts.facet_fields.title_suggest, function (item) {
                         if (count % 2 == 0) {
                             var str = item.toString();
                             return {
@@ -289,17 +309,47 @@ function autocompleteQ() {
         },
         minLength: 2,
         delay: 500,
-        select: function(event, ui) {
+        select: function (event, ui) {
             log(event);
             log(ui.item ?
                     "Selected: " + ui.item.label :
                     "Nothing selected, input was " + this.value);
         },
-        open: function() {
+        open: function () {
             $(this).removeClass("ui-corner-all").addClass("ui-corner-top");
         },
-        close: function() {
+        close: function () {
             $(this).removeClass("ui-corner-top").addClass("ui-corner-all");
         }
     });
+}
+
+function jsonElement(json, el, prefix) {
+    var val = json[el];
+    if (val) {
+        if (prefix && dict[prefix + "." + val]) {
+            return dict[prefix + "." + val];
+        } else {
+            return val;
+        }
+        return val;
+    } else {
+        return "";
+    }
+}
+
+function zdrojIcon(zdroj, isNKF) {
+    if (zdroj.indexOf("MZK") !== -1) {
+        return "img/icons/zdroj/mzk.gif";
+    } else if (zdroj.indexOf("VKOL") !== -1) {
+        return "img/icons/zdroj/vkol.gif";
+    } else if (zdroj.indexOf("NKC") !== -1) {
+        if (isNKF) {
+            return "img/icons/zdroj/nkf.gif";
+        } else {
+            return "img/icons/zdroj/nkp.gif";
+        }
+    } else {
+        return "img/icons/zdroj/" + zdroj + ".gif";
+    }
 }

@@ -40,11 +40,18 @@
                         <xsl:if test="./arr[@name='nabidka']/str">  
                             <div class="nabidka">Nabizeno:      
                             <xsl:for-each select="./arr[@name='nabidka']/str">
-                                <div>
-                                    <xsl:attribute name="data-id">
+                                <xsl:variable name="pos" select="position()" />
+                                <span>
+                                    <xsl:attribute name="data-offer">
                                         <xsl:value-of  select="." />
                                     </xsl:attribute>
-                                </div>
+                                    <xsl:attribute name="data-zaznam">
+                                        <xsl:value-of  select="../../arr[@name='nabidka_zaznam']/str[position()=$pos]" />
+                                    </xsl:attribute>
+                                    <xsl:attribute name="data-ex">
+                                        <xsl:value-of  select="../../arr[@name='ex_nabidka']/str[position()=$pos]" />
+                                    </xsl:attribute>
+                                </span>
                             </xsl:for-each>
                             </div>
                         </xsl:if>
@@ -53,12 +60,12 @@
                                 <xsl:attribute name="title">nahlédnout originální metadata</xsl:attribute>
                                 <xsl:attribute name="href">original?id=<xsl:value-of select="./arr[@name='id']/str" />&amp;path=<xsl:value-of select="./arr[@name='file']/str"/></xsl:attribute>view</a>
                         </span>
-                        <span class="offerdoc" style="float:left;">
+                        <span class="offerdoc" style="float:left;display:none;">
                             <a class="ui-icon ui-icon-flag" >
                                 <xsl:attribute name="title">přidat do nabídky</xsl:attribute>
                                 <xsl:attribute name="href">javascript:vdk.addToOffer('<xsl:value-of select="$code" />')</xsl:attribute>offer</a>
                         </span>
-                        <span class="demanddoc" style="float:left;">
+                        <span class="demanddoc" style="float:left;display:none;">
                             <a class="ui-icon ui-icon-cart" >
                                 <xsl:attribute name="title">přidat do poptávky</xsl:attribute>
                                 <xsl:attribute name="href">javascript:vdk.addToDemand('<xsl:value-of select="$code" />')</xsl:attribute>demand</a>
@@ -175,11 +182,13 @@
                     <xsl:value-of  select="." /><xsl:if test="position()!=last()">,</xsl:if>
                 </xsl:for-each>]}
             </xsl:attribute>
-            
             <xsl:attribute name="data-nabidka">{"exemplare":[
+            <!--
                 <xsl:for-each select="./arr[@name='ex_nabidka']/str">
-                    <xsl:value-of  select="." /><xsl:if test="position()!=last()">,</xsl:if>
-                </xsl:for-each>]}
+                    "<xsl:value-of  select="." />"<xsl:if test="position()!=last()">,</xsl:if>
+                </xsl:for-each>
+            -->
+            ]}
             </xsl:attribute>
         </div> 
     </xsl:template>

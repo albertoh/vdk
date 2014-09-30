@@ -27,6 +27,10 @@
         </init-param>
     </servlet>
     <!-- Map *.vm files to Velocity -->
+    <servlet>
+        <servlet-name>IndexOperations</servlet-name>
+        <servlet-class>cz.incad.vdk.client.IndexOperations</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>velocity</servlet-name>
         <url-pattern>*.vm</url-pattern>
@@ -54,6 +58,10 @@
     <servlet-mapping>
         <servlet-name>GetOriginalServlet</servlet-name>
         <url-pattern>/original</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>IndexOperations</servlet-name>
+        <url-pattern>/index</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

@@ -135,6 +135,28 @@ public class Search {
             }
             hasFilters = true;
         }
+        
+        if(req.getParameter("onlyOffers") != null){
+            query.addFilterQuery("nabidka:[* TO *]");
+        }
+
+        if (req.getParameterValues("offer") != null) {
+            for (String offer : req.getParameterValues("offer")) {
+                query.addFilterQuery("nabidka:" + offer);
+            }
+            hasFilters = true;
+        }
+        
+        if(req.getParameter("onlyDemands") != null){
+            query.addFilterQuery("poptavka:[* TO *]");
+        }
+        
+        if (req.getParameterValues("demand") != null) {
+            for (String demand : req.getParameterValues("demand")) {
+                query.addFilterQuery("poptavka:" + demand);
+            }
+            hasFilters = true;
+        }
     }
     
     public boolean getHasFilters(){

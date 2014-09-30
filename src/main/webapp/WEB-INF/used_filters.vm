@@ -16,10 +16,15 @@
 </li>
 #end
 
-#foreach($offer in $params.getStrings('offer'))
-<c:forEach varStatus="status" var="offer" items="${paramValues.offer}">
+#foreach($demand in $params.getStrings('demand'))
    <li>
-        <a class="usedFilter" href="javascript:removeOffer(${offer});"><img border="0" src="img/x.png" alt="" />$i18n.filter.nabidka: ${offer}</a>
+        <a class="usedFilter" href="javascript:removeDemand(${foreach.index});"><img border="0" src="img/x.png" alt="" />$i18n.filter.poptavka: ${demand}</a>
+   </li> 
+#end
+
+#foreach($offer in $params.getStrings('offer'))
+   <li>
+        <a class="usedFilter" href="javascript:removeOffer(${foreach.index});"><img border="0" src="img/x.png" alt="" />$i18n.filter.nabidka: ${offer}</a>
    </li> 
 #end
 

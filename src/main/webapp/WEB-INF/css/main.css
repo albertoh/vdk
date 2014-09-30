@@ -278,6 +278,10 @@ table.tex th{
     text-align:left;
 }
 
+table.tex tr.nabidka{
+    background-color: #CCCC22;
+}
+
 table.tex tr.more{
     display:none;
 }
@@ -391,7 +395,7 @@ table.tex td.RZ{
     width: 98%;
 }
 
-#useroffers ul{
+#useroffers ul, #userdemands ul{
     padding:0px;
 }
 
@@ -400,5 +404,13 @@ table.tex td.RZ{
     padding: 3px;
 }
 #useroffers li.active{
+    font-weight: bold;
+}
+
+#userdemands li.demand{
+    list-style: none;
+    padding: 3px;
+}
+#userdemands li.active{
     font-weight: bold;
 }
