@@ -20,6 +20,7 @@ public class Knihovna {
     private String nazev;
      private String heslo;
      private String role;
+     private int priorita;
      private String email;
      private String telefon;
      
@@ -33,6 +34,7 @@ public class Knihovna {
             this.id = rs.getInt("knihovna_id");
             this.nazev = rs.getString("nazev");
             this.role = rs.getString("userrole");
+            this.priorita = rs.getInt("priorita");
             this.telefon = rs.getString("telefon");
             this.email = rs.getString("email");
         }
@@ -141,6 +143,20 @@ public class Knihovna {
      */
     public void setId(int id) {
         this.id = id;
+    }
+
+    /**
+     * @return the priorita
+     */
+    public int getPriorita() {
+        return priorita;
+    }
+
+    /**
+     * @param priorita the priorita to set
+     */
+    public void setPriorita(int priorita) {
+        this.priorita = priorita;
     }
     
 }

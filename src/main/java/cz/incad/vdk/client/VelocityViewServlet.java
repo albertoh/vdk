@@ -16,10 +16,13 @@ public class VelocityViewServlet extends org.apache.velocity.tools.view.Velocity
     @Override
     protected void setContentType(HttpServletRequest request,
             HttpServletResponse response) {
+        LoggedController logControl =  new LoggedController(request);
+        request.getSession().setAttribute(LoggedController.LOG_CONTROL_KEY, logControl);
         if (request.getRequestURI().endsWith(".css")) {
             response.setContentType("text/css");
         } else if(request.getRequestURI().contains("/csv/")) {
             String filename = "vdk_export.csv";
+            response.setCharacterEncoding("UTF-8");
             response.setContentType("Content-type: application/x-csv; name="+filename);
             response.setHeader("Content-Disposition", "attachment; filename="+filename);
         }else {

@@ -35,7 +35,7 @@ function gotoOffset(offset) {
     document.getElementById("searchForm").submit();
 }
 
-function filterNabidky(nav) {
+function filterOffers() {
     var i = $("input.fq").length + 1;
     var input = '<input type="hidden" name="onlyOffers" id="onlyOffers" class="fq" value="yes" />';
     $("#searchForm").append(input);
@@ -173,6 +173,13 @@ function removeWanted() {
 
 function removeOnlyOffers() {
     $('#onlyOffers').remove();
+    document.getElementById("offset").value = 0;
+    document.getElementById("searchForm").submit();
+
+}
+
+function removeOnlyDemands() {
+    $('#onlyDemands').remove();
     document.getElementById("offset").value = 0;
     document.getElementById("searchForm").submit();
 
@@ -353,3 +360,34 @@ function zdrojIcon(zdroj, isNKF) {
         return "img/icons/zdroj/" + zdroj + ".gif";
     }
 }
+
+function Confirm() {
+    
+}
+
+Confirm.prototype = {
+    open: function (title, f) {
+        if($("#dialog-confirm").length === 0){
+            this.create(title);
+        }else{
+            $("#dialog-confirm>div").html(title);
+        }
+        $("#dialog-confirm").dialog({
+            resizable: false,
+            modal: true,
+            title: "Confirm",
+            buttons: {
+                "OK": function () {
+                    if (f) f.apply(null, null);
+                    $(this).dialog("close");
+                },
+                Cancel: function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+    },
+    create: function(title){
+        $('body').append($('<div id="dialog-confirm"><div>'+title+'</span></div>'));
+    }
+};

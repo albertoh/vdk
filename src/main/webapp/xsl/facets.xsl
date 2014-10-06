@@ -49,12 +49,12 @@
                     </xsl:call-template>
                 </xsl:when>
                 <xsl:when test="./@name='nabidka'">
-                    <ul>
-                        <li><a>
-                        <xsl:attribute name="href">javascript:filterNabidky();</xsl:attribute>
-                            :: <xsl:value-of select="rb:getString($i18n,./@name,'all')" />
-                        </a></li>
-                    </ul>
+                    <xsl:call-template name="nabidka">
+                        <xsl:with-param name="navName"  select="./@name" />
+                        <xsl:with-param name="content"  select="." />
+                    </xsl:call-template>
+                </xsl:when>
+                <xsl:when test="./@name='poptavka'">
                     <xsl:call-template name="facet">
                         <xsl:with-param name="navName"  select="./@name" />
                         <xsl:with-param name="content"  select="." />
@@ -71,6 +71,32 @@
         </xsl:for-each>
     </xsl:template>
 
+    <xsl:template name="nabidka">
+        <xsl:param name="navName" />
+        <xsl:param name="content" />
+        <ul id="nav_nabidka">
+            <li><a>
+            <xsl:attribute name="href">javascript:filterDemands();</xsl:attribute>
+                :: <xsl:value-of select="rb:getString($i18n,'poptavka.all','all')" />
+            </a></li>
+            <xsl:for-each select="$content/int" >
+                <xsl:variable name="bundle_name"><xsl:value-of select="$navName" />.<xsl:value-of select="./@name" /></xsl:variable>
+                    <li class="offer">
+                        <xsl:attribute name="data-offer" ><xsl:value-of select="./@name" /></xsl:attribute>
+                        <xsl:if test="position() &gt; $numInitial">
+                            <xsl:attribute name="class">more</xsl:attribute>
+                        </xsl:if><a>
+                        <xsl:attribute name="href">javascript:filterOffer(<xsl:value-of select="./@name" />);</xsl:attribute>
+                            :: <xsl:value-of select="rb:getString($i18n,$navName,./@name)" />
+                        </a>
+                        <span style="float:right;">(<xsl:value-of select="." />)</span>
+                    </li>
+            </xsl:for-each>
+            <xsl:if test="count($content/int) &gt; $numInitial"><li><a>
+                <xsl:attribute name="href">javascript:toggleNav('<xsl:value-of select="$navName" />');</xsl:attribute>...</a></li>
+            </xsl:if>
+        </ul>
+    </xsl:template>
     <xsl:template name="facet">
         <xsl:param name="navName" />
         <xsl:param name="content" />

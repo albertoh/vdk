@@ -6,9 +6,14 @@
     </div>
     <div style="float:right;">
         #if($logControl.logged)
-                <a href="logout.vm?redirectURL=index.vm" title="logout">user: $logControl.loggedName </a>
+            <a href="logout.vm?redirectURL=index.vm" title="logout">user: $logControl.loggedName </a>
         #else
-            <a href="redirect.vm?redirectURL=$esc.url($request.queryString)">login</a>
+            #if($request.queryString)
+                #set($reqAddr = $esc.url($request.queryString))
+            #else
+                #set($reqAddr = '.')
+            #end
+            <a href="redirect.vm?redirectURL=$reqAddr">login</a>
         #end
      </div>
     

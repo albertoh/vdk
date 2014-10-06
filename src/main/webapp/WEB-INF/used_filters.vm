@@ -1,7 +1,9 @@
 #if($search.hasFilters)
 
-    <h4 class="ui-accordion-header ui-helper-reset ui-state-default ui-accordion-icons ui-corner-all ui-state-focus"><img src="img/funnel.png" alt="" style="margin-top:4px;margin-left:8px;" /> <span><fmt:message key="filter.used" /></span>
-    <a style="float:right;margin-top:6px;margin-right:4px;" href="index.jsp"><img border="0" src="img/x.png" alt="" /></a>
+    <h4 class="ui-accordion-header ui-helper-reset ui-state-default ui-accordion-icons ui-corner-all ui-state-focus">
+        <img src="img/funnel.png" alt="" style="margin-top:4px;margin-left:8px;" /> 
+        <span>$i18n.filter.used</span>
+        <a style="float:right;margin-top:6px;margin-right:4px;" href="."><img border="0" src="img/x.png" alt="" /></a>
     </h4>
     <ul>        
 #if(${params.wanted})
@@ -10,9 +12,15 @@
 </li>
 #end
 
-#if($param.onlyOffers)
+#if($params.onlyOffers) 
 <li>
      <a class="usedFilter" href="javascript:removeOnlyOffers();"><img border="0" src="img/x.png" alt="" />$i18n.filter.onlyOffers</a>
+</li>
+#end
+
+#if($params.onlyDemands)
+<li>
+     <a class="usedFilter" href="javascript:removeOnlyDemands();"><img border="0" src="img/x.png" alt="" />$i18n.filter.onlyDemands</a>
 </li>
 #end
 

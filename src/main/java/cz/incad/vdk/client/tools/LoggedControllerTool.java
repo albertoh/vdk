@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletRequest;
  * 
  * @author pavels
  */
-public class LoggedController {
+public class LoggedControllerTool {
 
     protected HttpServletRequest req;
 

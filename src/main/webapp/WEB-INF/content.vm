@@ -18,12 +18,13 @@
                     </ul>
                 </div>
             #end
+#*
                 <h3>
                     <span>$i18n.filter.nabidka</span>
                 </h3>
                 <div>
                     <ul id="offers">
-                        <li><a href="javascript:filterNabidky();" >:: $i18n.nabidka.all</a></li>
+                        <li><a href="javascript:filterOffers();" >:: $i18n.nabidka.all</a></li>
                     </ul>
                 </div>
                 <h3>
@@ -34,6 +35,7 @@
                         <li><a href="javascript:filterDemands();" >:: $i18n.poptavka.all</a></li>
                     </ul>
                 </div>
+*#
             #parse("facets.vm")
             </div>
         </div>

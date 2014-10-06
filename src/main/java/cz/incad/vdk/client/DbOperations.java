@@ -1,7 +1,9 @@
 package cz.incad.vdk.client;
 
 import cz.incad.vdkcommon.Slouceni;
-import cz.incad.vdkcommon.SolrIndexerCommiter;
+import static cz.incad.vdkcommon.Slouceni.csvToMap;
+import static cz.incad.vdkcommon.Slouceni.toJSON;
+import cz.incad.vdkcommon.solr.IndexerQuery;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,6 +37,11 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVStrategy;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.SolrDocumentList;
+import org.json.JSONException;
 
 public class DbOperations extends HttpServlet {
 
@@ -144,7 +151,7 @@ public class DbOperations extends HttpServlet {
         }
 
         String sql = "insert into OFFER (nazev, knihovna, update_timestamp, offer_id, closed) values (?,?, sysdate, ?, 0)";
-        LOGGER.log(Level.INFO, "executing " + sql + "\nparams: {0}, {1}, {2}", new Object[]{name,idKnihovna,retVal});
+        LOGGER.log(Level.INFO, "executing " + sql + "\nparams: {0}, {1}, {2}", new Object[]{name, idKnihovna, retVal});
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setString(1, name);
 //        if (uploadedStream != null) {
@@ -159,7 +166,7 @@ public class DbOperations extends HttpServlet {
 
     }
 
-    public static void insertNabidka(Connection conn, int idKnihovna, String zaznam_id, String exemplar_id, String docCode, int idOffer, String line) throws Exception {
+    public static int insertNabidka(Connection conn, int idKnihovna, String zaznam_id, String exemplar_id, String docCode, int idOffer, String line) throws Exception {
 
         if (isOracle(conn)) {
             String sql1 = "select ZaznamOffer_ID_SQ.nextval from dual";
@@ -173,9 +180,9 @@ public class DbOperations extends HttpServlet {
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, docCode);
             ps.setString(2, zaznam_id);
-            if(exemplar_id == null){
+            if (exemplar_id == null) {
                 ps.setNull(3, Types.VARCHAR);
-            }else{
+            } else {
                 ps.setString(3, exemplar_id);
             }
             ps.setInt(4, idKnihovna);
@@ -183,30 +190,62 @@ public class DbOperations extends HttpServlet {
             ps.setInt(6, idOffer);
             ps.setString(7, line);
             ps.executeUpdate();
+            return idW;
         } else {
             String sql = "insert into ZaznamOffer (uniqueCode, zaznam, exemplar, knihovna,offer,fields) values (?,?,?,?,?,?)";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, docCode);
             ps.setString(2, zaznam_id);
-            if(exemplar_id == null){
+            if (exemplar_id == null) {
                 ps.setNull(3, Types.VARCHAR);
-            }else{
+            } else {
                 ps.setString(3, exemplar_id);
             }
             ps.setInt(4, idKnihovna);
             ps.setInt(5, idOffer);
             ps.setString(6, line);
-            ps.executeUpdate();
+            int idW = ps.executeUpdate();
+            return idW;
         }
         //indexWeOffer(conn, id, docCode, "md5");
     }
-    
-    public static void insertToDemand(Connection conn, 
-            int idKnihovna, 
-            String zaznam_id, 
-            String exemplar_id, 
-            String docCode, 
-            int id, 
+
+    public static void removeZaznamOffer(Connection conn,
+            int idKnihovna,
+            int ZaznamOffer_id) throws Exception {
+
+        String sql = "delete from ZaznamOffer where ZaznamOffer_id=? and knihovna=?";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setInt(1, ZaznamOffer_id);
+        ps.setInt(2, idKnihovna);
+        ps.executeUpdate();
+    }
+
+    public static void removeDemand(Connection conn,
+            int idKnihovna,
+            String zaznam_id,
+            String exemplar_id,
+            String docCode) throws Exception {
+
+        String sql = "delete from ZaznamDemand where uniqueCode=? and zaznam=? and exemplar=? and knihovna=?";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setString(1, docCode);
+        ps.setString(2, zaznam_id);
+        if (exemplar_id == null) {
+            ps.setNull(3, Types.VARCHAR);
+        } else {
+            ps.setString(3, exemplar_id);
+        }
+        ps.setInt(4, idKnihovna);
+        ps.executeUpdate();
+
+    }
+
+    public static void insertToDemand(Connection conn,
+            int idKnihovna,
+            String zaznam_id,
+            String exemplar_id,
+            String docCode,
             String line) throws Exception {
 
         if (isOracle(conn)) {
@@ -217,33 +256,31 @@ public class DbOperations extends HttpServlet {
                 idW = rs.getInt(1);
             }
 
-            String sql = "insert into ZaznamDemand (uniqueCode, zaznam, exemplar, knihovna, ZaznamDemand_id, demand, fields) values (?,?,?,?,?,?,?)";
+            String sql = "insert into ZaznamDemand (uniqueCode, zaznam, exemplar, knihovna, ZaznamDemand_id, fields) values (?,?,?,?,?,?)";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, docCode);
             ps.setString(2, zaznam_id);
-            if(exemplar_id == null){
+            if (exemplar_id == null) {
                 ps.setNull(3, Types.VARCHAR);
-            }else{
+            } else {
                 ps.setString(3, exemplar_id);
             }
             ps.setInt(4, idKnihovna);
             ps.setInt(5, idW);
-            ps.setInt(6, id);
-            ps.setString(7, line);
+            ps.setString(6, line);
             ps.executeUpdate();
         } else {
-            String sql = "insert into ZaznamDemand (uniqueCode, zaznam, exemplar, knihovna,demand,fields) values (?,?,?,?,?,?)";
+            String sql = "insert into ZaznamDemand (uniqueCode, zaznam, exemplar, knihovna,fields) values (?,?,?,?,?)";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, docCode);
             ps.setString(2, zaznam_id);
-            if(exemplar_id == null){
+            if (exemplar_id == null) {
                 ps.setNull(3, Types.VARCHAR);
-            }else{
+            } else {
                 ps.setString(3, exemplar_id);
             }
             ps.setInt(4, idKnihovna);
-            ps.setInt(5, id);
-            ps.setString(6, line);
+            ps.setString(5, line);
             ps.executeUpdate();
         }
         //indexWeOffer(conn, id, docCode, "md5");
@@ -267,31 +304,56 @@ public class DbOperations extends HttpServlet {
 
     }
 
-    public static void processStream(Connection conn, InputStream is, int idKnihovna, int idOffer) throws Exception {
+    public static void processStream(Connection conn, InputStream is, int idKnihovna, int idOffer, JSONObject json) throws Exception {
         try {
             CSVStrategy strategy = new CSVStrategy('\t', '\"', '#');
             CSVParser parser = new CSVParser(new InputStreamReader(is), strategy);
+            int lines = parser.getLineNumber();
             String[] parts = parser.getLine();
             while (parts != null) {
-                String zaznam_id = parts[0];
-                String ccnb = parts[1];
-                String line = "";
-                for (String s : parts) {
-                    line += s + "\t";
-                }
-
                 String docCode;
-                String codeType;
                 docCode = Slouceni.generateMD5(parts);
-                codeType = "ccnb";
-
-                insertNabidka(conn, idKnihovna, zaznam_id, null,  docCode, idOffer, line);
-                //indexWeOffer(conn, id, docCode, codeType);
+                insertNabidka(conn, idKnihovna, null, null, docCode, idOffer, Slouceni.toJSON(csvToMap(parts)).toString());
                 parts = parser.getLine();
             }
+            json.put("message", "imported " + lines + " lines to offer: " + idOffer);
         } catch (Exception ex) {
-            throw new Exception("Not valid cvs file. Separator must be tabulator and line must be 'id ccnb nazev autor mistovydani vydavatel datumvydani'", ex);
+            LOGGER.log(Level.SEVERE, null, ex);
+            throw new Exception("Not valid cvs file. Separator must be tabulator and line must be ", ex);
         }
+    }
+
+    private static JSONObject jsonZaznamOffer(String ZaznamOffer_id,
+            String uniqueCode,
+            String title,
+            String zaznam,
+            String exemplar,
+            String knihovna,
+            JSONObject fields) throws Exception {
+
+        JSONObject j = new JSONObject();
+        j.put("ZaznamOffer_id", ZaznamOffer_id);
+        j.put("uniqueCode", uniqueCode);
+        if (title == null) {
+            SolrQuery query = new SolrQuery("code:" + uniqueCode);
+            query.addField("title");
+            SolrDocumentList docs = IndexerQuery.query(query);
+            Iterator<SolrDocument> iter = docs.iterator();
+            if (iter.hasNext()) {
+                SolrDocument resultDoc = iter.next();
+                j.put("title", resultDoc.getFirstValue("title"));
+            }
+        } else {
+            j.put("title", title);
+        }
+        if (zaznam != null) {
+            j.put("zaznam", zaznam);
+        }
+
+        j.put("exemplar", exemplar);
+        j.put("knihovna", knihovna);
+        j.put("fields", fields);
+        return j;
     }
 
     public static JSONObject getOffer(String id) throws Exception {
@@ -300,17 +362,24 @@ public class DbOperations extends HttpServlet {
         JSONObject json = new JSONObject();
         try {
             conn = DbUtils.getConnection();
+
             String sql = "select * from ZaznamOffer where offer=" + id;
             PreparedStatement ps = conn.prepareStatement(sql);
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                JSONObject j = new JSONObject();
-                j.put("nabidkaId", rs.getString("ZaznamOffer_id"));
-                j.put("zaznam", rs.getString("zaznam"));
-                j.put("fields", rs.getString("fields"));
 
-                json.put(id, j);
+                String zoId = rs.getString("ZaznamOffer_id");
+                String zaznam = rs.getString("zaznam");
+                JSONObject j = jsonZaznamOffer(zoId,
+                        rs.getString("uniqueCode"),
+                        null,
+                        rs.getString("zaznam"),
+                        rs.getString("exemplar"),
+                        rs.getString("knihovna"),
+                        new JSONObject(rs.getString("fields")));
+
+                json.put(zoId, j);
             }
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
@@ -360,10 +429,28 @@ public class DbOperations extends HttpServlet {
         return json;
     }
 
-    public static JSONObject getOffers() throws Exception {
-
+    private static JSONObject offerJSON(Date offerDate,
+            String id,
+            String nazev,
+            String knihovna,
+            boolean closed) throws JSONException {
         Calendar now = Calendar.getInstance();
         Calendar o = Calendar.getInstance();
+        o.setTime(offerDate);
+        o.add(Calendar.DATE, EXPIRATION_DAYS);
+        JSONObject j = new JSONObject();
+        j.put("id", id);
+        j.put("nazev", nazev);
+        j.put("knihovna", knihovna);
+        j.put("closed", closed);
+        j.put("date", sdf.format(offerDate));
+        j.put("expires", sdf.format(o.getTime()));
+        j.put("expired", !o.after(now));
+        return j;
+    }
+
+    public static JSONObject getOffers() throws Exception {
+
         Connection conn = null;
         JSONObject json = new JSONObject();
         try {
@@ -374,16 +461,11 @@ public class DbOperations extends HttpServlet {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
                 Date offerDate = rs.getDate("update_timestamp");
-                o.setTime(offerDate);
-                o.add(Calendar.DATE, EXPIRATION_DAYS);
-                JSONObject j = new JSONObject();
-                j.put("offerId", rs.getString("offer_id"));
-                j.put("nazev", rs.getString("nazev"));
-                j.put("knihovna", rs.getString("code"));
-                j.put("closed", rs.getBoolean("closed"));
-                j.put("date", sdf.format(offerDate));
-                j.put("expires", sdf.format(o.getTime()));
-                j.put("expired", !o.after(now));
+                JSONObject j = offerJSON(offerDate,
+                        rs.getString("offer_id"),
+                        rs.getString("nazev"),
+                        rs.getString("code"),
+                        rs.getBoolean("closed"));
 
                 json.put(rs.getString("offer_id"), j);
             }
@@ -884,31 +966,26 @@ public class DbOperations extends HttpServlet {
 
                         Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
                         int idKnihovna = 0;
-                        if (kn != null) {
-                            idKnihovna = kn.getId();
-                        }
                         try {
-                            conn = DbUtils.getConnection();
-                            int idOffer = 0;
-                            if (isOracle(conn)) {
-                                idOffer = insertOfferOracle(conn, name, idKnihovna, null);
-                            } else {
-                                idOffer = insertOfferPg(conn, name, idKnihovna, null);
+                            if (kn != null) {
+                                idKnihovna = kn.getId();
+                                conn = DbUtils.getConnection();
+                                int idOffer = 0;
+                                if (isOracle(conn)) {
+                                    idOffer = insertOfferOracle(conn, name, idKnihovna, null);
+                                } else {
+                                    idOffer = insertOfferPg(conn, name, idKnihovna, null);
+                                }
+
+                                Calendar now = Calendar.getInstance();
+                                JSONObject j = offerJSON(now.getTime(),
+                                        Integer.toString(idOffer),
+                                        name,
+                                        kn.getCode(),
+                                        false);
+
+                                out.println(j.toString());
                             }
-
-                            Calendar now = Calendar.getInstance();
-                            Calendar o = Calendar.getInstance();
-                            o.add(Calendar.DATE, EXPIRATION_DAYS);
-                            JSONObject j = new JSONObject();
-                            j.put("offerId", Integer.toString(idOffer));
-                            j.put("nazev", name);
-                            j.put("knihovna", idKnihovna);
-                            j.put("closed", false);
-                            j.put("date", sdf.format(o.getTime()));
-                            j.put("expires", sdf.format(o.getTime()));
-                            j.put("expired", !o.after(now));
-
-                            out.println(j.toString());
 
                         } catch (Exception ex) {
                             LOGGER.log(Level.SEVERE, "upload failed", ex);
@@ -951,31 +1028,99 @@ public class DbOperations extends HttpServlet {
 
                     }
                 },
-        ADDTOOFFER {
+        IMPORTTOOFFER {
                     @Override
                     void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
 
-                        resp.setContentType("text/plain");
+                        resp.setContentType("application/json");
+                        JSONObject json = new JSONObject();
                         PrintWriter out = resp.getWriter();
 
-                        int idOffer = Integer.parseInt(req.getParameter("idOffer"));
-                        String zaznam_id = req.getParameter("id");
-                        String exemplar_id = req.getParameter("ex");
-                        String docCode = req.getParameter("docCode");
+                        /// Create a factory for disk-based file items
+                        FileItemFactory factory = new DiskFileItemFactory();
+
+                        // Create a new file upload handler
+                        ServletFileUpload upload = new ServletFileUpload(factory);
+
+                        // Parse the request
+                        List /* FileItem */ items = upload.parseRequest(req);
+
+                        Iterator iter = items.iterator();
+
+                        int idOffer = 0;
+                        while (iter.hasNext()) {
+                            FileItem item = (FileItem) iter.next();
+
+                            if (item.isFormField()) {
+                                LOGGER.log(Level.INFO, "------ {0} param value : {1}", new Object[]{item.getFieldName(), item.getString()});
+                                if (item.getFieldName().equals("id")) {
+                                    idOffer = Integer.parseInt(item.getString());
+                                }
+                            }
+                        }
+                        if (idOffer == 0) {
+                            json.put("error", "nabidka ne platna");
+                        } else {
+                            iter = items.iterator();
+                            while (iter.hasNext()) {
+                                FileItem item = (FileItem) iter.next();
+                                if (item.isFormField()) {
+                                    continue;
+                                }
+                                InputStream uploadedStream = item.getInputStream();
+                                byte[] bytes = IOUtils.toByteArray(uploadedStream);
+                                ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+
+                                //uploadedStream.mark(uploadedStream.available());
+                                Connection conn = null;
+
+                                Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                                int idKnihovna = 0;
+                                try {
+                                    if (kn != null) {
+
+                                        idKnihovna = kn.getId();
+                                        conn = DbUtils.getConnection();
+                                        processStream(conn, bais, idKnihovna, idOffer, json);
+
+                                    } else {
+                                        json.put("error", "nejste prihlasen");
+                                    }
+                                } catch (Exception ex) {
+                                    LOGGER.log(Level.SEVERE, "import to offer failed", ex);
+                                    json.put("error", ex.toString());
+                                } finally {
+                                    if (conn != null && !conn.isClosed()) {
+                                        conn.close();
+                                    }
+                                }
+                                uploadedStream.close();
+                            }
+                        }
+                        out.println(json.toString());
+                    }
+                },
+        ADDFORMTOOFFER {
+                    @Override
+                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+
+                        resp.setContentType("application/json");
+                        JSONObject json = new JSONObject();
+                        PrintWriter out = resp.getWriter();
+
+                        int idOffer = Integer.parseInt(req.getParameter("id"));
 
                         Connection conn = null;
 
                         Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
-                        int idKnihovna = 0;
-                        if (kn != null) {
-                            idKnihovna = kn.getId();
-                        }
 
                         try {
-                            conn = DbUtils.getConnection();
-                            Map<String, String> parts = new HashMap<String, String>();
-                            boolean exists = false;
-                            if (docCode == null || "".equals(docCode)) {
+                            if (kn != null) {
+                                int idKnihovna = kn.getId();
+
+                                conn = DbUtils.getConnection();
+                                Map<String, String> parts = new HashMap<String, String>();
+                                boolean exists = false;
 
                                 //String[] parts = new String[11];
                                 parts.put("isbn", req.getParameter("isbn"));
@@ -989,42 +1134,112 @@ public class DbOperations extends HttpServlet {
                                 parts.put("110a", req.getParameter("f110a"));
                                 parts.put("111a", req.getParameter("f111a"));
                                 parts.put("260a", req.getParameter("f260"));
+                                parts.put("cena", req.getParameter("cena"));
                                 parts.put("comment", req.getParameter("comment"));
 
-                                docCode = Slouceni.generateMD5(parts);
+                                String docCode = Slouceni.generateMD5(parts);
                                 String sql = "select * from ZAZNAM where uniquecode='" + docCode + "'";
                                 PreparedStatement ps = conn.prepareStatement(sql);
                                 ResultSet rs = ps.executeQuery();
                                 if (rs.next()) {
                                     exists = true;
                                 }
+
+                                JSONObject fields = new JSONObject(parts);
+                                int newid = insertNabidka(conn, idKnihovna, null, null, docCode, idOffer, fields.toString());
+
+                                json = jsonZaznamOffer(Integer.toString(newid),
+                                        docCode,
+                                        req.getParameter("titul"),
+                                        null,
+                                        null,
+                                        kn.getCode(),
+                                        fields);
+                                if (exists) {
+
+                                    json.put("message", "Nabidka pridana. Generovany kod: " + docCode + " uz existuje");
+                                } else {
+                                    json.put("message", "Nabidka pridana. Kod: " + docCode);
+                                }
                             } else {
-                                parts.put("comment", req.getParameter("comment"));
-                            }
-                            insertNabidka(conn, idKnihovna, zaznam_id, exemplar_id, docCode, idOffer, (new JSONObject(parts)).toString());
-                            if (exists) {
-                                out.println("Nabidka pridana. Generovany kod: " + docCode + " uz existuje");
-                            } else {
-                                out.println("Nabidka pridana. Kod: " + docCode);
+                                json.put("error", "nejste prihlasen");
                             }
                         } catch (Exception ex) {
-                            LOGGER.log(Level.SEVERE, "upload failed", ex);
-                            out.println(ex);
+                            LOGGER.log(Level.SEVERE, "add to offer failed", ex);
+                            json.put("error", ex.toString());
                         } finally {
                             if (conn != null && !conn.isClosed()) {
                                 conn.close();
                             }
                         }
+                        out.println(json.toString());
+                    }
+                },
+        ADDDOCTOOFFER {
+                    @Override
+                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+
+                        resp.setContentType("application/json");
+                        JSONObject json = new JSONObject();
+                        PrintWriter out = resp.getWriter();
+
+                        int idOffer = Integer.parseInt(req.getParameter("id"));
+                        String zaznam_id = req.getParameter("zaznam");
+                        String exemplar_id = req.getParameter("ex");
+                        String docCode = req.getParameter("docCode");
+
+                        Connection conn = null;
+
+                        Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+
+                        try {
+                            if (kn != null) {
+                                int idKnihovna = kn.getId();
+
+                                conn = DbUtils.getConnection();
+                                Map<String, String> parts = new HashMap<String, String>();
+                                boolean exists = false;
+
+                                parts.put("comment", req.getParameter("comment"));
+
+                                JSONObject fields = new JSONObject(parts);
+                                int newid = insertNabidka(conn, idKnihovna, zaznam_id, exemplar_id, docCode, idOffer, fields.toString());
+
+                                json = jsonZaznamOffer(Integer.toString(newid),
+                                        docCode,
+                                        req.getParameter("titul"),
+                                        zaznam_id,
+                                        exemplar_id,
+                                        kn.getCode(),
+                                        fields);
+                                if (exists) {
+
+                                    json.put("message", "Nabidka pridana. Generovany kod: " + docCode + " uz existuje");
+                                } else {
+                                    json.put("message", "Nabidka pridana. Kod: " + docCode);
+                                }
+                            } else {
+                                json.put("error", "nejste prihlasen");
+                            }
+                        } catch (Exception ex) {
+                            LOGGER.log(Level.SEVERE, "add to offer failed", ex);
+                            json.put("error", ex.toString());
+                        } finally {
+                            if (conn != null && !conn.isClosed()) {
+                                conn.close();
+                            }
+                        }
+                        out.println(json.toString());
                     }
                 },
         ADDTODEMAND {
                     @Override
                     void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
 
-                        resp.setContentType("text/plain");
+                        resp.setContentType("application/json");
+                        JSONObject json = new JSONObject();
                         PrintWriter out = resp.getWriter();
 
-                        int id = Integer.parseInt(req.getParameter("id"));
                         String zaznam_id = req.getParameter("zaznam");
                         String exemplar_id = req.getParameter("ex");
                         String docCode = req.getParameter("docCode");
@@ -1035,6 +1250,9 @@ public class DbOperations extends HttpServlet {
                         int idKnihovna = 0;
                         if (kn != null) {
                             idKnihovna = kn.getId();
+                        } else {
+                            json.put("error", "Nejste prihlasen");
+                            return;
                         }
 
                         try {
@@ -1042,93 +1260,95 @@ public class DbOperations extends HttpServlet {
                             Map<String, String> parts = new HashMap<String, String>();
                             boolean exists = false;
                             parts.put("comment", req.getParameter("comment"));
-                            
-                            insertToDemand(conn, idKnihovna, zaznam_id, exemplar_id, docCode, id, (new JSONObject(parts)).toString());
+
+                            insertToDemand(conn, idKnihovna, zaznam_id, exemplar_id, docCode, (new JSONObject(parts)).toString());
                             if (exists) {
-                                out.println("Poptavka pridana. Generovany kod: " + docCode + " uz existuje");
+                                json.put("message", "Poptavka pridana. Generovany kod: " + docCode + " uz existuje");
                             } else {
-                                out.println("Poptavka pridana. Kod: " + docCode);
+                                json.put("message", "Poptavka pridana. Kod: " + docCode);
                             }
                         } catch (Exception ex) {
-                            LOGGER.log(Level.SEVERE, "upload failed", ex);
-                            out.println(ex);
+                            LOGGER.log(Level.SEVERE, "add to demand failed", ex);
+                            json.put("error", ex.toString());
                         } finally {
                             if (conn != null && !conn.isClosed()) {
                                 conn.close();
                             }
                         }
+                        out.println(json.toString());
                     }
                 },
-        SAVEOFFER {
+        REMOVEZAZNAMOFFER {
+
                     @Override
                     void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
 
-                        resp.setContentType("text/plain");
+                        resp.setContentType("application/json");
+                        JSONObject json = new JSONObject();
                         PrintWriter out = resp.getWriter();
 
-                        String name = req.getParameter("offerName");
-                        String user = req.getRemoteUser();
+                        Connection conn = null;
 
-                        /// Create a factory for disk-based file items
-                        FileItemFactory factory = new DiskFileItemFactory();
-
-                        // Create a new file upload handler
-                        ServletFileUpload upload = new ServletFileUpload(factory);
-
-                        // Parse the request
-                        List /* FileItem */ items = upload.parseRequest(req);
-
-                        Iterator iter = items.iterator();
-
-                        while (iter.hasNext()) {
-                            FileItem item = (FileItem) iter.next();
-
-                            if (item.isFormField()) {
-                                if (item.getFieldName().equals("offerName")) {
-                                    name = item.getString();
-                                }
+                        Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                        int idKnihovna = 0;
+                        if (kn != null) {
+                            idKnihovna = kn.getId();
+                        } else {
+                            json.put("error", "Nejste prihlasen");
+                            return;
+                        }
+                        try {
+                            int ZaznamOffer_id = Integer.parseInt(req.getParameter("ZaznamOffer_id"));
+                            conn = DbUtils.getConnection();
+                            removeZaznamOffer(conn, idKnihovna, ZaznamOffer_id);
+                            json.put("message", "Zaznam z nabidky odstranen");
+                        } catch (Exception ex) {
+                            LOGGER.log(Level.SEVERE, "remove offer failed", ex);
+                            json.put("error", ex.toString());
+                        } finally {
+                            if (conn != null && !conn.isClosed()) {
+                                conn.close();
                             }
                         }
-                        iter = items.iterator();
-                        while (iter.hasNext()) {
-                            FileItem item = (FileItem) iter.next();
-                            if (item.isFormField()) {
-                                continue;
-                            }
-                            InputStream uploadedStream = item.getInputStream();
-                            byte[] bytes = IOUtils.toByteArray(uploadedStream);
-                            ByteArrayInputStream bais = new ByteArrayInputStream(bytes);
+                        out.println(json.toString());
+                    }
+                },
+        REMOVEDEMAND {
+                    @Override
+                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
 
-                            //uploadedStream.mark(uploadedStream.available());
-                            Connection conn = null;
+                        resp.setContentType("application/json");
+                        JSONObject json = new JSONObject();
+                        PrintWriter out = resp.getWriter();
 
-                            Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
-                            int idKnihovna = 0;
-                            if (kn != null) {
-                                idKnihovna = kn.getId();
-                            }
-                            try {
-                                conn = DbUtils.getConnection();
-                                int idOffer = 0;
-                                if (isOracle(conn)) {
-                                    idOffer = insertOfferOracle(conn, name, idKnihovna, bais);
-                                } else {
-                                    idOffer = insertOfferPg(conn, name, idKnihovna, bais);
-                                }
-                                out.println("Nabidka " + name + " ulozena.");
-                                bais.reset();
-                                processStream(conn, bais, idKnihovna, idOffer);
+                        String zaznam_id = req.getParameter("zaznam");
+                        String exemplar_id = req.getParameter("ex");
+                        String docCode = req.getParameter("docCode");
 
-                            } catch (Exception ex) {
-                                LOGGER.log(Level.SEVERE, "upload failed", ex);
-                                out.println(ex);
-                            } finally {
-                                if (conn != null && !conn.isClosed()) {
-                                    conn.close();
-                                }
-                            }
-                            uploadedStream.close();
+                        Connection conn = null;
+
+                        Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                        int idKnihovna = 0;
+                        if (kn != null) {
+                            idKnihovna = kn.getId();
+                        } else {
+                            json.put("error", "Nejste prihlasen");
+                            return;
                         }
+
+                        try {
+                            conn = DbUtils.getConnection();
+                            removeDemand(conn, idKnihovna, zaznam_id, exemplar_id, docCode);
+                            json.put("message", "Poptavka odstranena");
+                        } catch (Exception ex) {
+                            LOGGER.log(Level.SEVERE, "remove demand failed", ex);
+                            json.put("error", ex.toString());
+                        } finally {
+                            if (conn != null && !conn.isClosed()) {
+                                conn.close();
+                            }
+                        }
+                        out.println(json.toString());
                     }
                 },
         DOWNLOADOFFER {
@@ -1197,20 +1417,21 @@ public class DbOperations extends HttpServlet {
                             PrintWriter out = resp.getWriter();
                             out.println(ex);
                         }
-
                     }
                 },
         GETOFFERS {
                     @Override
                     void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-                        resp.setContentType("text/plain");
+                        resp.setContentType("application/json");
                         try {
                             PrintWriter out = resp.getWriter();
                             out.println(getOffers().toString());
 
                         } catch (Exception ex) {
                             PrintWriter out = resp.getWriter();
-                            out.println(ex);
+                            JSONObject json = new JSONObject();
+                            json.put("error", ex.toString());
+                            out.println(json.toString());
                         }
 
                     }

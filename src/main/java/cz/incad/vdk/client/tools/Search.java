@@ -16,8 +16,8 @@
  */
 package cz.incad.vdk.client.tools;
 
+import cz.incad.vdk.client.LoggedController;
 import cz.incad.vdkcommon.Options;
-import static cz.incad.vdkcommon.Options.LOGGER;
 import cz.incad.vdkcommon.solr.IndexerQuery;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
@@ -77,7 +77,12 @@ public class Search {
             query.setFacet(true);
             query.setStart(getStart());
             query.setRows(getRows());
+            
+            if(LoggedController.isLogged(req)){
+                query.addFacetField(opts.getStrings("user_facets"));
+            }
             query.addFacetField(opts.getStrings("facets"));
+            
             query.setFacetMinCount(1);
             
             JSONObject others  = opts.getJSONObject("otherParams");
@@ -138,6 +143,7 @@ public class Search {
         
         if(req.getParameter("onlyOffers") != null){
             query.addFilterQuery("nabidka:[* TO *]");
+            hasFilters = true;
         }
 
         if (req.getParameterValues("offer") != null) {
@@ -149,6 +155,7 @@ public class Search {
         
         if(req.getParameter("onlyDemands") != null){
             query.addFilterQuery("poptavka:[* TO *]");
+            hasFilters = true;
         }
         
         if (req.getParameterValues("demand") != null) {

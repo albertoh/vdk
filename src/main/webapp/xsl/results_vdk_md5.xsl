@@ -45,8 +45,8 @@
                                     <xsl:attribute name="data-offer">
                                         <xsl:value-of  select="." />
                                     </xsl:attribute>
-                                    <xsl:attribute name="data-zaznam">
-                                        <xsl:value-of  select="../../arr[@name='nabidka_zaznam']/str[position()=$pos]" />
+                                    <xsl:attribute name="data-offer_ext">
+                                        <xsl:value-of  select="../../arr[@name='nabidka_ext']/str[position()=$pos]" />
                                     </xsl:attribute>
                                     <xsl:attribute name="data-ex">
                                         <xsl:value-of  select="../../arr[@name='ex_nabidka']/str[position()=$pos]" />
@@ -63,18 +63,17 @@
                         <span class="offerdoc" style="float:left;display:none;">
                             <a class="ui-icon ui-icon-flag" >
                                 <xsl:attribute name="title">přidat do nabídky</xsl:attribute>
-                                <xsl:attribute name="href">javascript:vdk.addToOffer('<xsl:value-of select="$code" />')</xsl:attribute>offer</a>
+                                <xsl:attribute name="href">javascript:vdk.offers.addToActive('<xsl:value-of select="$code" />')</xsl:attribute>offer</a>
                         </span>
                         <span class="demanddoc" style="float:left;display:none;">
                             <a class="ui-icon ui-icon-cart" >
                                 <xsl:attribute name="title">přidat do poptávky</xsl:attribute>
                                 <xsl:attribute name="href">javascript:vdk.addToDemand('<xsl:value-of select="$code" />')</xsl:attribute>demand</a>
                         </span>
-                        <span class="csv" style="float:left;">
-                            <a class="ui-icon ui-icon-document" >
+                        <span style="float:left;" class="csv ui-icon ui-icon-document" >
                                 <xsl:attribute name="title">csv format</xsl:attribute>
                                 <xsl:attribute name="data-csv"><xsl:value-of select="./arr[@name='export']/str" /></xsl:attribute>
-                                <xsl:attribute name="href">javascript:vdk.showCSV(this)</xsl:attribute>csv</a>
+                                <xsl:attribute name="onclick">javascript:vdk.showCSV(this)</xsl:attribute>csv
                         </span>
                         <div class="diff ui-state-error" style="float:left;display:none;"><span class="ui-icon ui-icon-alert">has diff</span>
                         <div class="titles diffs">
@@ -182,12 +181,12 @@
                     <xsl:value-of  select="." /><xsl:if test="position()!=last()">,</xsl:if>
                 </xsl:for-each>]}
             </xsl:attribute>
-            <xsl:attribute name="data-nabidka">{"exemplare":[
-            <!--
-                <xsl:for-each select="./arr[@name='ex_nabidka']/str">
+            <xsl:attribute name="data-offer_ext">{"offer":[
+            
+                <xsl:for-each select="./arr[@name='nabidka_ext']/str">
                     "<xsl:value-of  select="." />"<xsl:if test="position()!=last()">,</xsl:if>
                 </xsl:for-each>
-            -->
+            
             ]}
             </xsl:attribute>
         </div> 

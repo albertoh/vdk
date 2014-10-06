@@ -382,6 +382,10 @@ table.tex td.RZ{
     color: red !important;
 }
 
+.csv{
+    cursor:pointer;
+}
+
 .csv1{
     width: 400px;
     overflow: visible;
@@ -394,17 +398,39 @@ table.tex td.RZ{
 #useroffer input{
     width: 98%;
 }
+#useroffer div.buttons{
+     position:relative;
+     height: 22px;
+}
+#useroffer button{
+     position:relative;
+}
+#useroffer li button{
+     position:absolute;
+     top: 13px;
+}
 
-#useroffers ul, #userdemands ul{
+#offersdialog ul, #userdemands ul{
     padding:0px;
 }
 
-#useroffers li.nabidka{
+#offersdialog li{
     list-style: none;
     padding: 3px;
 }
-#useroffers li.active{
+#offersdialog li.active{
     font-weight: bold;
+}
+#useroffer li{
+     position:relative;
+     min-height: 20px;
+}
+#useroffer li:nth-child(odd){
+     background: #eeeeee;
+}
+#useroffer li>div.label{
+     margin-right: 30px;
+     display: inline-block;
 }
 
 #userdemands li.demand{
