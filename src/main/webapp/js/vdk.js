@@ -1,17 +1,27 @@
 
 
 function VDK() {
+    this.user = null;
+    this.isLogged = false;
+    this.results = new Results();
     this.offers = new Offers();
     this.demands = new Demand();
     this.nabidka = new Nabidka();
     this.export = new Export();
     this.views = new Views();
-    this.results = new Results();
+    this.zdrojUser = {
+        'NKP': 'NKC-VDK',
+        'MZK': 'MZK',
+        'VKOL': 'VKOLOAI'};
+    this.setUser = function(name){
+        this.user = name;
+        this.isLogged = true;
+    }
     this.init = function () {
-        this.user = null;
         this.activeofferid = -1;
         this.getViews();
         this.results.init();
+        this.offers.init();
         //this.getOffers();
         $(document).tooltip({
             items: "div.diff, [title]",
@@ -29,7 +39,7 @@ function VDK() {
 
     }
     this.userOpts = function () {
-        if (zdrojUser[vdk.user]) {
+        if (this.zdrojUser[vdk.user]) {
             //Prihlaseny uzivatel je NKP, MZK nebo VKOL
             $(".offerdoc").hide();
             $(".offerex").show();

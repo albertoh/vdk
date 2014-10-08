@@ -24,6 +24,9 @@
         <xsl:variable name="hasCollapsed" select="$numDocs &gt; 1" />
         <li>
             <xsl:attribute name="id">res_<xsl:value-of select="$code" /></xsl:attribute>
+            <xsl:attribute name="data-offer_ext"></xsl:attribute>
+            <xsl:attribute name="data-wanted">[<xsl:for-each select="./arr[@name='chci']/str"><xsl:value-of  select="." /></xsl:for-each>]</xsl:attribute>
+            <xsl:attribute name="data-nowanted">[<xsl:for-each select="./arr[@name='nechci']/str"><xsl:value-of  select="." /></xsl:for-each>]</xsl:attribute>
             <xsl:attribute name="class">res<xsl:if test="hasCollapsed"> collapsed</xsl:if></xsl:attribute>
             <input type="hidden" class="code">
                 <xsl:attribute name="value"><xsl:value-of select="$code" /></xsl:attribute>
@@ -41,17 +44,14 @@
                             <div class="nabidka">Nabizeno:      
                             <xsl:for-each select="./arr[@name='nabidka']/str">
                                 <xsl:variable name="pos" select="position()" />
-                                <span>
+                                <button>
                                     <xsl:attribute name="data-offer">
                                         <xsl:value-of  select="." />
                                     </xsl:attribute>
                                     <xsl:attribute name="data-offer_ext">
                                         <xsl:value-of  select="../../arr[@name='nabidka_ext']/str[position()=$pos]" />
                                     </xsl:attribute>
-                                    <xsl:attribute name="data-ex">
-                                        <xsl:value-of  select="../../arr[@name='ex_nabidka']/str[position()=$pos]" />
-                                    </xsl:attribute>
-                                </span>
+                                </button>
                             </xsl:for-each>
                             </div>
                         </xsl:if>
@@ -91,7 +91,8 @@
                                     <xsl:value-of select="." />
                                 </span>
                             </div>
-                        </xsl:for-each>  
+                        </xsl:for-each>
+                        
                         </div>
                         </div>
                         <xsl:if test="not($numDocs = 0)"> (<xsl:value-of select="$numDocs" />&#160;<xsl:choose>
@@ -111,7 +112,18 @@
                         </xsl:when>
                         </xsl:choose>)</xsl:if>
                     </div>
-                    <div class="title"><xsl:value-of select="./arr[@name='title']/str" /></div>
+                    <div class="title">
+                        <xsl:value-of select="./arr[@name='title']/str" />
+                        
+                        <xsl:if test="not(./arr[@name='title']/str)" >
+                            (from offer)
+                        <xsl:for-each select="./arr[@name='nabidka_ext']/str" >
+                                <span class="nabidka_ext">
+                                    <xsl:attribute name="data-nabidka_ext"><xsl:value-of select="." /></xsl:attribute>
+                                </span>
+                        </xsl:for-each>  
+                        </xsl:if>
+                    </div>
                     <xsl:if test="./arr[@name='author']/str">
                     <div><span><xsl:value-of select="rb:getString($i18n,'field.authors')"/></span>: 
                         <xsl:for-each select="./arr[@name='author']/str"><xsl:value-of select="." />; </xsl:for-each></div>
@@ -140,26 +152,6 @@
                     <xsl:call-template name="exemplare">
                         <xsl:with-param name="index" select="$index" />
                     </xsl:call-template>
-                    
-                    <table class="tex">
-                        <thead>
-                            <tr>
-                            <th></th>
-                            <th>signatura</th>
-                            <th>status</th>
-                            <th>dilciKnih</th>
-                            
-                            <th>rocnik/svazek</th>
-                            <th>cislo</th>
-                            <th>rok</th>
-                            <th class="actions">
-                                <span class="ui-icon ui-icon-plus">expand/collapse</span>
-                            </th>
-                            
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>  
         
                     <div style="float:right;"></div>
                 </td>
@@ -181,14 +173,25 @@
                     <xsl:value-of  select="." /><xsl:if test="position()!=last()">,</xsl:if>
                 </xsl:for-each>]}
             </xsl:attribute>
-            <xsl:attribute name="data-offer_ext">{"offer":[
-            
-                <xsl:for-each select="./arr[@name='nabidka_ext']/str">
-                    "<xsl:value-of  select="." />"<xsl:if test="position()!=last()">,</xsl:if>
-                </xsl:for-each>
-            
-            ]}
-            </xsl:attribute>
+            <table class="tex">
+                <thead>
+                    <tr>
+                    <th></th>
+                    <th>signatura</th>
+                    <th>status</th>
+                    <th>dilciKnih</th>
+
+                    <th>rocnik/svazek</th>
+                    <th>cislo</th>
+                    <th>rok</th>
+                    <th class="actions">
+                        <span class="ui-icon ui-icon-plus">expand/collapse</span>
+                    </th>
+
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
         </div> 
     </xsl:template>
     

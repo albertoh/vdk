@@ -73,13 +73,7 @@ public class IndexOperations extends HttpServlet {
         }
     }
 
-    private static void indexWanted(Connection conn, String id, String code, String codeType) throws Exception {
-        String sql = "select wants, knihovna, code from WANTED, KNIHOVNA where zaznam=? and knihovna=knihovna_id";
-        PreparedStatement ps = conn.prepareStatement(sql);
-        ps.setString(1, id);
-
-        ResultSet rs = ps.executeQuery();
-
+    private static void removeWanted(String knihovna, String code, String codeType) throws Exception {
         StringBuilder sb = new StringBuilder();
         sb.append("<add><doc>");
         sb.append("<field name=\"code\">")
@@ -91,33 +85,44 @@ public class IndexOperations extends HttpServlet {
         sb.append("<field name=\"code_type\">")
                 .append(codeType)
                 .append("</field>");
-        sb.append("<field name=\"chci\" update=\"set\" null=\"true\" />");
-        sb.append("<field name=\"nechci\" update=\"set\" null=\"true\" />");
+        sb.append("<field name=\"chci\" update=\"remove\">").append(knihovna).append("</field>");
+        sb.append("<field name=\"nechci\" update=\"remove\">").append(knihovna).append("</field>");
         sb.append("</doc></add>");
         SolrIndexerCommiter.postData(sb.toString());
-        sb = new StringBuilder();
-        sb.append("<add><doc>");
-        sb.append("<field name=\"code\">")
-                .append(code)
-                .append("</field>");
-        sb.append("<field name=\"md5\">")
-                .append(code)
-                .append("</field>");
-        sb.append("<field name=\"code_type\">")
-                .append(codeType)
-                .append("</field>");
+        SolrIndexerCommiter.postData("<commit/>");
+    }
+    private static void indexWanted(Connection conn, int wanted_id) throws Exception {
+        String sql = "select w.wants, zo.knihovna, k.code, zo.uniquecode from WANTED w, KNIHOVNA k, ZAZNAMOFFER zo "
+                + "where w.wanted_id=? "
+                + "and w.knihovna=k.knihovna_id and zo.zaznamoffer_id=w.zaznamoffer";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setInt(1, wanted_id);
+
+        ResultSet rs = ps.executeQuery();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("<add>");
         while (rs.next()) {
+        sb.append("<doc>");
+            String uniquecode = rs.getString("uniquecode");
+            sb.append("<field name=\"code\">")
+                    .append(uniquecode)
+                    .append("</field>");
+            sb.append("<field name=\"md5\">")
+                    .append(uniquecode)
+                    .append("</field>");
             if (rs.getBoolean(1)) {
-                sb.append("<field name=\"chci\" update=\"set\">")
+                sb.append("<field name=\"chci\" update=\"add\">")
                         .append(rs.getString("code"))
                         .append("</field>");
             } else {
-                sb.append("<field name=\"nechci\" update=\"set\">")
+                sb.append("<field name=\"nechci\" update=\"add\">")
                         .append(rs.getString("code"))
                         .append("</field>");
             }
+            sb.append("</doc>");
         }
-        sb.append("</doc></add>");
+        sb.append("</add>");
         SolrIndexerCommiter.postData(sb.toString());
         SolrIndexerCommiter.postData("<commit/>");
     }
@@ -141,9 +146,11 @@ public class IndexOperations extends HttpServlet {
                     .append("</field>");
             JSONObject nabidka_ext = new JSONObject();
             JSONObject nabidka_ext_n = new JSONObject();
+            nabidka_ext_n.put("zaznamOffer", rs.getString("zaznamoffer_id"));
+            nabidka_ext_n.put("code", docCode);
             nabidka_ext_n.put("zaznam", rs.getString("zaznam"));
             nabidka_ext_n.put("ex", rs.getString("exemplar"));
-            nabidka_ext_n.put("fields", rs.getString("fields"));
+            nabidka_ext_n.put("fields", new JSONObject(rs.getString("fields")));
             nabidka_ext.put(""+id, nabidka_ext_n);
             sb.append("<field name=\"nabidka_ext\" update=\"add\">")
                     .append(nabidka_ext)
@@ -155,11 +162,13 @@ public class IndexOperations extends HttpServlet {
 
     private static void indexAllOffers(Connection conn) throws Exception {
         
-        String sql = "SELECT ZaznamOffer.offer, ZaznamOffer.uniqueCode, ZaznamOffer.zaznam, ZaznamOffer.exemplar, ZaznamOffer.fields, zaznam.codetype "
+        String sql = "SELECT ZaznamOffer.zaznamoffer_id, ZaznamOffer.offer, ZaznamOffer.uniqueCode, ZaznamOffer.zaznam, ZaznamOffer.exemplar, ZaznamOffer.fields, zaznam.codetype "
                 + "FROM Zaznam "
                 + "RIGHT OUTER JOIN zaznamOffer "
-                + "ON ZaznamOffer.zaznam=zaznam.identifikator ";
+                + "ON ZaznamOffer.zaznam=zaznam.identifikator "
+                + "JOIN offer ON offer.offer_id=zaznamOffer.offer where offer.closed=?";
         PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setBoolean(1, true);
         ResultSet rs = ps.executeQuery();
         StringBuilder sb = new StringBuilder();
         sb.append("<add>");
@@ -172,7 +181,7 @@ public class IndexOperations extends HttpServlet {
     }
 
     private static void indexOffer(Connection conn, int id) throws Exception {
-        String sql = "SELECT ZaznamOffer.uniqueCode, ZaznamOffer.zaznam, ZaznamOffer.exemplar, ZaznamOffer.fields, zaznam.codetype "
+        String sql = "SELECT ZaznamOffer.zaznamoffer_id, ZaznamOffer.uniqueCode, ZaznamOffer.zaznam, ZaznamOffer.exemplar, ZaznamOffer.fields, zaznam.codetype "
                 + "FROM Zaznam "
                 + "RIGHT OUTER JOIN zaznamOffer "
                 + "ON ZaznamOffer.zaznam=zaznam.identifikator "
@@ -358,6 +367,22 @@ public class IndexOperations extends HttpServlet {
     }
 
     enum Actions {
+
+        INDEXWANTED {
+                    @Override
+                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                        resp.setContentType("application/json");
+                        PrintWriter out = resp.getWriter();
+                        JSONObject json = new JSONObject();
+                        try {
+                            indexWanted(DbUtils.getConnection(), Integer.parseInt(req.getParameter("id")));
+                            json.put("message", "Reakce pridana.");
+                        } catch (Exception ex) {
+                            json.put("error", ex.toString());
+                        }
+                        out.println(json.toString());
+                    }
+                },
 
         INDEXALLOFFERS {
                     @Override

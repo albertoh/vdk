@@ -1,10 +1,12 @@
 
 function Offers() {
     this.loaded = false;
-    this.retreive();
 }
 
 Offers.prototype = {
+    init: function(){
+        this.retreive();
+    },
     addButtons: function (iconButtons, obj) {
 
         $.each(iconButtons, function (i, v) {
@@ -114,8 +116,6 @@ Offers.prototype = {
                 });
             }
         });
-
-
     },
     add: function () {
         var nazev = prompt("Nazev nabidky", "");
@@ -135,10 +135,9 @@ Offers.prototype = {
         this.json = {};
         $.getJSON("db?action=GETOFFERS", _.bind(function (json) {
             this.json = json;
-
             $("#nav_nabidka li.offer").each(function () {
                 var id = $(this).data("offer");
-                var label = json[id].nazev + ' (' + json[id].knihovna + ' )';
+                var label = json[id].nazev + ' (' + json[id].knihovna + ')';
                 $(this).find("a").text(label);
             });
 
@@ -151,6 +150,56 @@ Offers.prototype = {
                 }
             });
             this.parseUser();
+            
+            
+            $(".nabidka>button").each(function () {
+                var offerid = $(this).data("offer");
+                if (json.hasOwnProperty(offerid)) {
+                    var val = json[offerid];
+                    var expired = val.expired ? " expired" : "";
+                    var text = '<label class="' + expired + '">' + val.nazev + " (" + val.knihovna + ")</label>";
+                    $(this).html(text);
+
+                    var zaznam = $(this).data("zaznam");
+                    if (zaznam === "none") {
+                        //je to nabidka zvenku, nemame zaznam.
+                    } else {
+                        $("tr[data-zaznam~='" + zaznam + "']");
+                    }
+                    var offerId = $(this).data("offer");
+                    var zaznamOffer = $(this).data("offer_ext")[offerId].zaznamOffer;
+                    
+                    if(vdk.isLogged && vdk.user !== val.knihovna){
+                        $(this).append(vdk.results.actionWant(zaznamOffer));
+                        $(this).append(vdk.results.actionDontWant(zaznamOffer));
+                        $(this).attr('title', dict['offer.want']);
+//                        $(this).click(function(){
+//                            vdk.offers.wantDoc(zaznamOffer);
+//                        });
+                    }
+                    
+                    if (!$(this).data("offer_ext")[offerId].hasOwnProperty('ex')) {
+                        //je to nabidka na cely zaznam.
+                    } else {
+                        var ex = $(this).data("offer_ext")[offerId].ex;
+                        var tr = $("tr[data-md5~='" + ex + "']");
+                        tr.addClass("nabidka");
+                        tr.find(".offerex, .demandexadd").remove();
+                        if(vdk.isLogged && vdk.user !== val.knihovna){
+                            tr.find("td.actions").append(vdk.results.actionWant(zaznamOffer));
+                            tr.find("td.actions").append(vdk.results.actionDontWant(zaznamOffer));
+                        }
+                        $(this).mouseenter(function () {
+                            tr.addClass("nabidka_over");
+                        });
+                        $(this).mouseleave(function () {
+                            tr.removeClass("nabidka_over");
+                        });
+
+                    }
+                }
+            });
+
         }, this));
     },
     parseUser: function () {
@@ -211,7 +260,13 @@ Offers.prototype = {
         if (val.hasOwnProperty('title')) {
             label.html(val.title + " (" + val.fields.comment + ")");
         } else {
-            var html = val.fields['245a'] + " (" + val.fields.comment + ")"
+            var html = "";
+            if (val.fields.hasOwnProperty('245a')) {
+                html += val.fields['245a'];
+            }
+            if (val.fields.hasOwnProperty('comment')) {
+                html += val.fields['comment'];
+            }
             label.html(html);
         }
         doc.append(label);
@@ -225,6 +280,9 @@ Offers.prototype = {
                 }];
             this.addButtons(iconButtons, doc);
         }
+        $.each(val.wanted, function(key, wanted){
+            doc.append('<span class="'+ (wanted.wanted ? '':'no') +'wanted">' + wanted.knihovna + "</span>" );
+        });
         $('#useroffer>ul').append(doc);
     },
     getActive: function () {
@@ -315,6 +373,27 @@ Offers.prototype = {
 
             }, this));
         }, this));
+
+    },
+    wantDoc: function (zaznam_offer, wanted) {
+        $.getJSON("db", {action: "WANTOFFER", zaznam_offer: zaznam_offer, wanted: wanted}, function (data) {
+            if (data.error) {
+                alert("error ocurred: " + data.error);
+            } else {
+                //indexujeme
+                    $.getJSON("index", {action: "INDEXWANTED", id: data.id}, _.bind(function (resp) {
+                        if (resp.error) {
+                            alert("error ocurred: " + resp.error);
+                        } else {
+                            $(".wanteddoc[data-wanted~='" + zaznam_offer + "']").remove();
+                            alert("Reakce uspesne zpracovana");
+                        }
+                    }, this));
+                
+                
+            }
+
+        });
 
     },
     addToActive: function (code, zaznam, ex) {

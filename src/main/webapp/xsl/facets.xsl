@@ -76,7 +76,7 @@
         <xsl:param name="content" />
         <ul id="nav_nabidka">
             <li><a>
-            <xsl:attribute name="href">javascript:filterDemands();</xsl:attribute>
+            <xsl:attribute name="href">javascript:filterOffers();</xsl:attribute>
                 :: <xsl:value-of select="rb:getString($i18n,'poptavka.all','all')" />
             </a></li>
             <xsl:for-each select="$content/int" >

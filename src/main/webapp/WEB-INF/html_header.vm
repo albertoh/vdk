@@ -3,8 +3,8 @@
     <link rel="icon" href="img/favicon.ico" />
     <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon" />
     <!--
-    <script type="text/javascript" src="js/jquery-1.6.2.min.js"></script>
-    <script type="text/javascript" src="js/jquery-ui-1.8.16.custom.min.js"></script>
+    <script type="text/javascript" src="js/jquery-1.9.1.min.js"></script>
+    <script type="text/javascript" src="js/jquery-ui-1.10.3.custom.min.js"></script>
     -->
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.js"></script>
     <script type="text/javascript" src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
@@ -16,7 +16,7 @@
     <script type="text/javascript" src="js/results.js"></script>
     <script type="text/javascript" src="js/vdk.js"></script>
     <!--
-    <link type="text/css" href="css/smoothness/jquery-ui-1.8.16.custom.css" rel="stylesheet" />
+    <link type="text/css" href="css/smoothness/jquery-ui-1.10.3.custom.css" rel="stylesheet" />
     -->
     <link type="text/css" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" rel="stylesheet" />
     <link type="text/css" href="css/icons.css" rel="stylesheet" />
@@ -31,16 +31,15 @@
                     #end
                     "dummy":""
                     }
-            var zdrojUser = [];
-            zdrojUser['NKP'] = 'NKC-VDK';
-            zdrojUser['MZK'] = 'MZK';
-            zdrojUser['VKOL'] = 'VKOLOAI';
+            
     
         $(document).ready(function(){
             autocompleteQ();
+            #if($logControl.logged)
+            vdk.setUser('$logControl.loggedName');
+            #end
             vdk.init();
             #if($logControl.logged)
-            vdk.user = '$logControl.loggedName';
             vdk.userOpts();
             #end
             

@@ -282,6 +282,10 @@ table.tex tr.nabidka{
     background-color: #CCCC22;
 }
 
+table.tex tr.nabidka_over{
+    border: solid 3px #CC9900;
+}
+
 table.tex tr.more{
     display:none;
 }
@@ -409,6 +413,20 @@ table.tex td.RZ{
      position:absolute;
      top: 13px;
 }
+#useroffer li .wanted{
+     float: right;
+     background-color: darkseagreen;
+     border: 1px solid green;
+     margin: 2px;
+}
+#useroffer li .nowanted{
+     float: right;
+     background-color: rosybrown;
+     border: 1px solid darkred;
+     margin: 2px;
+}
+
+
 
 #offersdialog ul, #userdemands ul{
     padding:0px;

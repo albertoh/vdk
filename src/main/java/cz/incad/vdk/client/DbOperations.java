@@ -166,6 +166,39 @@ public class DbOperations extends HttpServlet {
 
     }
 
+    public static int insertWantOffer(Connection conn, int zaznam_offer, int knihovna, boolean wanted) throws Exception {
+
+        if (isOracle(conn)) {
+            String sql1 = "select Wanted_ID_SQ.nextval from dual";
+            ResultSet rs = conn.prepareStatement(sql1).executeQuery();
+            int newid = 1;
+            if (rs.next()) {
+                newid = rs.getInt(1);
+            }
+
+            String sql = "insert into WANTED (ZaznamOffer, wants, knihovna, wanted_id, update_timestamp) values (?,?,?,?,sysdate)";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, zaznam_offer);
+            ps.setInt(2, knihovna);
+            ps.setBoolean(3, wanted);
+            ps.setInt(4, newid);
+            ps.executeUpdate();
+            return newid;
+        } else {
+            String sql = "insert into WANTED (ZaznamOffer, knihovna, wants,update_timestamp) values (?,?,?,NOW()) returning wanted_id";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, zaznam_offer);
+            ps.setInt(2, knihovna);
+            ps.setBoolean(3, wanted);
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) {
+                return rs.getInt(1);
+            } else {
+                return 0;
+            }
+        }
+    }
+
     public static int insertNabidka(Connection conn, int idKnihovna, String zaznam_id, String exemplar_id, String docCode, int idOffer, String line) throws Exception {
 
         if (isOracle(conn)) {
@@ -323,7 +356,30 @@ public class DbOperations extends HttpServlet {
         }
     }
 
-    private static JSONObject jsonZaznamOffer(String ZaznamOffer_id,
+    
+    
+    private static JSONArray getWanted(Connection conn, int ZaznamOffer_id) throws Exception{
+        String sql = "select w.wanted_id, w.wants, k.code from WANTED w, KNIHOVNA k, ZAZNAMOFFER zo "
+                + "where zo.ZaznamOffer_id=? "
+                + "and w.knihovna=k.knihovna_id and zo.zaznamoffer_id=w.zaznamoffer";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setInt(1, ZaznamOffer_id);
+
+        ResultSet rs = ps.executeQuery();
+        JSONArray ja = new JSONArray();
+        while (rs.next()) {
+            JSONObject j = new JSONObject();
+            j.put("wanted_id", rs.getInt("wanted_id"));
+            j.put("wanted", rs.getBoolean("wants"));
+            j.put("knihovna", rs.getString("code"));
+            j.put("date", rs.getString("update_timestamp"));
+            ja.put(j);
+        }
+        rs.close();
+        return ja;
+    }
+    
+    private static JSONObject jsonZaznamOffer(int ZaznamOffer_id,
             String uniqueCode,
             String title,
             String zaznam,
@@ -369,17 +425,18 @@ public class DbOperations extends HttpServlet {
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
 
-                String zoId = rs.getString("ZaznamOffer_id");
+                int zoId = rs.getInt("ZaznamOffer_id");
                 String zaznam = rs.getString("zaznam");
                 JSONObject j = jsonZaznamOffer(zoId,
                         rs.getString("uniqueCode"),
                         null,
-                        rs.getString("zaznam"),
+                        zaznam,
                         rs.getString("exemplar"),
                         rs.getString("knihovna"),
                         new JSONObject(rs.getString("fields")));
 
-                json.put(zoId, j);
+                j.put("wanted", getWanted(conn, zoId));
+                json.put(Integer.toString(zoId), j);
             }
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
@@ -446,6 +503,7 @@ public class DbOperations extends HttpServlet {
         j.put("date", sdf.format(offerDate));
         j.put("expires", sdf.format(o.getTime()));
         j.put("expired", !o.after(now));
+        
         return j;
     }
 
@@ -496,238 +554,40 @@ public class DbOperations extends HttpServlet {
 
     enum Actions {
 
-        GETWEOFFER {
+        WANTOFFER {
                     @Override
                     void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-                        resp.setContentType("text/plain");
+
+                        resp.setContentType("application/json");
+                        JSONObject json = new JSONObject();
                         PrintWriter out = resp.getWriter();
-                        String id = req.getParameter("id");
-                        String exem = req.getParameter("ex");
-                        String user = req.getRemoteUser();
-                        Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
-                        int idKnihovna = 0;
-                        if (kn != null) {
-                            idKnihovna = kn.getId();
-                        }
+
+                        int zaznam_offer = Integer.parseInt(req.getParameter("zaznam_offer"));
+                        boolean wanted = Boolean.parseBoolean(req.getParameter("wanted"));
 
                         Connection conn = null;
-                        try {
-                            conn = DbUtils.getConnection();
 
-                            String sql = "select zaznam from ZaznamOffer where zaznam=? and knihovna=? and exemplar=?";
-                            PreparedStatement ps = conn.prepareStatement(sql);
-                            ps.setString(1, id);
-                            ps.setInt(2, idKnihovna);
-                            ps.setString(3, exem);
-                            ResultSet rs = ps.executeQuery();
-                            if (rs.next()) {
-                                out.print("true");
+                        Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+
+                        try {
+                            if (kn != null) {
+                                conn = DbUtils.getConnection();
+                                
+                                int newid = insertWantOffer(conn, zaznam_offer, kn.getId(), wanted);
+                                json.put("message", "Reakce pridana. Id: " + newid);
+                                json.put("id",newid);
                             } else {
-                                out.print("0");
+                                json.put("error", "nejste prihlasen");
                             }
                         } catch (Exception ex) {
-                            out.println(ex);
+                            LOGGER.log(Level.SEVERE, "want offer failed", ex);
+                            json.put("error", ex.toString());
                         } finally {
                             if (conn != null && !conn.isClosed()) {
                                 conn.close();
                             }
                         }
-                    }
-                },
-        DELETEWEOFFER {
-                    @Override
-                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-                        resp.setContentType("text/plain");
-                        PrintWriter out = resp.getWriter();
-
-                        String id = req.getParameter("id");
-                        String exem = req.getParameter("ex");
-                        String docCode = req.getParameter("code");
-                        String user = req.getRemoteUser();
-                        Connection conn = null;
-
-                        Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
-                        int idKnihovna = 0;
-                        if (kn != null) {
-                            idKnihovna = kn.getId();
-                        }
-                        try {
-                            conn = DbUtils.getConnection();
-                            String sql = "delete from ZaznamOffer where zaznam=? and knihovna=? and exemplar=?";
-                            PreparedStatement ps = conn.prepareStatement(sql);
-                            ps.setString(1, id);
-                            ps.setInt(2, idKnihovna);
-                            ps.setString(3, exem);
-                            ps.executeUpdate();
-                            //indexWeOffer(conn, id, docCode, "md5");
-                            LOGGER.log(Level.INFO, id + " deleted");
-                            out.println(id + " deleted");
-                        } catch (Exception ex) {
-                            LOGGER.log(Level.SEVERE, "Error updating WEOFFER", ex);
-                            out.println(ex);
-                        } finally {
-                            if (conn != null && !conn.isClosed()) {
-                                conn.close();
-                            }
-                        }
-                    }
-                },
-        SAVEWEOFFER {
-                    @Override
-                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-                        resp.setContentType("text/plain");
-                        PrintWriter out = resp.getWriter();
-
-                        String zaznam_id = req.getParameter("id");
-                        String exemplar_id = req.getParameter("ex");
-                        String docCode = req.getParameter("code");
-                        String line = req.getParameter("line");
-                        String user = req.getRemoteUser();
-
-                        Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
-                        int idKnihovna = 0;
-                        if (kn != null) {
-                            idKnihovna = kn.getId();
-                        }
-
-                        Connection conn = null;
-                        try {
-                            conn = DbUtils.getConnection();
-                            insertNabidka(conn, idKnihovna, zaznam_id, exemplar_id, docCode, 0, line);
-                            out.println(zaznam_id + " added");
-                        } catch (Exception ex) {
-                            LOGGER.log(Level.SEVERE, "Error saving WEOFFER", ex);
-                            out.println(ex);
-                        } finally {
-                            if (conn != null && !conn.isClosed()) {
-                                conn.close();
-                            }
-                        }
-                    }
-                },
-        GETWANTED {
-                    @Override
-                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-                        resp.setContentType("text/plain");
-                        PrintWriter out = resp.getWriter();
-                        String id = req.getParameter("id");
-                        String user = req.getRemoteUser();
-
-                        Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
-                        int idKnihovna = 0;
-                        if (kn != null) {
-                            idKnihovna = kn.getId();
-                        }
-                        Connection conn = null;
-                        try {
-                            conn = DbUtils.getConnection();
-                            String sql = "select wants from WANTED where zaznam=? and knihovna=?";
-                            PreparedStatement ps = conn.prepareStatement(sql);
-                            ps.setString(1, id);
-                            ps.setInt(2, idKnihovna);
-                            ResultSet rs = ps.executeQuery();
-                            if (rs.next()) {
-                                out.print(rs.getBoolean(1));
-                            } else {
-                                out.print("0");
-                            }
-                        } catch (Exception ex) {
-                            out.println(ex);
-                        } finally {
-                            if (conn != null && !conn.isClosed()) {
-                                conn.close();
-                            }
-                        }
-                    }
-                },
-        UPDATEWANTED {
-                    @Override
-                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-                        resp.setContentType("text/plain");
-                        PrintWriter out = resp.getWriter();
-
-                        boolean wants = Boolean.parseBoolean(req.getParameter("wanted"));
-                        String id = req.getParameter("id");
-                        String code = req.getParameter("code");
-                        String user = req.getRemoteUser();
-                        Connection conn = null;
-
-                        Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
-                        int idKnihovna = 0;
-                        if (kn != null) {
-                            idKnihovna = kn.getId();
-                        }
-                        try {
-                            conn = DbUtils.getConnection();
-                            String sql = "update WANTED set wants=? where zaznam=? and knihovna=?";
-                            PreparedStatement ps = conn.prepareStatement(sql);
-                            ps.setBoolean(1, wants);
-                            ps.setString(2, id);
-                            ps.setInt(3, idKnihovna);
-                            ps.executeUpdate();
-                            //indexWanted(conn, id, code, "md5");
-                            out.println(id + " updated");
-                        } catch (Exception ex) {
-                            LOGGER.log(Level.SEVERE, "Error updating WANTED", ex);
-                            out.println(ex);
-                        } finally {
-                            if (conn != null && !conn.isClosed()) {
-                                conn.close();
-                            }
-                        }
-                    }
-                },
-        SAVEWANTED {
-                    @Override
-                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-                        resp.setContentType("text/plain");
-                        PrintWriter out = resp.getWriter();
-
-                        boolean wants = Boolean.parseBoolean(req.getParameter("wanted"));
-                        String id = req.getParameter("id");
-                        String code = req.getParameter("code");
-                        String user = req.getRemoteUser();
-                        Connection conn = null;
-
-                        Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
-                        int idKnihovna = 0;
-                        if (kn != null) {
-                            idKnihovna = kn.getId();
-                        }
-                        try {
-                            conn = DbUtils.getConnection();
-                            if (isOracle(conn)) {
-                                String sql1 = "select Wanted_ID_SQ.nextval from dual";
-                                ResultSet rs = conn.prepareStatement(sql1).executeQuery();
-                                int idW = 1;
-                                if (rs.next()) {
-                                    idW = rs.getInt(1);
-                                }
-
-                                String sql = "insert into WANTED (zaznam, knihovna, wants, wanted_id) values (?,?,?,?)";
-                                PreparedStatement ps = conn.prepareStatement(sql);
-                                ps.setString(1, id);
-                                ps.setInt(2, idKnihovna);
-                                ps.setBoolean(3, wants);
-                                ps.setInt(4, idW);
-                                ps.executeUpdate();
-                            } else {
-                                String sql = "insert into WANTED (zaznam, knihovna, wants) values (?,?,?)";
-                                PreparedStatement ps = conn.prepareStatement(sql);
-                                ps.setString(1, id);
-                                ps.setInt(2, idKnihovna);
-                                ps.setBoolean(3, wants);
-                                ps.executeUpdate();
-                            }
-                            //indexWanted(conn, id, code, "md5");
-                            out.println(id + " added");
-                        } catch (Exception ex) {
-                            out.println(ex);
-                        } finally {
-                            if (conn != null && !conn.isClosed()) {
-                                conn.close();
-                            }
-                        }
+                        out.println(json.toString());
                     }
                 },
         SAVEVIEW {
@@ -814,40 +674,6 @@ public class DbOperations extends HttpServlet {
                                 o.put("query", rs.getString("query"));
                                 o.put("isGlobal", rs.getBoolean("isGlobal"));
                                 o.put("knihovna", rs.getInt("knihovna"));
-                                jarray.put(o);
-                            }
-                            out.println(json.toString());
-
-                        } catch (Exception ex) {
-                            out.println(ex);
-                        } finally {
-                            if (conn != null && !conn.isClosed()) {
-                                conn.close();
-                            }
-                        }
-
-                    }
-                },
-        LOADOFFERS {
-                    @Override
-                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
-
-                        resp.setContentType("text/plain");
-                        PrintWriter out = resp.getWriter();
-                        Connection conn = null;
-                        try {
-                            conn = DbUtils.getConnection();
-
-                            String sql = "select * from OFFER";
-                            PreparedStatement ps = conn.prepareStatement(sql);
-                            ResultSet rs = ps.executeQuery();
-                            JSONObject json = new JSONObject();
-                            JSONArray jarray = new JSONArray();
-                            json.put("views", jarray);
-                            while (rs.next()) {
-                                JSONObject o = new JSONObject();
-                                o.put("id", rs.getString("offer_id"));
-                                o.put("nazev", rs.getString("nazev"));
                                 jarray.put(o);
                             }
                             out.println(json.toString());
@@ -1148,7 +974,7 @@ public class DbOperations extends HttpServlet {
                                 JSONObject fields = new JSONObject(parts);
                                 int newid = insertNabidka(conn, idKnihovna, null, null, docCode, idOffer, fields.toString());
 
-                                json = jsonZaznamOffer(Integer.toString(newid),
+                                json = jsonZaznamOffer(newid,
                                         docCode,
                                         req.getParameter("titul"),
                                         null,
@@ -1205,7 +1031,7 @@ public class DbOperations extends HttpServlet {
                                 JSONObject fields = new JSONObject(parts);
                                 int newid = insertNabidka(conn, idKnihovna, zaznam_id, exemplar_id, docCode, idOffer, fields.toString());
 
-                                json = jsonZaznamOffer(Integer.toString(newid),
+                                json = jsonZaznamOffer(newid,
                                         docCode,
                                         req.getParameter("titul"),
                                         zaznam_id,

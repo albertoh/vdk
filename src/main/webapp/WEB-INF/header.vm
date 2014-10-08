@@ -9,11 +9,11 @@
             <a href="logout.vm?redirectURL=index.vm" title="logout">user: $logControl.loggedName </a>
         #else
             #if($request.queryString)
-                #set($reqAddr = $esc.url($request.queryString))
+                #set($reqAddr = '?redirectURL=' + $esc.url($request.queryString))
             #else
-                #set($reqAddr = '.')
+                #set($reqAddr = '')
             #end
-            <a href="redirect.vm?redirectURL=$reqAddr">login</a>
+            <a href="redirect.vm$reqAddr">login</a>
         #end
      </div>
     
