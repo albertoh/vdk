@@ -356,25 +356,80 @@ public class DbOperations extends HttpServlet {
         }
     }
 
+    private static JSONArray wantedJSON(ResultSet rs) throws Exception{
+        JSONArray ja = new JSONArray();
+        while (rs.next()) {
+            JSONObject j = new JSONObject();
+            j.put("wanted_id", rs.getInt("wanted_id"));
+            j.put("zaznamoffer", rs.getInt("zaznamoffer"));
+            j.put("wanted", rs.getBoolean("wants"));
+            j.put("knihovna", rs.getString("code"));
+            j.put("date", rs.getString("update_timestamp"));
+            ja.put(j);
+        }
+        return ja;
+    }
     
-    
-    private static JSONArray getWanted(Connection conn, int ZaznamOffer_id) throws Exception{
-        String sql = "select w.wanted_id, w.wants, k.code from WANTED w, KNIHOVNA k, ZAZNAMOFFER zo "
+    private static JSONArray getWantedById(Connection conn, int ZaznamOffer_id) throws Exception{
+        String sql = "select w.zaznamoffer, w.wanted_id, w.wants, w.update_timestamp, k.code from WANTED w, KNIHOVNA k, ZAZNAMOFFER zo "
                 + "where zo.ZaznamOffer_id=? "
                 + "and w.knihovna=k.knihovna_id and zo.zaznamoffer_id=w.zaznamoffer";
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setInt(1, ZaznamOffer_id);
 
         ResultSet rs = ps.executeQuery();
-        JSONArray ja = new JSONArray();
-        while (rs.next()) {
-            JSONObject j = new JSONObject();
-            j.put("wanted_id", rs.getInt("wanted_id"));
-            j.put("wanted", rs.getBoolean("wants"));
-            j.put("knihovna", rs.getString("code"));
-            j.put("date", rs.getString("update_timestamp"));
-            ja.put(j);
-        }
+        JSONArray ja = wantedJSON(rs);
+        rs.close();
+        return ja;
+    }
+    
+    private static JSONArray getWanted(Connection conn) throws Exception{
+        String sql = "select w.zaznamoffer, w.wanted_id, w.wants, w.update_timestamp, k.code from WANTED w, KNIHOVNA k, ZAZNAMOFFER zo "
+                + "where w.knihovna=k.knihovna_id and zo.zaznamoffer_id=w.zaznamoffer";
+        PreparedStatement ps = conn.prepareStatement(sql);
+
+        ResultSet rs = ps.executeQuery();
+        JSONArray ja = wantedJSON(rs);
+        rs.close();
+        return ja;
+    }
+    
+    private static JSONArray getLibraryWantedByCode(Connection conn, String docCode, int idKnihovna) throws Exception{
+        String sql = "select w.zaznamoffer, w.wanted_id, w.wants, w.update_timestamp, k.code from WANTED w, KNIHOVNA k, ZAZNAMOFFER zo "
+                + "where zo.uniquecode=? and w.knihovna=? "
+                + "and w.knihovna=k.knihovna_id and zo.zaznamoffer_id=w.zaznamoffer";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setString(1, docCode);
+        ps.setInt(2, idKnihovna);
+
+        ResultSet rs = ps.executeQuery();
+        JSONArray ja = wantedJSON(rs);
+        rs.close();
+        return ja;
+    }
+    
+    private static JSONArray getLibraryWanted(Connection conn, int idKnihovna) throws Exception{
+        String sql = "select w.zaznamoffer, w.wanted_id, w.wants, w.update_timestamp, k.code from WANTED w, KNIHOVNA k, ZAZNAMOFFER zo "
+                + "where k.knihovna_id=? "
+                + "and w.knihovna=k.knihovna_id and zo.zaznamoffer_id=w.zaznamoffer";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setInt(1, idKnihovna);
+
+        ResultSet rs = ps.executeQuery();
+        JSONArray ja = wantedJSON(rs);
+        rs.close();
+        return ja;
+    }
+    
+    private static JSONArray getWantedByCode(Connection conn, String docCode) throws Exception{
+        String sql = "select w.zaznamoffer, w.wanted_id, w.wants, w.update_timestamp, k.code from WANTED w, KNIHOVNA k, ZAZNAMOFFER zo "
+                + "where zo.uniquecode=? "
+                + "and w.knihovna=k.knihovna_id and zo.zaznamoffer_id=w.zaznamoffer";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setString(1, docCode);
+
+        ResultSet rs = ps.executeQuery();
+        JSONArray ja = wantedJSON(rs);
         rs.close();
         return ja;
     }
@@ -435,7 +490,7 @@ public class DbOperations extends HttpServlet {
                         rs.getString("knihovna"),
                         new JSONObject(rs.getString("fields")));
 
-                j.put("wanted", getWanted(conn, zoId));
+                j.put("wanted", getWantedById(conn, zoId));
                 json.put(Integer.toString(zoId), j);
             }
         } catch (Exception ex) {
@@ -553,6 +608,126 @@ public class DbOperations extends HttpServlet {
     }
 
     enum Actions {
+
+        GETLIBRARYWANTED {
+                    @Override
+                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+
+                        resp.setContentType("application/json");
+                        JSONObject json = new JSONObject();
+                        PrintWriter out = resp.getWriter();
+                        
+                        Connection conn = null;
+
+                        try {
+                            Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                            if (kn != null) {
+                                conn = DbUtils.getConnection();
+                                JSONArray ja = getLibraryWanted(conn, kn.getId());
+                                json.put(kn.getCode(), ja);
+                            } else {
+                                json.put("error", "nejste prihlasen");
+                            }
+                        } catch (Exception ex) {
+                            LOGGER.log(Level.SEVERE, "get wanted failed", ex);
+                            json.put("error", ex.toString());
+                        } finally {
+                            if (conn != null && !conn.isClosed()) {
+                                conn.close();
+                            }
+                        }
+                        out.println(json.toString());
+                    }
+                },
+
+        GETLIBRARYWANTEDBYCODE {
+                    @Override
+                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+
+                        resp.setContentType("application/json");
+                        JSONObject json = new JSONObject();
+                        PrintWriter out = resp.getWriter();
+                        
+                        Connection conn = null;
+
+                        try {
+                            Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                            if (kn != null) {
+                                conn = DbUtils.getConnection();
+                                String code = req.getParameter("code");
+                                JSONArray ja = getLibraryWantedByCode(conn, code, kn.getId());
+                                json.put(code, ja);
+                            } else {
+                                json.put("error", "nejste prihlasen");
+                            }
+                        } catch (Exception ex) {
+                            LOGGER.log(Level.SEVERE, "get wanted failed", ex);
+                            json.put("error", ex.toString());
+                        } finally {
+                            if (conn != null && !conn.isClosed()) {
+                                conn.close();
+                            }
+                        }
+                        out.println(json.toString());
+                    }
+                },
+
+        GETWANTEDBYCODE {
+                    @Override
+                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+
+                        resp.setContentType("application/json");
+                        JSONObject json = new JSONObject();
+                        PrintWriter out = resp.getWriter();
+                        
+                        Connection conn = null;
+
+                        try {
+                            //Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                            //if (kn != null) {
+                                conn = DbUtils.getConnection();
+                                String code = req.getParameter("code");
+                                JSONArray ja = getWantedByCode(conn, code);
+                                json.put(code, ja);
+//                            } else {
+//                                json.put("error", "nejste prihlasen");
+//                            }
+                        } catch (Exception ex) {
+                            LOGGER.log(Level.SEVERE, "get wanted failed", ex);
+                            json.put("error", ex.toString());
+                        } finally {
+                            if (conn != null && !conn.isClosed()) {
+                                conn.close();
+                            }
+                        }
+                        out.println(json.toString());
+                    }
+                },
+
+        GETWANTED {
+                    @Override
+                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+
+                        resp.setContentType("application/json");
+                        PrintWriter out = resp.getWriter();
+                        
+                        Connection conn = null;
+
+                        try {
+                                conn = DbUtils.getConnection();
+                                JSONArray ja = getWanted(conn);
+                                out.println(ja.toString());
+                        } catch (Exception ex) {
+                            LOGGER.log(Level.SEVERE, "get wanted failed", ex);
+                            JSONObject json = new JSONObject();
+                            json.put("error", ex.toString());
+                        } finally {
+                            if (conn != null && !conn.isClosed()) {
+                                conn.close();
+                            }
+                        }
+                    }
+                },
 
         WANTOFFER {
                     @Override

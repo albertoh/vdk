@@ -126,6 +126,39 @@ public class IndexOperations extends HttpServlet {
         SolrIndexerCommiter.postData(sb.toString());
         SolrIndexerCommiter.postData("<commit/>");
     }
+    private static void indexAllWanted(Connection conn) throws Exception {
+        String sql = "select w.wants, zo.knihovna, k.code, zo.uniquecode from WANTED w, KNIHOVNA k, ZAZNAMOFFER zo "
+                + "where w.knihovna=k.knihovna_id and zo.zaznamoffer_id=w.zaznamoffer";
+        PreparedStatement ps = conn.prepareStatement(sql);
+
+        ResultSet rs = ps.executeQuery();
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("<add>");
+        while (rs.next()) {
+        sb.append("<doc>");
+            String uniquecode = rs.getString("uniquecode");
+            sb.append("<field name=\"code\">")
+                    .append(uniquecode)
+                    .append("</field>");
+            sb.append("<field name=\"md5\">")
+                    .append(uniquecode)
+                    .append("</field>");
+            if (rs.getBoolean(1)) {
+                sb.append("<field name=\"chci\" update=\"add\">")
+                        .append(rs.getString("code"))
+                        .append("</field>");
+            } else {
+                sb.append("<field name=\"nechci\" update=\"add\">")
+                        .append(rs.getString("code"))
+                        .append("</field>");
+            }
+            sb.append("</doc>");
+        }
+        sb.append("</add>");
+        SolrIndexerCommiter.postData(sb.toString());
+        SolrIndexerCommiter.postData("<commit/>");
+    }
     
     private static StringBuilder doIndexOfferXml(int id, ResultSet rs) throws Exception {
         StringBuilder sb = new StringBuilder();
@@ -146,7 +179,7 @@ public class IndexOperations extends HttpServlet {
                     .append("</field>");
             JSONObject nabidka_ext = new JSONObject();
             JSONObject nabidka_ext_n = new JSONObject();
-            nabidka_ext_n.put("zaznamOffer", rs.getString("zaznamoffer_id"));
+            nabidka_ext_n.put("zaznamOffer", rs.getInt("zaznamoffer_id"));
             nabidka_ext_n.put("code", docCode);
             nabidka_ext_n.put("zaznam", rs.getString("zaznam"));
             nabidka_ext_n.put("ex", rs.getString("exemplar"));
@@ -244,6 +277,53 @@ public class IndexOperations extends HttpServlet {
         sb.append("</add>");
         SolrIndexerCommiter.postData(sb.toString());
         SolrIndexerCommiter.postData("<commit/>");
+    }
+
+    private static void removeAllWanted() throws Exception {
+        SolrQuery query = new SolrQuery("chci:[* TO *]");
+        query.addField("code");
+        SolrDocumentList docs = IndexerQuery.query(query);
+        Iterator<SolrDocument> iter = docs.iterator();
+        while (iter.hasNext()) {
+            StringBuilder sb = new StringBuilder();
+
+            SolrDocument resultDoc = iter.next();
+            String docCode = (String) resultDoc.getFieldValue("code");
+            sb.append("<add><doc>");
+            sb.append("<field name=\"code\">")
+                    .append(docCode)
+                    .append("</field>");
+            sb.append("<field name=\"md5\">")
+                    .append(docCode)
+                    .append("</field>");
+
+            sb.append("<field name=\"chci\" update=\"set\" null=\"true\" />");
+            sb.append("</doc></add>");
+            SolrIndexerCommiter.postData(sb.toString());
+            SolrIndexerCommiter.postData("<commit/>");
+        }
+        query.setQuery("nechci:[* TO *]");
+        query.addField("code");
+        docs = IndexerQuery.query(query);
+        docs.iterator();
+        while (iter.hasNext()) {
+            StringBuilder sb = new StringBuilder();
+
+            SolrDocument resultDoc = iter.next();
+            String docCode = (String) resultDoc.getFieldValue("code");
+            sb.append("<add><doc>");
+            sb.append("<field name=\"code\">")
+                    .append(docCode)
+                    .append("</field>");
+            sb.append("<field name=\"md5\">")
+                    .append(docCode)
+                    .append("</field>");
+
+            sb.append("<field name=\"chci\" update=\"set\" null=\"true\" />");
+            sb.append("</doc></add>");
+            SolrIndexerCommiter.postData(sb.toString());
+            SolrIndexerCommiter.postData("<commit/>");
+        }
     }
 
     private static void removeAllOffers() throws Exception {
@@ -377,6 +457,36 @@ public class IndexOperations extends HttpServlet {
                         try {
                             indexWanted(DbUtils.getConnection(), Integer.parseInt(req.getParameter("id")));
                             json.put("message", "Reakce pridana.");
+                        } catch (Exception ex) {
+                            json.put("error", ex.toString());
+                        }
+                        out.println(json.toString());
+                    }
+                },
+
+        REMOVEALLWANTED {
+                    @Override
+                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                        resp.setContentType("application/json");
+                        PrintWriter out = resp.getWriter();
+                        JSONObject json = new JSONObject();
+                        try {
+                            removeAllWanted();
+                        } catch (Exception ex) {
+                            json.put("error", ex.toString());
+                        }
+                        out.println(json.toString());
+                    }
+                },
+
+        INDEXALLWANTED {
+                    @Override
+                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                        resp.setContentType("application/json");
+                        PrintWriter out = resp.getWriter();
+                        JSONObject json = new JSONObject();
+                        try {
+                            indexAllWanted(DbUtils.getConnection());
                         } catch (Exception ex) {
                             json.put("error", ex.toString());
                         }

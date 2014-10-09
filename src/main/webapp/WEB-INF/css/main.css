@@ -262,6 +262,20 @@ a.image:hover {
     height: 150px;
 }
 
+div.nabidka div{
+    display:inline-block;border: solid #333333 1px;
+    background-color: #DDDDDD;
+    padding: 2px;
+    vertical-align: middle;
+}
+
+div.nabidka label{
+    font-size: .8em;
+    margin-top: 4px;
+    display: inline-block;
+    float: right;
+}
+
 table.tex{
     font-size: .85em;
     color: #373737;
@@ -413,16 +427,20 @@ table.tex td.RZ{
      position:absolute;
      top: 13px;
 }
+.wanted{
+     background-color: darkseagreen !important;
+     border: 1px solid green !important;
+}
+.nowanted{
+     background-color: rosybrown !important;
+     border: 1px solid darkred !important;
+}
 #useroffer li .wanted{
      float: right;
-     background-color: darkseagreen;
-     border: 1px solid green;
      margin: 2px;
 }
 #useroffer li .nowanted{
      float: right;
-     background-color: rosybrown;
-     border: 1px solid darkred;
      margin: 2px;
 }
 

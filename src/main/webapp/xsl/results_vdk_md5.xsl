@@ -44,14 +44,14 @@
                             <div class="nabidka">Nabizeno:      
                             <xsl:for-each select="./arr[@name='nabidka']/str">
                                 <xsl:variable name="pos" select="position()" />
-                                <button>
+                                <div >
                                     <xsl:attribute name="data-offer">
                                         <xsl:value-of  select="." />
                                     </xsl:attribute>
                                     <xsl:attribute name="data-offer_ext">
                                         <xsl:value-of  select="../../arr[@name='nabidka_ext']/str[position()=$pos]" />
                                     </xsl:attribute>
-                                </button>
+                                </div>
                             </xsl:for-each>
                             </div>
                         </xsl:if>
@@ -155,10 +155,6 @@
         
                     <div style="float:right;"></div>
                 </td>
-                    <!--
-                <td class="actions" valign="top" width="100px">
-                </td>
-                    -->
             </tr></table> 
         </li>
         <li class="line"></li>
@@ -204,7 +200,5 @@
         <xsl:otherwise>img/icons/<xsl:value-of select="$zdroj"/>.gif</xsl:otherwise>
         </xsl:choose>
     </xsl:template>
-    
-    
     
 </xsl:stylesheet>

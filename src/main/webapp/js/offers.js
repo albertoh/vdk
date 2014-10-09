@@ -5,7 +5,7 @@ function Offers() {
 
 Offers.prototype = {
     init: function(){
-        this.retreive();
+        this.retrieve();
     },
     addButtons: function (iconButtons, obj) {
 
@@ -129,7 +129,30 @@ Offers.prototype = {
             }, this));
         }
     },
-    retreive: function () {
+    isWanted: function(zaznamoffer, knihovna){
+        for(var i=0; i<this.wanted.length; i++){
+            if(this.wanted[i].zaznamoffer === zaznamoffer
+                    && this.wanted[i].knihovna === knihovna){
+                return this.wanted[i].wanted;
+            }
+        }
+        return null;
+    },
+    retrieve: function(){
+        this.retrieveWanted();
+    },
+    retrieveWanted: function(){
+        this.wanted = [];
+        $.getJSON("db?action=GETWANTED", _.bind(function (json) {
+            if(json.error){
+                alert(json.error);
+            }else{
+                this.wanted = json;
+                this.retrieveOffers();
+            }
+        }, this));
+    },
+    retrieveOffers: function () {
         this.activeid = -1;
         $("#offers li.offer").remove();
         this.json = {};
@@ -149,10 +172,9 @@ Offers.prototype = {
                     $(this).html(text);
                 }
             });
-            this.parseUser();
+            this.parseUser();            
             
-            
-            $(".nabidka>button").each(function () {
+            $(".nabidka>div").each(function () {
                 var offerid = $(this).data("offer");
                 if (json.hasOwnProperty(offerid)) {
                     var val = json[offerid];
@@ -170,12 +192,20 @@ Offers.prototype = {
                     var zaznamOffer = $(this).data("offer_ext")[offerId].zaznamOffer;
                     
                     if(vdk.isLogged && vdk.user !== val.knihovna){
-                        $(this).append(vdk.results.actionWant(zaznamOffer));
-                        $(this).append(vdk.results.actionDontWant(zaznamOffer));
-                        $(this).attr('title', dict['offer.want']);
-//                        $(this).click(function(){
-//                            vdk.offers.wantDoc(zaznamOffer);
-//                        });
+                        var wanted = vdk.offers.isWanted(zaznamOffer, vdk.user);
+                        if(wanted == null){
+                            $(this).append(vdk.results.actionWant(zaznamOffer));
+                            $(this).append(vdk.results.actionDontWant(zaznamOffer));
+                            $(this).attr('title', dict['offer.want.unknown']);
+                        }else if(wanted){
+                            $(this).addClass('wanted');
+                            $(this).append(vdk.results.actionDontWant(zaznamOffer));
+                            $(this).attr('title', dict['chci.do.fondu']);
+                        }else{
+                            $(this).append(vdk.results.actionWant(zaznamOffer));
+                            $(this).addClass('nowanted');
+                            $(this).attr('title', dict['nechci.do.fondu']);
+                        }
                     }
                     
                     if (!$(this).data("offer_ext")[offerId].hasOwnProperty('ex')) {

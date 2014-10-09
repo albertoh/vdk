@@ -113,19 +113,19 @@ Results.prototype = {
         return span;
     },
     actionWant: function (zaznamOffer) {
-        var span = $('<span/>', {class: 'wanteddoc', 'data-wanted': zaznamOffer, style: 'float:left;'});
+        var span = $('<button/>', {class: 'wanteddoc', 'data-wanted': zaznamOffer, style: 'float:left;'});
         var a = $('<a class="ui-icon ui-icon-star" >');
-        a.attr('title', dict['chci.do.fondu']);
+        a.attr('title', dict['offer.want'] + ' "' + dict['chci.do.fondu'] + '"');
         a.attr('href', 'javascript:vdk.offers.wantDoc(' + zaznamOffer + ', true)');
         a.text('chci');
         span.append(a);
         return span;
     },
     actionDontWant: function (zaznamOffer) {
-        var span = $('<span/>', {class: 'wanteddoc', 'data-wanted': zaznamOffer, style: 'float:left;'});
+        var span = $('<button/>', {class: 'wanteddoc', 'data-wanted': zaznamOffer, style: 'float:left;'});
         
         var a = $('<a class="ui-icon ui-icon-cancel" >');
-        a.attr('title', dict['nechci.do.fondu']);
+        a.attr('title', dict['offer.want'] + ' "' + dict['nechci.do.fondu'] + '"');
         a.attr('href', 'javascript:vdk.offers.wantDoc(' + zaznamOffer + ', false)');
         a.text('chci');
         span.append(a);
