@@ -28,11 +28,12 @@
             <xsl:attribute name="data-wanted">[<xsl:for-each select="./arr[@name='chci']/str"><xsl:value-of  select="." /></xsl:for-each>]</xsl:attribute>
             <xsl:attribute name="data-nowanted">[<xsl:for-each select="./arr[@name='nechci']/str"><xsl:value-of  select="." /></xsl:for-each>]</xsl:attribute>
             <xsl:attribute name="class">res<xsl:if test="hasCollapsed"> collapsed</xsl:if></xsl:attribute>
+            <xsl:attribute name="data-csv"><xsl:value-of select="./arr[@name='export']/str" /></xsl:attribute>
             <input type="hidden" class="code">
                 <xsl:attribute name="value"><xsl:value-of select="$code" /></xsl:attribute>
             </input>
             <input type="hidden" class="identifier">
-                <xsl:attribute name="value"><xsl:value-of select="./str[@name='id']" /></xsl:attribute>
+                <xsl:attribute name="value"><xsl:value-of select="./arr[@name='id']/str " /></xsl:attribute>
             </input>
             <input type="hidden" class="numDocs">
                 <xsl:attribute name="value"><xsl:value-of select="$numDocs" /></xsl:attribute>
@@ -41,7 +42,7 @@
                 <td valign="top">
                     <div>
                         <xsl:if test="./arr[@name='nabidka']/str">  
-                            <div class="nabidka">Nabizeno:      
+                            <div class="nabidka">nabízí:      
                             <xsl:for-each select="./arr[@name='nabidka']/str">
                                 <xsl:variable name="pos" select="position()" />
                                 <div >
@@ -55,11 +56,19 @@
                             </xsl:for-each>
                             </div>
                         </xsl:if>
-                        <span style="float:left;">
-                            <a class="ui-icon ui-icon-extlink" target="_view">
-                                <xsl:attribute name="title">nahlédnout originální metadata</xsl:attribute>
-                                <xsl:attribute name="href">original?id=<xsl:value-of select="./arr[@name='id']/str" />&amp;path=<xsl:value-of select="./arr[@name='file']/str"/></xsl:attribute>view</a>
-                        </span>
+                        <xsl:if test="./arr[@name='poptavka']/str">  
+                            <div class="poptavka">poptává:      
+                            <xsl:for-each select="./arr[@name='poptavka']/str">
+                                <div><xsl:value-of  select="." /></div>
+                            </xsl:for-each>
+                            </div>
+                        </xsl:if>
+                        <div class="docactions"></div>
+                        <!--
+                        <button class="ui-icon-extlink" target="_view" style="float:left;">
+                            <xsl:attribute name="title">nahlédnout originální metadata</xsl:attribute>
+                            <xsl:attribute name="onclick">original?id=<xsl:value-of select="./arr[@name='id']/str" />&amp;path=<xsl:value-of select="./arr[@name='file']/str"/></xsl:attribute>view
+                        </button>
                         <span class="offerdoc" style="float:left;display:none;">
                             <a class="ui-icon ui-icon-flag" >
                                 <xsl:attribute name="title">přidat do nabídky</xsl:attribute>
@@ -75,6 +84,7 @@
                                 <xsl:attribute name="data-csv"><xsl:value-of select="./arr[@name='export']/str" /></xsl:attribute>
                                 <xsl:attribute name="onclick">javascript:vdk.showCSV(this)</xsl:attribute>csv
                         </span>
+                        -->
                         <div class="diff ui-state-error" style="float:left;display:none;"><span class="ui-icon ui-icon-alert">has diff</span>
                         <div class="titles diffs">
                         <xsl:for-each select="./arr[@name='title']/str" >

@@ -205,6 +205,7 @@ a.image:hover {
 }
 #results div.title{
     font-weight: bold;
+    clear: both;
 }
 #results ul li.line{
     border-bottom: 1px solid;
@@ -262,10 +263,21 @@ a.image:hover {
     height: 150px;
 }
 
-div.nabidka div{
-    display:inline-block;border: solid #333333 1px;
+div.poptavka div{
+    display:inline-block;
+    border: solid #333333 1px;
     background-color: #DDDDDD;
     padding: 2px;
+    margin: 2px;
+    vertical-align: middle;
+    font-size: .8em;
+}
+
+div.nabidka div{
+    display:inline-block;
+    border: solid #333333 1px;
+    background-color: #DDDDDD;
+    margin: 2px;
     vertical-align: middle;
 }
 
@@ -416,14 +428,14 @@ table.tex td.RZ{
 #useroffer input{
     width: 98%;
 }
-#useroffer div.buttons{
+#useroffer div.buttons, #userdemands div.buttons{
      position:relative;
      height: 22px;
 }
-#useroffer button{
+#useroffer button, #userdemands button{
      position:relative;
 }
-#useroffer li button{
+#useroffer li button, #userdemands li button{
      position:absolute;
      top: 13px;
 }
@@ -461,18 +473,17 @@ table.tex td.RZ{
      position:relative;
      min-height: 20px;
 }
-#useroffer li:nth-child(odd){
+#useroffer li:nth-child(odd), #userdemands li:nth-child(odd){
      background: #eeeeee;
 }
-#useroffer li>div.label{
+#useroffer li>div.label, #userdemands li>div.label{
      margin-right: 30px;
      display: inline-block;
 }
 
-#userdemands li.demand{
+#userdemands li{
+     position:relative;
+     min-height: 20px;
     list-style: none;
     padding: 3px;
-}
-#userdemands li.active{
-    font-weight: bold;
 }

@@ -362,14 +362,14 @@ function zdrojIcon(zdroj, isNKF) {
 }
 
 function Confirm() {
-    
+
 }
 
 Confirm.prototype = {
     open: function (title, f) {
-        if($("#dialog-confirm").length === 0){
+        if ($("#dialog-confirm").length === 0) {
             this.create(title);
-        }else{
+        } else {
             $("#dialog-confirm>div").html(title);
         }
         $("#dialog-confirm").dialog({
@@ -378,7 +378,8 @@ Confirm.prototype = {
             title: "Confirm",
             buttons: {
                 "OK": function () {
-                    if (f) f.apply(null, null);
+                    if (f)
+                        f.apply(null, null);
                     $(this).dialog("close");
                 },
                 Cancel: function () {
@@ -387,7 +388,23 @@ Confirm.prototype = {
             }
         });
     },
-    create: function(title){
-        $('body').append($('<div id="dialog-confirm"><div>'+title+'</span></div>'));
+    create: function (title) {
+        $('body').append($('<div id="dialog-confirm"><div>' + title + '</span></div>'));
     }
 };
+
+
+function addButtons(iconButtons, obj) {
+
+    $.each(iconButtons, function (i, v) {
+
+        var $button = $("<button/>").text(this.text);
+        $button.button({
+            icons: {primary: this.icon},
+            text: false
+        }).addClass("ui-dialog-titlebar-close")
+                .css("float", "right")
+                .click(this.click);
+        $(obj).append($button);
+    });
+}

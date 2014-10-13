@@ -7,22 +7,6 @@ Offers.prototype = {
     init: function(){
         this.retrieve();
     },
-    addButtons: function (iconButtons, obj) {
-
-        $.each(iconButtons, function (i, v) {
-
-            var $button = $("<button/>").text(this.text);
-            $button.button({
-                icons: {primary: this.icon},
-                text: false
-            }).addClass("ui-dialog-titlebar-close")
-                    .css("float", "right")
-                    .click(this.click);
-
-            $(obj).append($button);
-
-        });
-    },
     openForm: function () {
         this.formDialog = $("<div/>", {title: dict['select.offerForm']});
         $("body").append(this.formDialog);
@@ -72,7 +56,7 @@ Offers.prototype = {
                         }
                     }
                 ];
-                this.addButtons(bs, "#useroffer>div.buttons");
+                addButtons(bs, "#useroffer>div.buttons");
             }, this));
             this.loaded = true;
         }
@@ -191,8 +175,8 @@ Offers.prototype = {
                     var offerId = $(this).data("offer");
                     var zaznamOffer = $(this).data("offer_ext")[offerId].zaznamOffer;
                     
-                    if(vdk.isLogged && vdk.user !== val.knihovna){
-                        var wanted = vdk.offers.isWanted(zaznamOffer, vdk.user);
+                    if(vdk.isLogged && vdk.user.code !== val.knihovna){
+                        var wanted = vdk.offers.isWanted(zaznamOffer, vdk.user.code);
                         if(wanted == null){
                             $(this).append(vdk.results.actionWant(zaznamOffer));
                             $(this).append(vdk.results.actionDontWant(zaznamOffer));
@@ -215,7 +199,7 @@ Offers.prototype = {
                         var tr = $("tr[data-md5~='" + ex + "']");
                         tr.addClass("nabidka");
                         tr.find(".offerex, .demandexadd").remove();
-                        if(vdk.isLogged && vdk.user !== val.knihovna){
+                        if(vdk.isLogged && vdk.user.code !== val.knihovna){
                             tr.find("td.actions").append(vdk.results.actionWant(zaznamOffer));
                             tr.find("td.actions").append(vdk.results.actionDontWant(zaznamOffer));
                         }
@@ -236,7 +220,7 @@ Offers.prototype = {
         $("#activeOffers>option").remove();
         $("#useroffers li.offer").remove();
         $.each(this.json, _.bind(function (key, val) {
-            if (val.knihovna === vdk.user) {
+            if (vdk.isLogged && val.knihovna === vdk.user.code) {
                 this.renderUserOffer(val);
             }
         }, this));
@@ -308,7 +292,7 @@ Offers.prototype = {
                         vdk.offers.removeDoc(val.ZaznamOffer_id);
                     }
                 }];
-            this.addButtons(iconButtons, doc);
+            addButtons(iconButtons, doc);
         }
         $.each(val.wanted, function(key, wanted){
             doc.append('<span class="'+ (wanted.wanted ? '':'no') +'wanted">' + wanted.knihovna + "</span>" );
@@ -521,7 +505,7 @@ this.getUserOffers = function () {
     $("#activeOffers>option").remove();
     $("#useroffers li.nabidka").remove();
     $.each(vdk.offers, function (key, val) {
-        if (val.knihovna === vdk.user) {
+        if (vdk.isLogged && val.knihovna === vdk.user.code) {
             vdk.renderUserOffer(val);
         }
     });

@@ -77,6 +77,7 @@ public class Search {
             query.setFacet(true);
             query.setStart(getStart());
             query.setRows(getRows());
+            query.setSort("_version_", SolrQuery.ORDER.desc);
             
             if(LoggedController.isLogged(req)){
                 query.addFacetField(opts.getStrings("user_facets"));

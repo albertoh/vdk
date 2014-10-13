@@ -5,7 +5,9 @@
  */
 package cz.incad.vdk.client;
 
+import cz.incad.vdkcommon.DbUtils;
 import cz.incad.vdkcommon.SolrIndexerCommiter;
+import cz.incad.vdkcommon.solr.Indexer;
 import cz.incad.vdkcommon.solr.IndexerQuery;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -352,13 +354,12 @@ public class IndexOperations extends HttpServlet {
         }
     }
     
-    private static void indexDemand(String knihovna,
+    private static StringBuilder doIndexDemandXml(String knihovna,
             String docCode,
             String zaznam,
-            String exemplar) throws Exception {
-
+            String exemplar, String update) throws Exception {
         StringBuilder sb = new StringBuilder();
-        sb.append("<add><doc>");
+        sb.append("<doc>");
         sb.append("<field name=\"code\">")
                 .append(docCode)
                 .append("</field>");
@@ -366,28 +367,57 @@ public class IndexOperations extends HttpServlet {
                 .append(docCode)
                 .append("</field>");
 
-        sb.append("<field name=\"poptavka\" update=\"add\">")
+        sb.append("<field name=\"poptavka\" update=\"").append(update).append("\">")
                 .append(knihovna)
                 .append("</field>");
-        if (zaznam == null) {
-            sb.append("<field name=\"poptavka_zaznam\" update=\"add\">")
-                    .append(knihovna).append(";").append("none")
+        JSONObject j = new JSONObject();
+        j.put("knihovna", knihovna);
+        j.put("code", docCode);
+        j.put("zaznam", zaznam);
+        j.put("exemplar", exemplar);
+        sb.append("<field name=\"poptavka_ext\" update=\"").append(update).append("\">")
+                    .append(j)
                     .append("</field>");
-        } else {
-            sb.append("<field name=\"poptavka_zaznam\" update=\"add\">")
-                    .append(knihovna).append(";").append(zaznam)
-                    .append("</field>");
+        
+        sb.append("</doc>");
+            return sb;
+    }
+    
+    private static void indexAllDemands(Connection conn) throws Exception {
+        
+        String sql = "SELECT zaznamDemand.zaznamDemand_id, "
+                + "zaznamDemand.uniqueCode, zaznamDemand.zaznam, zaznamDemand.exemplar, zaznamDemand.fields, Knihovna.code "
+                + "FROM zaznamDemand, Knihovna "
+                + "where zaznamDemand.knihovna=knihovna.knihovna_id ";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ResultSet rs = ps.executeQuery();
+        StringBuilder sb = new StringBuilder();
+        sb.append("<add>");
+        while (rs.next()) {
+            sb.append(doIndexDemandXml(rs.getString("code"),
+                    rs.getString("uniqueCode"),
+                    rs.getString("zaznam"),
+                    rs.getString("exemplar"),
+                    "add"));
         }
-        if (exemplar == null) {
-            sb.append("<field name=\"ex_poptavka\" update=\"add\">")
-                    .append(knihovna).append(";").append("none")
-                    .append("</field>");
-        } else {
-            sb.append("<field name=\"ex_poptavka\" update=\"add\">")
-                    .append(knihovna).append(";").append(exemplar)
-                    .append("</field>");
-        }
-        sb.append("</doc></add>");
+        sb.append("</add>");
+        SolrIndexerCommiter.postData(sb.toString());
+        SolrIndexerCommiter.postData("<commit/>");
+    }
+
+    private static void indexDemand(String knihovna,
+            String docCode,
+            String zaznam,
+            String exemplar) throws Exception {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("<add>");
+            sb.append(doIndexDemandXml(knihovna,
+            docCode,
+            zaznam,
+            exemplar,
+            "add"));
+        sb.append("</add>");
         SolrIndexerCommiter.postData(sb.toString());
         SolrIndexerCommiter.postData("<commit/>");
     }
@@ -397,25 +427,16 @@ public class IndexOperations extends HttpServlet {
             String zaznam,
             String exemplar) throws Exception {
 
-        StringBuilder sb1 = new StringBuilder();
-        sb1.append("<add><doc>");
-        sb1.append("<field name=\"code\">")
-                .append(docCode)
-                .append("</field>");
-        sb1.append("<field name=\"md5\">")
-                .append(docCode)
-                .append("</field>");
-        sb1.append("<field name=\"poptavka\" update=\"remove\">")
-                .append(knihovna)
-                .append("</field>");
-        sb1.append("<field name=\"ex_poptavka\" update=\"remove\">")
-                .append(knihovna).append(";").append(exemplar)
-                .append("</field>");
-        sb1.append("<field name=\"poptavka_zaznam\" update=\"remove\">")
-                .append(knihovna).append(";").append(zaznam)
-                .append("</field>");
-        sb1.append("</doc></add>");
-        SolrIndexerCommiter.postData(sb1.toString());
+        StringBuilder sb = new StringBuilder();
+        sb.append("<add>");
+        sb.append(doIndexDemandXml(knihovna,
+        docCode,
+        zaznam,
+        exemplar,
+        "remove"));
+        sb.append("</add>");
+        LOGGER.log(Level.INFO, sb.toString());
+        SolrIndexerCommiter.postData(sb.toString());
         SolrIndexerCommiter.postData("<commit/>");
     }
 
@@ -438,8 +459,7 @@ public class IndexOperations extends HttpServlet {
                     .append("</field>");
 
             sb.append("<field name=\"poptavka\" update=\"set\" null=\"true\" />");
-            sb.append("<field name=\"poptavka_zaznam\" update=\"set\" null=\"true\" />");
-            sb.append("<field name=\"ex_poptavka\" update=\"set\" null=\"true\" />");
+            sb.append("<field name=\"poptavka_ext\" update=\"set\" null=\"true\" />");
             sb.append("</doc></add>");
             SolrIndexerCommiter.postData(sb.toString());
             SolrIndexerCommiter.postData("<commit/>");
@@ -597,6 +617,27 @@ public class IndexOperations extends HttpServlet {
                         out.println(json.toString());
                     }
                 },
+
+        INDEXALLDEMANDS {
+                    @Override
+                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                        resp.setContentType("application/json");
+                        PrintWriter out = resp.getWriter();
+                        JSONObject json = new JSONObject();
+                        try {
+                            Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                            if (kn == null) {
+                                json.put("error", "Nejste prihlasen");
+                            } else {
+                                indexAllDemands(DbUtils.getConnection());
+                            }
+                        } catch (Exception ex) {
+                            LOGGER.log(Level.SEVERE, null, ex);
+                            json.put("error", ex.toString());
+                        }
+                        out.println(json.toString());
+                    }
+                },
         REMOVEALLDEMANDS {
                     @Override
                     void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
@@ -611,6 +652,28 @@ public class IndexOperations extends HttpServlet {
                                 removeAllDemands();
                             }
                         } catch (Exception ex) {
+                            LOGGER.log(Level.SEVERE, null, ex);
+                            json.put("error", ex.toString());
+                        }
+                        out.println(json.toString());
+                    }
+                },
+        REINDEXDOCS {
+                    @Override
+                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                        resp.setContentType("application/json");
+                        PrintWriter out = resp.getWriter();
+                        JSONObject json = new JSONObject();
+                        try {
+                            Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                            if (kn == null) {
+                                json.put("error", "Nejste prihlasen");
+                            } else {
+                                Indexer indexer = new Indexer();
+                                indexer.reindex(DbUtils.getConnection());
+                            }
+                        } catch (Exception ex) {
+                            LOGGER.log(Level.SEVERE, null, ex);
                             json.put("error", ex.toString());
                         }
                         out.println(json.toString());

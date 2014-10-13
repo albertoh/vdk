@@ -11,10 +11,10 @@
     <script src="js/underscore-min.js" type="text/javascript" ></script>
     <script type="text/javascript" src="js/jquery.form.js"></script>
     <script type="text/javascript" src="js/main.js"></script>
+    <script type="text/javascript" src="js/vdk.js"></script>
     <script type="text/javascript" src="js/offers.js"></script>
     <script type="text/javascript" src="js/demand.js"></script>
     <script type="text/javascript" src="js/results.js"></script>
-    <script type="text/javascript" src="js/vdk.js"></script>
     <!--
     <link type="text/css" href="css/smoothness/jquery-ui-1.10.3.custom.css" rel="stylesheet" />
     -->

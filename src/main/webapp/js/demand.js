@@ -1,27 +1,89 @@
 
 function Demand() {
     this.loaded = false;
+    this.dialog = null;
     this.activeid = -1;
     this.retreive();
 }
 
 Demand.prototype = {
     open: function () {
-        if (!this.loaded) {
+        if (this.dialog === null) {
             this.dialog = $("<div/>", {title: dict['select.demand']});
             $("body").append(this.dialog);
             this.dialog.load("demands.vm", _.bind(function () {
                 this.getUserDemands();
             }, this));
-            this.loaded = true;
         }
-        this.dialog.dialog({modal: true, width: 680, height: 500});
+        this.dialog.dialog({
+            modal: true,
+            width: 750,
+            height: 600,
+            iconButtons: [
+                {
+                    text: "Refresh",
+                    icon: "ui-icon-refresh",
+                    click: function (e) {
+                        vdk.demands.retreive();
+                    }
+                },
+                {
+                    text: "Přídat poptavku",
+                    icon: "ui-icon-plusthick",
+                    click: function (e) {
+                        vdk.demands.add();
+                    }
+                }
+            ],
+            create: function () {
+                var $titlebar = $(this).parent().find(".ui-dialog-titlebar");
+                $.each($(this).dialog('option', 'iconButtons'), function (i, v) {
+
+                    var $button = $("<button/>").text(this.text),
+                            right = $titlebar.find("[role='button']:last")
+                            .css("right");
+
+                    $button.button({
+                        icons: {primary: this.icon},
+                        text: false
+                    }).addClass("ui-dialog-titlebar-close")
+                            .css("right", (parseInt(right) + 22) + "px")
+                            .click(this.click);
+
+                    $titlebar.append($button);
+
+                });
+            }
+        });
+    },
+    isDemand: function(code, zaznam, exemplar){
+        var retVal = false;
+        $.each(this.json, function (key, val) {
+            if(val.code === code && val.zaznam===zaznam && val.exemplar===exemplar){
+                retVal = true;
+                return;
+            }
+        });
+        return retVal;
+    },
+    isUserDemand: function(code, zaznam, exemplar){
+        var retVal = false;
+        $.each(this.json, function (key, val) {
+            if(vdk.isLogged && val.code === code && 
+                    val.zaznam===zaznam && 
+                    val.exemplar===exemplar && 
+                    val.knihovna===vdk.user.code){
+                retVal = true;
+                return;
+            }
+        });
+        return retVal;
     },
     retreive: function () {
         $("#demands li.demand").remove();
-        this.demands = {};
+        this.json = {};
         $.getJSON("db?action=GETDEMANDS", _.bind(function (json) {
-            this.demands = json;
+            this.json = json;
             $.each(json, function (key, val) {
                 var label = val.nazev + ' (' + val.knihovna + ' )';
                 if (val.closed) {
@@ -37,82 +99,68 @@ Demand.prototype = {
                 }
             });
             this.getUserDemands();
+            this.loaded = true;
+            vdk.eventsHandler.trigger("demands",null);
         }, this));
     },
     getUserDemands: function () {
         $("#activeDemands>option").remove();
         $("#userdemands li.demand").remove();
-        $.each(this.demands, _.bind(function (key, val) {
-            if (val.knihovna === vdk.user) {
-                this.renderUserDemand(val);
+        $.each(this.json, _.bind(function (key, val) {
+            if (vdk.isLogged && val.knihovna === vdk.user.code) {
+                this.renderDoc(val);
             }
         }, this));
 
     },
-    renderUserDemand: function (val) {
-        var label = val.nazev;
-        $("#activeDemands").append('<option value="' + val.id + '">' + label + '</option>');
-        var li = $("<li/>");
-        li.addClass("demand");
-        li.data("demand", val.id);
-        var span1 = $('<span class="ui-icon" style="float:left;" />');
-        if (val.expired) {
-            span1.addClass("ui-icon-clock");
+    renderDoc: function (val) {
+        var doc = $('<li/>', {class: 'demand', 'data-zaznamdemandid': val.zaznamdemand_id});
+        doc.data("zaznamdemandid", val.zaznamdemand_id);
+
+        var label = $('<div/>', {class: 'label'});
+        var html = "";
+        if (val.hasOwnProperty('title')) {
+            html += val.title;
         } else {
-            span1.addClass("ui-icon-check");
+            if (val.fields.hasOwnProperty('245a')) {
+                html += val.fields['245a'];
+            }
         }
-        li.append(span1);
-        var span = $('<span class="closed ui-icon" style="float:left;" />');
-        if (val.closed) {
-            span.addClass("ui-icon-locked");
-            span.attr("title", "poptavka je zavrena");
-        } else {
-            span.addClass("ui-icon-unlocked");
-            span.attr("title", "zavrit poptavku");
-            span.click(_.bind(function (e) {
-                this.close(val.id);
-            }, this));
+        if (val.fields.hasOwnProperty('comment') && val.fields.comment !== "") {
+            html += " (" + val.fields.comment + ")";
         }
-        li.append(span);
-        var a = $("<a/>");
-        a.text(label);
-        a.attr("href", "javascript:vdk.demands.clickUser('" + val.id + "');");
-        li.append(a);
-        $("#userdemands>ul").append(li);
+        label.html(html);
+        doc.append(label);
+        //if(!closed){
+            var iconButtons = [{
+                    text: "Remove",
+                    icon: "ui-icon-close",
+                    click: function (e) {
+                        vdk.demands.remove(val.zaznamdemand_id, val.code, val.zaznam, val.exemplar);
+                    }
+                }];
+            addButtons(iconButtons, doc);
+        //}
+        $('#userdemands>ul').append(doc);
     },
-    getActive: function () {
-
-        $.getJSON("db?action=GETOFFER&id=" + this.activeid, _.bind(function (json) {
-            console.log(json);
-            this.active = json;
-            $.each(json, function (key, val) {
-
-
-            });
+    remove: function (ZaznamDemand_id, docCode, zaznam, exemplar) {
+        $.getJSON("db", {action: "REMOVEDEMAND", id: ZaznamDemand_id}, _.bind(function (data) {
+            if (data.error) {
+                alert("error ocurred: " + data.error);
+            } else {
+                $.getJSON("index", {action: "REMOVEDEMAND", docCode:docCode, zaznam:zaznam, ex:exemplar}, _.bind(function (resp) {
+                    if (resp.error) {
+                        alert("error ocurred: " + resp.error);
+                    } else {
+                        $("#userdemands li.demand[data-zaznamdemandid~='" + ZaznamDemand_id + "']").remove();
+                        delete this.json[(ZaznamDemand_id + "")];
+                        alert(data.message);
+                    }
+                }, this));
+                
+            }
         }, this));
 
-    },
-    setActive: function (id) {
-        this.activeid = id;
-        $("#userdemands li.demand").removeClass("active");
-        $("#userdemands li.demand").each(function () {
-            if (id === $(this).data("demand")) {
-                $(this).addClass("active");
-                return;
-            }
-        });
-        $("#importDemandForm input[name~='idDemand']").val(this.activeid);
-        $("#addToDemandForm input[name~='idDemand']").val(this.activeid);
-        this.getActive();
-        $("#userdemand").show();
-    },
-    clickUser: function (id) {
-        this.setActive(id);
-        $('#activeDemands').val(id);
-    },
-    selectActive: function () {
-        var id = $('#activeDemands').val();
-        this.setActive(id);
     },
     add: function (code, id, ex) {
         var comment = prompt("Poznamka", "");
@@ -132,22 +180,6 @@ Demand.prototype = {
         });
 
     },
-    remove: function (code, id, ex) {
-        $.getJSON("db", {action: "REMOVEDEMAND", docCode: code, zaznam: id, ex: ex}, function (data) {
-            if (data.error) {
-                alert("error ocurred: " + data.error);
-                return;
-            }
-            $.getJSON("index", {action: "REMOVEDEMAND", docCode: code, zaznam: id, ex: ex}, _.bind(function (resp) {
-                if (resp.error) {
-                    alert("error ocurred: " + resp.error);
-                } else {
-                    alert("Poptavka uspesne odstranena");
-                }
-            }, this));
-        });
-
-    },
     close: function (id) {
         $.post("db", {action: "CLOSEDEMAND", id: id}, _.bind(function (resp) {
             if (resp.trim() === "1") {
@@ -158,7 +190,7 @@ Demand.prototype = {
                         alert("error ocurred: " + resp.error);
                     } else {
                         
-                        this.demands[id].closed = true;
+                        this.json[id].closed = true;
                         $("#userdemands li.demand").each(function () {
                             if ($(this).data("demand") === id) {
                                 $(this).find("span.closed").removeClass("ui-icon-unlocked").addClass("ui-icon-locked");

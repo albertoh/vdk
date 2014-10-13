@@ -4,6 +4,7 @@
  */
 package cz.incad.vdk.client;
 
+import cz.incad.vdkcommon.DbUtils;
 import cz.incad.vdkcommon.solr.IndexerQuery;
 import java.io.File;
 import java.io.IOException;

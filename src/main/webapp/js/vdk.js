@@ -1,27 +1,103 @@
 
 
+/** 
+ * Simple event handler used in application 
+ * @constructor 
+ */
+function ApplicationEvents() {}
+
+ApplicationEvents.prototype = {
+
+        handlerEnabled:true,        
+
+        enableHandler:function() {
+                this.handlerEnabled = true;
+        },
+        disableHandler:function() {
+                this.handlerEnabled = false;
+        },        
+
+        /** contains event handlers*/
+        handlers: [],
+        
+        
+
+        /** 
+         * Trigger event 
+         * @method
+         */
+        trigger:function(type, data) {
+                console.log("trigger event:"+type);
+                if (!this.handlerEnabled) {
+                        console.log("handler disabled. Discarding event "+type);
+                        return;
+                }
+                        
+                $.each(this.handlers,function(idx,obj) { 
+                        obj.apply(null, [type,data]);
+                });
+        },
+
+        /** add new handler 
+         *@method
+         */
+        addHandler: function(handler) {
+                this.handlers.push(handler);
+        },
+
+        /** remove handler 
+         * @method
+         */
+        removeHandler:function(handler) {
+                /*
+                var index = this.handlers.indexOf(handler);
+                var nhandlers = [];
+                if (index >=0)  {
+                        for (var i=0;i<index;i++) {
+                                 nhandlers.push(this.handlers[i]);
+                        }
+                        for (var i=index+1;i<this.handlers.length;i++) {
+                                 nhandlers.push(this.handlers[i]);
+                        }
+                }
+                this.handlers = nhandlers;
+                */
+        }
+}
+
 function VDK() {
+    /** 
+    * Handlers 
+    * <pre><code>
+    *  K5.eventsHandler
+    * </code></pre>
+    * @member
+    */
+   this.eventsHandler =  new ApplicationEvents();
+   
     this.user = null;
+    
     this.isLogged = false;
-    this.results = new Results();
-    this.offers = new Offers();
-    this.demands = new Demand();
-    this.nabidka = new Nabidka();
-    this.export = new Export();
-    this.views = new Views();
     this.zdrojUser = {
         'NKP': 'NKC-VDK',
         'MZK': 'MZK',
         'VKOL': 'VKOLOAI'};
     this.setUser = function(name){
-        this.user = name;
-        this.isLogged = true;
-    }
+        $.getJSON("user.vm", _.bind(function(data){
+            this.user = data;
+            this.isLogged = true;
+        }, this));
+        
+    };
     this.init = function () {
+        this.demands = new Demand();
+        this.results = new Results();
+        this.offers = new Offers();
+        this.nabidka = new Nabidka();
+        this.export = new Export();
+        this.views = new Views();
         this.activeofferid = -1;
         this.getViews();
-        this.results.init();
-        this.offers.init();
         //this.getOffers();
         $(document).tooltip({
             items: "div.diff, [title]",
@@ -39,7 +115,7 @@ function VDK() {
 
     }
     this.userOpts = function () {
-        if (this.zdrojUser[vdk.user]) {
+        if (this.isLogged && this.zdrojUser[vdk.user.code]) {
             //Prihlaseny uzivatel je NKP, MZK nebo VKOL
             $(".offerdoc").hide();
             $(".offerex").show();
@@ -76,7 +152,10 @@ function VDK() {
     this.openExport = function () {
         this.export.open();
     };
-    this.showCSV = function (elem) {
+    this.showOriginal = function(id){
+        window.open("original?id="+id, "original");
+    };
+    this.showCSV = function (csv) {
         if (!this.csv) {
             this.csvdialog = $('<div title="CSV format" class="csv1" ></div>');
             this.csv = $('<input style="width:100%;" type="text" value=""/>');
@@ -86,7 +165,7 @@ function VDK() {
                 $(this).select();
             });
         }
-        this.csv.val($(elem).data("csv"));
+        this.csv.val(csv);
         this.csvdialog.dialog({modal: true, width: 700});
     };
 }
@@ -146,30 +225,6 @@ Views.prototype = {
 function Nabidka() {
     this.loaded = false;
 }
-
-Nabidka.prototype = {
-    open: function () {
-        if (!this.loaded) {
-            this.dialog = $("<div/>", {title: dict['select.offer']});
-            $("body").append(this.dialog);
-            this.dialog.load("nabidka.vm", function () {
-                vdk.getUserOffers();
-            });
-            this.loaded = true;
-        }
-        this.dialog.dialog({modal: true, width: 680, height: 500});
-        //vdk.getUserOffers();
-    },
-    add: function (code) {
-        alert(code);
-    },
-    getAll: function () {
-        $.getJSON("db?action=GETOFFERS", function () {
-
-        })
-    }
-};
-
 function Export() {
     this.loaded = false;
 }
@@ -178,19 +233,6 @@ Export.prototype = {
     open: function () {
         var url = "csv/export.vm" + window.location.search + "&rows=10000";
         window.open(url, "export");
-//        if(!this.loaded){
-//            this.dialog = $("<div/>", {id: 'export', title: 'export'});
-//            $("body").append(this.dialog);
-//            this.loaded = true;
-//        }
-//        var area = $("<textarea/>");
-//        var text = "";
-//        $('.csv').each(function(){
-//            text = text + $(this).data("csv") + "\n";
-//        });
-//        area.text(text);
-//        this.dialog.html(area);
-//        this.dialog.dialog({width: '90%', height: '400'});
     }
 };
 

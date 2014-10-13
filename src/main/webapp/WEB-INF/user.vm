@@ -1,0 +1,7 @@
+#if($request.session.knihovna)
+$request.session.knihovna.json
+#else
+{}
+#end
+
+$request.remoteUser

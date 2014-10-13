@@ -1,8 +1,5 @@
 <div id="demands">
-<div id="userdemands" style="float:left;width:200px;">
+<div id="userdemands">
     <ul></ul>
-    <div>
-        <a href="javascript:vdk.demands.add();">Přídat poptavku</a>
-    </div>
 </div>
-        </div>
+</div>

@@ -1,4 +1,10 @@
 
+vdk.eventsHandler.addHandler(function(type, configuration) {
+    if (type === "demands") {
+        vdk.results.init();
+        vdk.offers.init();
+    }
+});
 
 function Results() {
 }
@@ -9,6 +15,7 @@ Results.prototype = {
             heightStyle: "content"
         });
         this.checkDifferences();
+        this.zdrojNavButtons();
         this.doRange("#rokvydani_range", "#rokvydani_select", "rokvydani", true);
         this.doRange("#pocet_range", "#pocet_select", "pocet_exemplaru", false);
         this.parseDocs();
@@ -18,7 +25,7 @@ Results.prototype = {
         $(".nabidka_ext").each(function () {
             var json = $(this).data('nabidka_ext');
             $.each(json, _.bind(function (key, val) {
-                if (val.knihovna === vdk.user) {
+                if (vdk.isLogged && val.knihovna === vdk.user.code) {
                     this.renderUserOffer(val);
                 }
                 if(val.fields['245a']){
@@ -33,10 +40,17 @@ Results.prototype = {
             
             var res = $(this).attr('id');
             var code = $(jq(res) + ">input.code").val();
+            var zaznam = $(jq(res) + ">input.identifier").val();
             $(jq(res) + " .ex").each(function () {
                 vdk.results.parseDocExemplars($(this), code);
             });
-
+            var $actions = $(this).find('.docactions');
+            $actions.append(vdk.results.actionOriginal(zaznam));
+            if(vdk.isLogged){
+                $actions.append(vdk.results.actionOffer(code));
+                $actions.append(vdk.results.actionAddDemand(code));
+            }
+            $actions.append(vdk.results.actionCSV($(this).data("csv")));
             
         });
     },
@@ -81,7 +95,7 @@ Results.prototype = {
         row.append("<td>" + jsonElement(json, "cislo") + "</td>");
         row.append("<td>" + jsonElement(json, "rok") + "</td>");
         var checks = $('<td class="actions" style="width:95px;"></td>');
-        if (vdk.user !== null) {
+        if (vdk.isLogged !== null) {
             this.addAkce(row, checks, zaznam, zdroj, code, json.md5);
         } else {
             checks.append('<span style="margin-left:60px;">&nbsp;</span>');
@@ -94,8 +108,26 @@ Results.prototype = {
 //        }
         return row;
     },
+    actionOriginal: function (id) {
+        var span = $('<button/>', {class: 'original', style: 'float:left;'});
+        var a = $('<a class="ui-icon ui-icon-extlink" >');
+        a.attr('title', 'nahlédnout originální metadata');
+        a.attr('href', 'javascript:vdk.showOriginal("' + id + '")');
+        a.text('original');
+        span.append(a);
+        return span;
+    },
+    actionCSV: function (csv) {
+        var span = $('<button/>', {class: 'original', style: 'float:left;'});
+        var a = $('<a class="ui-icon ui-icon-document" >');
+        a.attr('title', 'csv format');
+        a.attr('href', 'javascript:vdk.showCSV("'+csv+'")');
+        a.text('csv');
+        span.append(a);
+        return span;
+    },
     actionOffer: function (code, id, ex) {
-        var span = $('<span/>', {class: 'offerex', style: 'float:left;'});
+        var span = $('<button/>', {class: 'offerex', style: 'float:left;'});
         var a = $('<a class="ui-icon ui-icon-flag" >');
         a.attr('title', 'přidat do nabídky');
         a.attr('href', 'javascript:vdk.offers.addToActive("' + code + '", "' + id + '", "' + ex + '")');
@@ -104,7 +136,7 @@ Results.prototype = {
         return span;
     },
     actionAddDemand: function (code, id, ex) {
-        var span = $('<span/>', {class: 'demandexadd', style: 'float:left;'});
+        var span = $('<button/>', {class: 'demandexadd', style: 'float:left;'});
         var a = $('<a class="ui-icon ui-icon-cart" >');
         a.attr('title', 'přidat do poptávky');
         a.attr('href', 'javascript:vdk.demands.add("' + code + '", "' + id + '", "' + ex + '")');
@@ -132,7 +164,7 @@ Results.prototype = {
         return span;
     },
     actionRemoveDemand: function (code, id, ex) {
-        var span = $('<span/>', {class: 'demandexrem', style: 'float:left;'});
+        var span = $('<button/>', {class: 'demandexrem', style: 'float:left;'});
         var a = $('<a class="ui-icon ui-icon-cancel" >');
         a.attr('title', 'odstranit z poptávky');
         a.attr('href', 'javascript:vdk.demands.remove("' + code + '", "' + id + '", "' + ex + '")');
@@ -140,16 +172,14 @@ Results.prototype = {
         span.append(a);
         return span;
     },
-    addAkce: function (row, checks, id, zdroj, code, exemplar) {
-        if (vdk.zdrojUser[vdk.user] === zdroj) {
-            checks.append(this.actionOffer(code, id, exemplar));
+    addAkce: function (row, checks, zaznam, zdroj, code, exemplar) {
+        if (vdk.isLogged && vdk.zdrojUser[vdk.user.code] === zdroj) {
+            checks.append(this.actionOffer(code, zaznam, exemplar));
         }
-        checks.append(vdk.results.actionAddDemand(code, id, exemplar));
-        if(row.hasClass('isdemand')){
-            checks.append(this.actionRemoveDemand(code, id, exemplar));
-        }
-        if(row.hasClass('isoffer')){
-            checks.append(this.actionWant(code, id, exemplar));
+        if(vdk.demands.isUserDemand(code, zaznam, exemplar)){
+            checks.append(this.actionRemoveDemand(code, zaznam, exemplar));
+        }else{
+            checks.append(this.actionAddDemand(code, zaznam, exemplar));
         }
     },
     
@@ -179,6 +209,22 @@ Results.prototype = {
         });
         $(sel + ">span.go").click(function () {
             addRange(field, $(sel).data("from"), $(sel).data("to"));
+        });
+    },
+    zdrojNavButtons: function () {
+        $('#facets input.chci').button({
+            icons: {
+                primary: "ui-icon-check"
+            },
+            text: false
+        });
+        $('#facets input.nechci').button({
+            icons: {
+                primary: "ui-icon-cancel"
+            },
+            text: false
+        }).change(function () {
+            //saveWanted(id, identifier);
         });
     },
     checkDifferences: function () {
@@ -280,7 +326,7 @@ Results2.prototype = {
         row.append("<td>" + jsonElement(j, "cislo") + "</td>");
         row.append("<td>" + jsonElement(j, "rok") + "</td>");
         var checks = $('<td class="dofondu" style="width:95px;"></td>');
-        if (vdk.user !== null) {
+        if (vdk.isLogged !== null) {
             this.addAkce(row, checks, json.id, json.zdroj, code, j.md5);
         } else {
             checks.append('<span style="margin-left:60px;">&nbsp;</span>');
@@ -331,7 +377,7 @@ Results2.prototype = {
         return span;
     },
     addAkce: function (row, checks, id, zdroj, code, exemplar) {
-        if (vdk.zdrojUser[vdk.user] === zdroj) {
+        if (vdk.zdrojUser[vdk.user.code] === zdroj) {
             checks.append(this.actionOffer(code, id, exemplar));
         }
         checks.append(vdk.results.actionAddDemand(code, id, exemplar));
@@ -344,7 +390,7 @@ Results2.prototype = {
     },
     addActions: function (checks, id, zdroj, code, exemplar) {
 
-        if (vdk.zdrojUser[vdk.user] !== zdroj) {
+        if (vdk.isLogged && vdk.isLogged && vdk.zdrojUser[vdk.user.code] !== zdroj) {
             var id1 = id + exemplar + "_chci";
             var check1 = $('<input class="chci" type="radio" name="' + id + exemplar + '" id="' + id1 + '" />');
             var label1 = $('<label for="' + id1 + '">${chci}</label>');
@@ -375,7 +421,7 @@ Results2.prototype = {
             });
         }
 
-        if (vdk.zdrojUser[vdk.user] === zdroj) {
+        if (vdk.isLogged && vdk.zdrojUser[vdk.user.code] === zdroj) {
             var id3 = id + exemplar + "_nabidnu";
             var check3 = $('<input class="nabidnu" type="checkbox" name="' + id3 + '" id="' + id3 + '" />');
             var label3 = $('<label for="' + id3 + '">${nabidnu}</label>');
@@ -460,7 +506,7 @@ Results2.prototype = {
         $(".nabidka_ext").each(function () {
             var json = $(this).data('nabidka_ext');
             $.each(json, _.bind(function (key, val) {
-                if (val.knihovna === vdk.user) {
+                if (val.knihovna === vdk.user.code) {
                     this.renderUserOffer(val);
                 }
                 if(val.fields['245a']){
