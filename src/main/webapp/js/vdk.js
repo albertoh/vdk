@@ -79,7 +79,8 @@ function VDK() {
     
     this.isLogged = false;
     this.zdrojUser = {
-        'NKP': 'NKC-VDK',
+        'NKF': 'NKF',
+        'UKF': 'UKF',
         'MZK': 'MZK',
         'VKOL': 'VKOLOAI'};
     this.setUser = function(name){
@@ -114,6 +115,13 @@ function VDK() {
         });
 
     }
+    this.translate = function(key){
+        if(dict.hasOwnProperty(key)){
+            return dict[key];
+        }else{
+            return key;
+        }
+    };
     this.userOpts = function () {
         if (this.isLogged && this.zdrojUser[vdk.user.code]) {
             //Prihlaseny uzivatel je NKP, MZK nebo VKOL

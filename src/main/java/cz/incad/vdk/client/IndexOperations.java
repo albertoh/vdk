@@ -582,7 +582,7 @@ public class IndexOperations extends HttpServlet {
                         try {
                             Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
                             if (kn == null) {
-                                json.put("error", "Nejste prihlasen");
+                                json.put("error", "rights.notlogged");
                             } else {
                                 indexDemand(kn.getCode(),
                                         req.getParameter("docCode"),
@@ -604,7 +604,7 @@ public class IndexOperations extends HttpServlet {
                         try {
                             Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
                             if (kn == null) {
-                                json.put("error", "Nejste prihlasen");
+                                json.put("error", "rights.notlogged");
                             } else {
                                 removeDemand(kn.getCode(),
                                         req.getParameter("docCode"),
@@ -627,7 +627,7 @@ public class IndexOperations extends HttpServlet {
                         try {
                             Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
                             if (kn == null) {
-                                json.put("error", "Nejste prihlasen");
+                                json.put("error", "rights.notlogged");
                             } else {
                                 indexAllDemands(DbUtils.getConnection());
                             }
@@ -647,7 +647,7 @@ public class IndexOperations extends HttpServlet {
                         try {
                             Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
                             if (kn == null) {
-                                json.put("error", "Nejste prihlasen");
+                                json.put("error", "rights.notlogged");
                             } else {
                                 removeAllDemands();
                             }
@@ -667,10 +667,41 @@ public class IndexOperations extends HttpServlet {
                         try {
                             Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
                             if (kn == null) {
-                                json.put("error", "Nejste prihlasen");
+                                json.put("error", "rights.notlogged");
                             } else {
-                                Indexer indexer = new Indexer();
-                                indexer.reindex(DbUtils.getConnection());
+                                
+                                if (kn.hasRole(DbUtils.Roles.SOURCELIB)) {
+                                    Indexer indexer = new Indexer();
+                                    indexer.reindex(DbUtils.getConnection());
+                                } else {
+                                    json.put("error", "rights.insuficient");
+                                }
+                            }
+                        } catch (Exception ex) {
+                            LOGGER.log(Level.SEVERE, null, ex);
+                            json.put("error", ex.toString());
+                        }
+                        out.println(json.toString());
+                    }
+                },
+        REINDEXDOC {
+                    @Override
+                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                        resp.setContentType("application/json");
+                        PrintWriter out = resp.getWriter();
+                        JSONObject json = new JSONObject();
+                        try {
+                            Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                            if (kn == null) {
+                                json.put("error", "rights.notlogged");
+                            } else {
+                                
+                                if (kn.hasRole(DbUtils.Roles.SOURCELIB)) {
+                                    Indexer indexer = new Indexer();
+                                    indexer.reindexDoc(DbUtils.getConnection(), req.getParameter("code"));
+                                } else {
+                                    json.put("error", "rights.insuficient");
+                                }
                             }
                         } catch (Exception ex) {
                             LOGGER.log(Level.SEVERE, null, ex);

@@ -3,7 +3,6 @@ package cz.incad.vdk.client;
 import cz.incad.vdkcommon.DbUtils;
 import cz.incad.vdkcommon.Slouceni;
 import static cz.incad.vdkcommon.Slouceni.csvToMap;
-import static cz.incad.vdkcommon.Slouceni.toJSON;
 import cz.incad.vdkcommon.solr.IndexerQuery;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -39,7 +38,6 @@ import org.json.JSONObject;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVStrategy;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.json.JSONException;
@@ -210,7 +208,9 @@ public class DbOperations extends HttpServlet {
                 idW = rs.getInt(1);
             }
 
-            String sql = "insert into ZaznamOffer (uniqueCode, zaznam, exemplar, knihovna, ZaznamOffer_id, offer, fields) values (?,?,?,?,?,?,?)";
+            String sql = "insert into ZaznamOffer "
+                    + "(uniqueCode, zaznam, exemplar, knihovna, ZaznamOffer_id, offer, fields,update_timestamp) "
+                    + "values (?,?,?,?,?,?,?,sysdate)";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, docCode);
             ps.setString(2, zaznam_id);
@@ -226,7 +226,9 @@ public class DbOperations extends HttpServlet {
             ps.executeUpdate();
             return idW;
         } else {
-            String sql = "insert into ZaznamOffer (uniqueCode, zaznam, exemplar, knihovna,offer,fields) values (?,?,?,?,?,?)";
+            String sql = "insert into ZaznamOffer "
+                    + "(uniqueCode, zaznam, exemplar, knihovna,offer,fields,update_timestamp) "
+                    + "values (?,?,?,?,?,?,NOW())";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, docCode);
             ps.setString(2, zaznam_id);
@@ -281,7 +283,9 @@ public class DbOperations extends HttpServlet {
                 idW = rs.getInt(1);
             }
 
-            String sql = "insert into ZaznamDemand (uniqueCode, zaznam, exemplar, knihovna, ZaznamDemand_id, fields, update_timestamp) values (?,?,?,?,?,?,sysdate)";
+            String sql = "insert into ZaznamDemand "
+                    + "(uniqueCode, zaznam, exemplar, knihovna, ZaznamDemand_id, fields, update_timestamp) "
+                    + "values (?,?,?,?,?,?,sysdate)";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, docCode);
             ps.setString(2, zaznam_id);
@@ -295,7 +299,9 @@ public class DbOperations extends HttpServlet {
             ps.setString(6, line);
             ps.executeUpdate();
         } else {
-            String sql = "insert into ZaznamDemand (uniqueCode, zaznam, exemplar, knihovna,fields, update_timestamp) values (?,?,?,?,?,NOW())";
+            String sql = "insert into ZaznamDemand "
+                    + "(uniqueCode, zaznam, exemplar, knihovna,fields, update_timestamp) "
+                    + "values (?,?,?,?,?,NOW())";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, docCode);
             ps.setString(2, zaznam_id);
@@ -438,13 +444,17 @@ public class DbOperations extends HttpServlet {
         j.put("ZaznamOffer_id", ZaznamOffer_id);
         j.put("uniqueCode", uniqueCode);
         if (title == null) {
-            SolrQuery query = new SolrQuery("code:" + uniqueCode);
-            query.addField("title");
-            SolrDocumentList docs = IndexerQuery.query(query);
-            Iterator<SolrDocument> iter = docs.iterator();
-            if (iter.hasNext()) {
-                SolrDocument resultDoc = iter.next();
-                j.put("title", resultDoc.getFirstValue("title"));
+            if(fields.has("245a")){
+                j.put("title", fields.getString("245a"));
+            }else{
+                SolrQuery query = new SolrQuery("code:" + uniqueCode);
+                query.addField("title");
+                SolrDocumentList docs = IndexerQuery.query(query);
+                Iterator<SolrDocument> iter = docs.iterator();
+                if (iter.hasNext()) {
+                    SolrDocument resultDoc = iter.next();
+                    j.put("title", resultDoc.getFirstValue("title"));
+                }
             }
         } else {
             j.put("title", title);
@@ -509,16 +519,14 @@ public class DbOperations extends HttpServlet {
         j.put("fields", new JSONObject(rs.getString("fields")));
         j.put("date", sdf.format(date));
 
-        
-            SolrQuery query = new SolrQuery("code:" + rs.getString("uniqueCode"));
-            query.addField("title");
-            SolrDocumentList docs = IndexerQuery.query(query);
-            Iterator<SolrDocument> iter = docs.iterator();
-            if (iter.hasNext()) {
-                SolrDocument resultDoc = iter.next();
-                j.put("title", resultDoc.getFirstValue("title"));
-            }
-        
+        SolrQuery query = new SolrQuery("code:" + rs.getString("uniqueCode"));
+        query.addField("title");
+        SolrDocumentList docs = IndexerQuery.query(query);
+        Iterator<SolrDocument> iter = docs.iterator();
+        if (iter.hasNext()) {
+            SolrDocument resultDoc = iter.next();
+            j.put("title", resultDoc.getFirstValue("title"));
+        }
 
         return j;
     }
@@ -796,7 +804,9 @@ public class DbOperations extends HttpServlet {
                                     idPohled = rs.getInt(1);
                                 }
 
-                                String sql = "insert into POHLED (nazev, query, knihovna, isGlobal, pohled_id) values (?,?,?,?,?)";
+                                String sql = "insert into POHLED "
+                                        + "(nazev, query, knihovna, isGlobal, pohled_id, update_timestamp) "
+                                        + "values (?,?,?,?,?,sysdate)";
                                 PreparedStatement ps = conn.prepareStatement(sql);
                                 ps.setString(1, name);
                                 ps.setString(2, query);
@@ -806,7 +816,9 @@ public class DbOperations extends HttpServlet {
                                 ps.executeUpdate();
                             } else {
 
-                                String sql = "insert into POHLED (nazev, query, knihovna, isGlobal) values (?,?,?,?)";
+                                String sql = "insert into POHLED "
+                                        + "(nazev, query, knihovna, isGlobal,update_timestamp) "
+                                        + "values (?,?,?,?,NOW())";
                                 PreparedStatement ps = conn.prepareStatement(sql);
                                 ps.setString(1, name);
                                 ps.setString(2, query);
@@ -1248,26 +1260,22 @@ public class DbOperations extends HttpServlet {
 
                         Connection conn = null;
 
-                        Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
-                        int idKnihovna = 0;
-                        if (kn != null) {
-                            idKnihovna = kn.getId();
-                        } else {
-                            json.put("error", "Nejste prihlasen");
-                            return;
-                        }
-
                         try {
-                            conn = DbUtils.getConnection();
-                            Map<String, String> parts = new HashMap<String, String>();
-                            boolean exists = false;
-                            parts.put("comment", req.getParameter("comment"));
+                            Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                            if (kn != null) {
+                                conn = DbUtils.getConnection();
+                                Map<String, String> parts = new HashMap<String, String>();
+                                boolean exists = false;
+                                parts.put("comment", req.getParameter("comment"));
 
-                            insertToDemand(conn, idKnihovna, zaznam_id, exemplar_id, docCode, (new JSONObject(parts)).toString());
-                            if (exists) {
-                                json.put("message", "Poptavka pridana. Generovany kod: " + docCode + " uz existuje");
+                                insertToDemand(conn, kn.getId(), zaznam_id, exemplar_id, docCode, (new JSONObject(parts)).toString());
+                                if (exists) {
+                                    json.put("message", "Poptavka pridana. Generovany kod: " + docCode + " uz existuje");
+                                } else {
+                                    json.put("message", "Poptavka pridana. Kod: " + docCode);
+                                }
                             } else {
-                                json.put("message", "Poptavka pridana. Kod: " + docCode);
+                                json.put("error", "rights.notlogged");
                             }
                         } catch (Exception ex) {
                             LOGGER.log(Level.SEVERE, "add to demand failed", ex);
@@ -1291,19 +1299,20 @@ public class DbOperations extends HttpServlet {
 
                         Connection conn = null;
 
-                        Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
-                        int idKnihovna = 0;
-                        if (kn != null) {
-                            idKnihovna = kn.getId();
-                        } else {
-                            json.put("error", "Nejste prihlasen");
-                            return;
-                        }
                         try {
-                            int ZaznamOffer_id = Integer.parseInt(req.getParameter("ZaznamOffer_id"));
-                            conn = DbUtils.getConnection();
-                            removeZaznamOffer(conn, idKnihovna, ZaznamOffer_id);
-                            json.put("message", "Zaznam z nabidky odstranen");
+                            Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                            if (kn != null) {
+                                if (kn.hasRole(DbUtils.Roles.LIB)) {
+                                    int ZaznamOffer_id = Integer.parseInt(req.getParameter("ZaznamOffer_id"));
+                                    conn = DbUtils.getConnection();
+                                    removeZaznamOffer(conn, kn.getId(), ZaznamOffer_id);
+                                    json.put("message", "Zaznam z nabidky odstranen");
+                                } else {
+                                    json.put("error", "rights.insuficient");
+                                }
+                            } else {
+                                json.put("error", "rights.notlogged");
+                            }
                         } catch (Exception ex) {
                             LOGGER.log(Level.SEVERE, "remove offer failed", ex);
                             json.put("error", ex.toString());
@@ -1325,15 +1334,15 @@ public class DbOperations extends HttpServlet {
                         Connection conn = null;
                         try {
                             Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
-                            
+
                             if (kn != null) {
                                 conn = DbUtils.getConnection();
-                                removeDemand(conn, 
-                                        Integer.parseInt(req.getParameter("id")), 
+                                removeDemand(conn,
+                                        Integer.parseInt(req.getParameter("id")),
                                         kn.getId());
                                 json.put("message", "Poptavka odstranena");
                             } else {
-                                json.put("error", "Nejste prihlasen");
+                                json.put("error", "rights.notlogged");
                             }
                         } catch (Exception ex) {
                             LOGGER.log(Level.SEVERE, "remove demand failed", ex);
@@ -1490,3 +1499,4 @@ public class DbOperations extends HttpServlet {
         return "Short description";
     }// </editor-fold>
 }
+

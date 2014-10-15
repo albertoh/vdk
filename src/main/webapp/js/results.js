@@ -121,7 +121,9 @@ Results.prototype = {
         var span = $('<button/>', {class: 'original', style: 'float:left;'});
         var a = $('<a class="ui-icon ui-icon-document" >');
         a.attr('title', 'csv format');
-        a.attr('href', 'javascript:vdk.showCSV("'+csv+'")');
+        //a.attr('href', 'javascript:vdk.showCSV("'+csv+'")');
+        a.attr('href', 'javascript:void(0);');
+        a.click(function(){vdk.showCSV(csv)});
         a.text('csv');
         span.append(a);
         return span;

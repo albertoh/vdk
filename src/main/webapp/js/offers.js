@@ -129,7 +129,7 @@ Offers.prototype = {
         this.wanted = [];
         $.getJSON("db?action=GETWANTED", _.bind(function (json) {
             if(json.error){
-                alert(json.error);
+                alert(vdk.translate(json.error));
             }else{
                 this.wanted = json;
                 this.retrieveOffers();
@@ -336,12 +336,12 @@ Offers.prototype = {
     remove: function (code, id, ex) {
         $.getJSON("db", {action: "REMOVEOFFER", docCode: code, zaznam: id, ex: ex}, function (data) {
             if (data.error) {
-                alert("error ocurred: " + data.error);
+                alert("error ocurred: " + vdk.translate(data.error));
                 return;
             }
             $.getJSON("index", {action: "REMOVEOFFER", docCode: code, zaznam: id, ex: ex}, _.bind(function (resp) {
                 if (resp.error) {
-                    alert("error ocurred: " + resp.error);
+                    alert("error ocurred: " + vdk.translate(resp.error));
                 } else {
                     alert("Nabidka uspesne odstranena");
                 }
@@ -352,7 +352,7 @@ Offers.prototype = {
     removeDoc: function (ZaznamOffer_id) {
         $.getJSON("db", {action: "REMOVEZAZNAMOFFER", ZaznamOffer_id: ZaznamOffer_id}, function (data) {
             if (data.error) {
-                alert("error ocurred: " + data.error);
+                alert("error ocurred: " + vdk.translate(data.error));
             } else {
                 $("#useroffer li.offer[data-zaznamofferid~='" + ZaznamOffer_id + "']").remove();
                 ;
@@ -370,7 +370,7 @@ Offers.prototype = {
                     //indexujeme
                     $.getJSON("index", {action: "INDEXOFFER", id: id}, _.bind(function (resp) {
                         if (resp.error) {
-                            alert("error ocurred: " + resp.error);
+                            alert("error ocurred: " + vdk.translate(resp.error));
                         } else {
 
                             this.json[id].closed = true;
@@ -392,12 +392,12 @@ Offers.prototype = {
     wantDoc: function (zaznam_offer, wanted) {
         $.getJSON("db", {action: "WANTOFFER", zaznam_offer: zaznam_offer, wanted: wanted}, function (data) {
             if (data.error) {
-                alert("error ocurred: " + data.error);
+                alert("error ocurred: " + vdk.translate(data.error));
             } else {
                 //indexujeme
                     $.getJSON("index", {action: "INDEXWANTED", id: data.id}, _.bind(function (resp) {
                         if (resp.error) {
-                            alert("error ocurred: " + resp.error);
+                            alert("error ocurred: " + vdk.translate(resp.error));
                         } else {
                             $(".wanteddoc[data-wanted~='" + zaznam_offer + "']").remove();
                             alert("Reakce uspesne zpracovana");
@@ -416,7 +416,7 @@ Offers.prototype = {
             return;
         $.getJSON("db", {action: "ADDDOCTOOFFER", id: this.activeid, docCode: code, zaznam: zaznam, ex: ex, comment: comment}, function (data) {
             if (data.error) {
-                alert("error ocurred: " + data.error);
+                alert("error ocurred: " + vdk.translate(data.error));
             } else {
                 alert(data.message);
             }
@@ -431,7 +431,7 @@ Offers.prototype = {
             $("#addToOfferForm input[name~='id']").val(this.activeid);
             $.getJSON("db", $("#addToOfferForm").serialize(), function (data) {
                 if (data.error) {
-                    alert("error ocurred: " + data.error);
+                    alert("error ocurred: " + vdk.translate(data.error));
                 } else {
                     vdk.offers.renderDoc(data);
                     alert("Pridano!");
@@ -446,7 +446,7 @@ Offers.prototype = {
             $("#importOfferForm input[name~='id']").val(this.activeid);
             $.getJSON("db", $("#importOfferForm").serialize(), function (data) {
                 if (data.error) {
-                    alert("error ocurred: " + data.error);
+                    alert("error ocurred: " + vdk.translate(data.error));
                 } else {
                     vdk.offers.renderDoc(data);
                     alert("Pridano!");
@@ -545,7 +545,7 @@ this.renderUserOffer = function (val) {
                     //indexujeme
                     $.getJSON("index", {action: "INDEXOFFER", id: val.offerId}, function (resp) {
                         if (resp.error) {
-                            alert("error ocurred: " + resp.error);
+                            alert("error ocurred: " + vdk.translate(resp.error));
                         } else {
                             alert("Nabidka uspesne indexovana");
                         }

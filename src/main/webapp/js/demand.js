@@ -146,11 +146,11 @@ Demand.prototype = {
     remove: function (ZaznamDemand_id, docCode, zaznam, exemplar) {
         $.getJSON("db", {action: "REMOVEDEMAND", id: ZaznamDemand_id}, _.bind(function (data) {
             if (data.error) {
-                alert("error ocurred: " + data.error);
+                alert("error ocurred: " + vdk.translate(data.error));
             } else {
                 $.getJSON("index", {action: "REMOVEDEMAND", docCode:docCode, zaznam:zaznam, ex:exemplar}, _.bind(function (resp) {
                     if (resp.error) {
-                        alert("error ocurred: " + resp.error);
+                        alert("error ocurred: " + vdk.translate(resp.error));
                     } else {
                         $("#userdemands li.demand[data-zaznamdemandid~='" + ZaznamDemand_id + "']").remove();
                         delete this.json[(ZaznamDemand_id + "")];
@@ -167,12 +167,12 @@ Demand.prototype = {
         if(comment===null) return;
         $.getJSON("db", {action: "ADDTODEMAND", docCode: code, zaznam: id, ex: ex, comment: comment}, function (data) {
             if (data.error) {
-                alert("error ocurred: " + data.error);
+                alert("error ocurred: " + vdk.translate(data.error));
                 return;
             }
             $.getJSON("index", {action: "ADDDEMAND", docCode: code, zaznam: id, ex: ex}, _.bind(function (resp) {
                 if (resp.error) {
-                    alert("error ocurred: " + resp.error);
+                    alert("error ocurred: " + vdk.translate(resp.error));
                 } else {
                     alert("Poptavka uspesne indexovana");
                 }
@@ -187,7 +187,7 @@ Demand.prototype = {
                 //indexujeme
                 $.getJSON("index", {action: "INDEXDEMAND", id: id}, _.bind(function (resp) {
                     if (resp.error) {
-                        alert("error ocurred: " + resp.error);
+                        alert("error ocurred: " + vdk.translate(resp.error));
                     } else {
                         
                         this.json[id].closed = true;

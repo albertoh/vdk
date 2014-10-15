@@ -67,17 +67,15 @@ public class Search {
         try {
 
             String q = req.getParameter("q");
+            SolrQuery query = new SolrQuery();
             if (q == null || q.equals("")) {
                 q = "*:*";
-            } else {
-                q = URLEncoder.encode(q, "UTF-8");
+                query.setSort("_version_", SolrQuery.ORDER.desc);
             }
-
-            SolrQuery query = new SolrQuery(q);
+            query.setQuery(q);
             query.setFacet(true);
             query.setStart(getStart());
             query.setRows(getRows());
-            query.setSort("_version_", SolrQuery.ORDER.desc);
             
             if(LoggedController.isLogged(req)){
                 query.addFacetField(opts.getStrings("user_facets"));
@@ -165,6 +163,42 @@ public class Search {
             }
             hasFilters = true;
         }
+        
+        if(req.getParameter("title") != null && !req.getParameter("title").equals("")){
+            query.addFilterQuery("title:" + req.getParameter("title"));
+            hasFilters = true;
+        }
+        
+        if(req.getParameter("author") != null && !req.getParameter("author").equals("")){
+            query.addFilterQuery("author:" + req.getParameter("author"));
+            hasFilters = true;
+        }
+        
+        if(req.getParameter("rok") != null && !req.getParameter("rok").equals("")){
+            query.addFilterQuery("rokvydani:" + req.getParameter("rok"));
+            hasFilters = true;
+        }
+        
+        if(req.getParameter("isbn") != null && !req.getParameter("isbn").equals("")){
+            query.addFilterQuery("isbn:\"" + req.getParameter("isbn") + "\"");
+            hasFilters = true;
+        }
+        
+        if(req.getParameter("issn") != null && !req.getParameter("issn").equals("")){
+            query.addFilterQuery("issn:\"" + req.getParameter("issn") + "\"");
+            hasFilters = true;
+        }
+        
+        if(req.getParameter("ccnb") != null && !req.getParameter("ccnb").equals("")){
+            query.addFilterQuery("ccnb:\"" + req.getParameter("ccnb") + "\"");
+            hasFilters = true;
+        }
+        
+        if(req.getParameter("vydavatel") != null && !req.getParameter("vydavatel").equals("")){
+            query.addFilterQuery("vydavatel:" + req.getParameter("vydavatel"));
+            hasFilters = true;
+        }
+ 
     }
     
     public boolean getHasFilters(){

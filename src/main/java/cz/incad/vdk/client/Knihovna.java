@@ -1,10 +1,12 @@
 
 package cz.incad.vdk.client;
 
+import cz.incad.vdkcommon.DbUtils;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -21,7 +23,7 @@ public class Knihovna {
     private String code;
     private String nazev;
      private String heslo;
-     private String role;
+     private ArrayList<String> roles;
      private int priorita;
      private String email;
      private String telefon;
@@ -35,11 +37,22 @@ public class Knihovna {
         if (rs.next()) {
             this.id = rs.getInt("knihovna_id");
             this.nazev = rs.getString("nazev");
-            this.role = rs.getString("userrole");
+            this.roles = getRoles(conn, code);
             this.priorita = rs.getInt("priorita");
             this.telefon = rs.getString("telefon");
             this.email = rs.getString("email");
         }
+    }
+    
+    private ArrayList<String> getRoles(Connection conn, String code) throws SQLException{
+        ArrayList<String> r = new ArrayList<String>();
+        String sql = "select name from ROLE where code='" + code + "'";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ResultSet rs = ps.executeQuery();
+        while (rs.next()) {
+            r.add(rs.getString("name"));
+        }
+        return r;
     }
     
     private Connection getConnection() throws NamingException, SQLException {
@@ -55,7 +68,7 @@ public class Knihovna {
         j.put("name", nazev);
         j.put("code", code);
         j.put("priorita", priorita);
-        j.put("role", role);
+        j.put("roles", roles);
         j.put("telefon", telefon);
         j.put("email", email);
         return j;
@@ -104,17 +117,18 @@ public class Knihovna {
     }
 
     /**
-     * @return the role
+     * @return the roles
      */
-    public String getRole() {
-        return role;
+    public ArrayList<String> getRoles() {
+        return roles;
     }
-
-    /**
-     * @param role the role to set
-     */
-    public void setRole(String role) {
-        this.role = role;
+    
+    public boolean hasRole(DbUtils.Roles role){
+        return roles.contains(role.toString());
+    }
+    
+    public boolean isSourceLib(){
+        return hasRole(DbUtils.Roles.SOURCELIB);
     }
 
     /**

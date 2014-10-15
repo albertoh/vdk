@@ -206,7 +206,7 @@
         <xsl:choose>
         <xsl:when test="contains($zdroj, 'MZK')">img/icons/zdroj/mzk.gif</xsl:when>
         <xsl:when test="contains($zdroj, 'VKOL')">img/icons/zdroj/vkol.gif</xsl:when>
-        <xsl:when test="contains($zdroj, 'NKC')">img/icons/zdroj/nkp.gif</xsl:when>
+        <xsl:when test="contains($zdroj, 'UKF')">img/icons/zdroj/ukf.gif</xsl:when>
         <xsl:otherwise>img/icons/<xsl:value-of select="$zdroj"/>.gif</xsl:otherwise>
         </xsl:choose>
     </xsl:template>

@@ -350,11 +350,13 @@ function zdrojIcon(zdroj, isNKF) {
         return "img/icons/zdroj/mzk.gif";
     } else if (zdroj.indexOf("VKOL") !== -1) {
         return "img/icons/zdroj/vkol.gif";
-    } else if (zdroj.indexOf("NKC") !== -1) {
+    } else if (zdroj.indexOf("NKF") !== -1) {
+        return "img/icons/zdroj/nkf.gif";
+    } else if (zdroj.indexOf("UKF") !== -1) {
         if (isNKF) {
             return "img/icons/zdroj/nkf.gif";
         } else {
-            return "img/icons/zdroj/nkp.gif";
+            return "img/icons/zdroj/ukf.gif";
         }
     } else {
         return "img/icons/zdroj/" + zdroj + ".gif";

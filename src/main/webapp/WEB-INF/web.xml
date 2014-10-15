@@ -79,22 +79,13 @@
             <http-method>POST</http-method>
         </web-resource-collection>
         <auth-constraint>
-            <role-name>vdk-admin</role-name>
+            <role-name>sourcelib</role-name>
         </auth-constraint>
-        <user-data-constraint>
-            <!-- transport-guarantee can be CONFIDENTIAL, INTEGRAL, or NONE -->
-            <transport-guarantee>NONE</transport-guarantee>
-        </user-data-constraint>
-    </security-constraint>
-    <security-constraint>
-        <web-resource-collection>
-            <web-resource-name>Protected area</web-resource-name>
-            <url-pattern>/redirect.vm</url-pattern>
-            <http-method>GET</http-method>
-            <http-method>POST</http-method>
-        </web-resource-collection>
         <auth-constraint>
-            <role-name>vdk</role-name>
+            <role-name>lib</role-name>
+        </auth-constraint>
+        <auth-constraint>
+            <role-name>user</role-name>
         </auth-constraint>
         <user-data-constraint>
             <!-- transport-guarantee can be CONFIDENTIAL, INTEGRAL, or NONE -->
