@@ -41,6 +41,16 @@ public class LoggedController {
         return logControl.isLogged();
     }
     
+    
+    public static Knihovna knihovna(HttpServletRequest req) {
+        LoggedController logControl =  (LoggedController) req.getSession().getAttribute(LoggedController.LOG_CONTROL_KEY);
+        if(logControl.isLogged()){
+            return (Knihovna) req.getSession().getAttribute("knihovna");
+        }else{
+            return null;
+        }
+    }
+    
     public boolean isLogged() {
         return req.getSession() != null
                 && req.getRemoteUser() != null 

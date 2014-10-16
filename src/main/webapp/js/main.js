@@ -157,9 +157,17 @@ function removeQuery() {
     document.getElementById("searchForm").submit();
 }
 
-function addWanted(wants) {
+function addWanted() {
 
-    var input = '<input name="wanted" id="wanted" type="hidden" value="' + wants + '" />';
+    var input = '<input name="wanted" id="wanted" type="hidden" value="true" />';
+    $("#searchForm").append(input);
+    $("#offset").val("0");
+    document.getElementById("searchForm").submit();
+}
+
+function addNoWanted() {
+
+    var input = '<input name="nowanted" id="nowanted" type="hidden" value="true" />';
     $("#searchForm").append(input);
     $("#offset").val("0");
     document.getElementById("searchForm").submit();

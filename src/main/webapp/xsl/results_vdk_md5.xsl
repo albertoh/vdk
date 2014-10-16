@@ -65,26 +65,9 @@
                         </xsl:if>
                         <div class="docactions"></div>
                         <!--
-                        <button class="ui-icon-extlink" target="_view" style="float:left;">
-                            <xsl:attribute name="title">nahlédnout originální metadata</xsl:attribute>
-                            <xsl:attribute name="onclick">original?id=<xsl:value-of select="./arr[@name='id']/str" />&amp;path=<xsl:value-of select="./arr[@name='file']/str"/></xsl:attribute>view
-                        </button>
-                        <span class="offerdoc" style="float:left;display:none;">
-                            <a class="ui-icon ui-icon-flag" >
-                                <xsl:attribute name="title">přidat do nabídky</xsl:attribute>
-                                <xsl:attribute name="href">javascript:vdk.offers.addToActive('<xsl:value-of select="$code" />')</xsl:attribute>offer</a>
-                        </span>
-                        <span class="demanddoc" style="float:left;display:none;">
-                            <a class="ui-icon ui-icon-cart" >
-                                <xsl:attribute name="title">přidat do poptávky</xsl:attribute>
-                                <xsl:attribute name="href">javascript:vdk.addToDemand('<xsl:value-of select="$code" />')</xsl:attribute>demand</a>
-                        </span>
-                        <span style="float:left;" class="csv ui-icon ui-icon-document" >
-                                <xsl:attribute name="title">csv format</xsl:attribute>
-                                <xsl:attribute name="data-csv"><xsl:value-of select="./arr[@name='export']/str" /></xsl:attribute>
-                                <xsl:attribute name="onclick">javascript:vdk.showCSV(this)</xsl:attribute>csv
-                        </span>
-                        -->
+                        
+                        //Vypnuto kvuli pridani NKF do zdroje
+                        //Nutno zpracovat primo z db
                         <div class="diff ui-state-error" style="float:left;display:none;"><span class="ui-icon ui-icon-alert">has diff</span>
                         <div class="titles diffs">
                         <xsl:for-each select="./arr[@name='title']/str" >
@@ -105,22 +88,26 @@
                         
                         </div>
                         </div>
-                        <xsl:if test="not($numDocs = 0)"> (<xsl:value-of select="$numDocs" />&#160;<xsl:choose>
-                        <xsl:when test="$numDocs = 1">
-                            <xsl:value-of select="rb:getString($i18n,'results.collapsed.singular')"/>
-                        </xsl:when>
-                        <xsl:when test="$numDocs &lt; 5">
-                            <xsl:value-of select="rb:getString($i18n,'results.collapsed.plural_1')"/>
-                            
-                            &#160;<xsl:value-of select="rb:getString($i18n,'field.code_type')"/>&#160;
-                            <xsl:value-of select="./str[@name='code_type']" />
-                        </xsl:when>
-                        <xsl:when test="$numDocs &gt; 4">
-                            <xsl:value-of select="rb:getString($i18n,'results.collapsed.plural_2')"/>
-                            &#160;<xsl:value-of select="rb:getString($i18n,'field.code_type')"/>&#160;
-                            <xsl:value-of select="./str[@name='code_type']" />
-                        </xsl:when>
-                        </xsl:choose>)</xsl:if>
+                        -->
+                        <span>&#160;
+                        <xsl:if test="not($numDocs = 0)"> (<xsl:value-of select="$numDocs" />&#160;
+                            <xsl:choose>
+                                <xsl:when test="$numDocs = 1">
+                                    <xsl:value-of select="rb:getString($i18n,'results.collapsed.singular')"/>
+                                </xsl:when>
+                                <xsl:when test="$numDocs &lt; 5">
+                                    <xsl:value-of select="rb:getString($i18n,'results.collapsed.plural_1')"/>
+                                    &#160;<xsl:value-of select="rb:getString($i18n,'field.code_type')"/>&#160;
+                                    <xsl:value-of select="./str[@name='code_type']" />
+                                </xsl:when>
+                                <xsl:when test="$numDocs &gt; 4">
+                                    <xsl:value-of select="rb:getString($i18n,'results.collapsed.plural_2')"/>
+                                    &#160;<xsl:value-of select="rb:getString($i18n,'field.code_type')"/>&#160;
+                                    <xsl:value-of select="./str[@name='code_type']" />
+                                </xsl:when>
+                            </xsl:choose>)
+                        </xsl:if>
+                        </span>
                     </div>
                     <div class="title">
                         <xsl:value-of select="./arr[@name='title']/str" />
@@ -207,6 +194,7 @@
         <xsl:when test="contains($zdroj, 'MZK')">img/icons/zdroj/mzk.gif</xsl:when>
         <xsl:when test="contains($zdroj, 'VKOL')">img/icons/zdroj/vkol.gif</xsl:when>
         <xsl:when test="contains($zdroj, 'UKF')">img/icons/zdroj/ukf.gif</xsl:when>
+        <xsl:when test="contains($zdroj, 'NKF')">img/icons/zdroj/nkf.gif</xsl:when>
         <xsl:otherwise>img/icons/<xsl:value-of select="$zdroj"/>.gif</xsl:otherwise>
         </xsl:choose>
     </xsl:template>

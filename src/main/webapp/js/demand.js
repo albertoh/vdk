@@ -56,23 +56,23 @@ Demand.prototype = {
             }
         });
     },
-    isDemand: function(code, zaznam, exemplar){
+    isDemand: function (code, zaznam, exemplar) {
         var retVal = false;
         $.each(this.json, function (key, val) {
-            if(val.code === code && val.zaznam===zaznam && val.exemplar===exemplar){
+            if (val.code === code && val.zaznam === zaznam && val.exemplar === exemplar) {
                 retVal = true;
                 return;
             }
         });
         return retVal;
     },
-    isUserDemand: function(code, zaznam, exemplar){
+    isUserDemand: function (code, zaznam, exemplar) {
         var retVal = false;
         $.each(this.json, function (key, val) {
-            if(vdk.isLogged && val.code === code && 
-                    val.zaznam===zaznam && 
-                    val.exemplar===exemplar && 
-                    val.knihovna===vdk.user.code){
+            if (vdk.isLogged && val.code === code &&
+                    val.zaznam === zaznam &&
+                    val.exemplar === exemplar &&
+                    val.knihovna === vdk.user.code) {
                 retVal = true;
                 return;
             }
@@ -100,7 +100,7 @@ Demand.prototype = {
             });
             this.getUserDemands();
             this.loaded = true;
-            vdk.eventsHandler.trigger("demands",null);
+            vdk.eventsHandler.trigger("demands", null);
         }, this));
     },
     getUserDemands: function () {
@@ -112,6 +112,23 @@ Demand.prototype = {
             }
         }, this));
 
+    },
+    isOffer: function (doc, code, zaznam, exemplar, knihovna) {
+        $.getJSON('index', {action: 'ISOFFER', code: code, zaznam: zaznam, exemplar: exemplar}, _.bind(function (resp) {
+            if(resp.hasOwnProperty('error')){
+                alert("error ocurred: " + vdk.translate(resp.error));
+            }else{
+                doc.addClass("match");
+//                var iconButtons = [{
+//                        text: "Remove",
+//                        icon: "ui-icon-close",
+//                        click: function (e) {
+//                            vdk.demands.remove(val.zaznamdemand_id, val.code, val.zaznam, val.exemplar);
+//                        }
+//                    }];
+//                addButtons(iconButtons, doc);
+            }
+        }, this));
     },
     renderDoc: function (val) {
         var doc = $('<li/>', {class: 'demand', 'data-zaznamdemandid': val.zaznamdemand_id});
@@ -131,16 +148,14 @@ Demand.prototype = {
         }
         label.html(html);
         doc.append(label);
-        //if(!closed){
-            var iconButtons = [{
-                    text: "Remove",
-                    icon: "ui-icon-close",
-                    click: function (e) {
-                        vdk.demands.remove(val.zaznamdemand_id, val.code, val.zaznam, val.exemplar);
-                    }
-                }];
-            addButtons(iconButtons, doc);
-        //}
+        var iconButtons = [{
+                text: "Remove",
+                icon: "ui-icon-close",
+                click: function (e) {
+                    vdk.demands.remove(val.zaznamdemand_id, val.code, val.zaznam, val.exemplar);
+                }
+            }];
+        addButtons(iconButtons, doc);
         $('#userdemands>ul').append(doc);
     },
     remove: function (ZaznamDemand_id, docCode, zaznam, exemplar) {
@@ -148,7 +163,7 @@ Demand.prototype = {
             if (data.error) {
                 alert("error ocurred: " + vdk.translate(data.error));
             } else {
-                $.getJSON("index", {action: "REMOVEDEMAND", docCode:docCode, zaznam:zaznam, ex:exemplar}, _.bind(function (resp) {
+                $.getJSON("index", {action: "REMOVEDEMAND", docCode: docCode, zaznam: zaznam, ex: exemplar}, _.bind(function (resp) {
                     if (resp.error) {
                         alert("error ocurred: " + vdk.translate(resp.error));
                     } else {
@@ -157,14 +172,15 @@ Demand.prototype = {
                         alert(data.message);
                     }
                 }, this));
-                
+
             }
         }, this));
 
     },
     add: function (code, id, ex) {
         var comment = prompt("Poznamka", "");
-        if(comment===null) return;
+        if (comment === null)
+            return;
         $.getJSON("db", {action: "ADDTODEMAND", docCode: code, zaznam: id, ex: ex, comment: comment}, function (data) {
             if (data.error) {
                 alert("error ocurred: " + vdk.translate(data.error));
@@ -183,13 +199,13 @@ Demand.prototype = {
     close: function (id) {
         $.post("db", {action: "CLOSEDEMAND", id: id}, _.bind(function (resp) {
             if (resp.trim() === "1") {
-                
+
                 //indexujeme
                 $.getJSON("index", {action: "INDEXDEMAND", id: id}, _.bind(function (resp) {
                     if (resp.error) {
                         alert("error ocurred: " + vdk.translate(resp.error));
                     } else {
-                        
+
                         this.json[id].closed = true;
                         $("#userdemands li.demand").each(function () {
                             if ($(this).data("demand") === id) {

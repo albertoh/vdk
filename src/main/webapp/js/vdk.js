@@ -83,12 +83,16 @@ function VDK() {
         'UKF': 'UKF',
         'MZK': 'MZK',
         'VKOL': 'VKOLOAI'};
-    this.setUser = function(name){
+    this.setUser = function(){
         $.getJSON("user.vm", _.bind(function(data){
             this.user = data;
             this.isLogged = true;
         }, this));
         
+    };
+    this.changeLanguage = function(lang){
+        $("#searchForm").append('<input name="language" value="'+lang+'" type="hidden" />');
+        document.getElementById("searchForm").submit();
     };
     this.init = function () {
         this.demands = new Demand();
@@ -176,8 +180,16 @@ function VDK() {
         this.csv.val(csv);
         this.csvdialog.dialog({modal: true, width: 700});
     };
-}
-;
+    
+
+    this.filterOnlyMatches = function() {
+        var i = $("input.fq").length + 1;
+        var input = '<input type="hidden" name="onlyMatches" id="onlyMatches" class="fq" value="yes" />';
+        $("#searchForm").append(input);
+        $("#offset").val("0");
+        document.getElementById("searchForm").submit();
+    };
+};
 
 function LoginDialog() {
 

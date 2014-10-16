@@ -86,8 +86,12 @@ Results.prototype = {
         row.data("md5", json.md5);
         
         var icon = zdrojIcon(zdroj, json.isNKF);
+        var filePath = "";
+        if(json.hasOwnProperty("file")){
+            '&path=' + json.file;
+        }
         row.append('<td><img width="16" src="' + icon + '" title="' + zdroj + '"/>' +
-                '<a style="float:right;" class="ui-icon ui-icon-extlink" target="_view" href="original?id=' + zaznam + '&path=' + json.file + '">view</a></td>');
+                '<a style="float:right;" class="ui-icon ui-icon-extlink" target="_view" href="original?id=' + zaznam + filePath + '">view</a></td>');
         row.append("<td>" + jsonElement(json, "signatura") + "</td>");
         row.append("<td class=\"" + jsonElement(json, "status") + "\">" + jsonElement(json, "status", "status") + "</td>");
         row.append("<td>" + jsonElement(json, "dilchiKnih") + "</td>");
@@ -230,6 +234,9 @@ Results.prototype = {
         });
     },
     checkDifferences: function () {
+        //Vypnuto kvuli pridani NKF do zdroje
+        //Nutno zpracovat primo z db
+        return;
         $("li.res").each(function () {
             var res = $(this).attr('id');
             if ($(jq(res) + " input.numDocs").val() > 1) {

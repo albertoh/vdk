@@ -16,10 +16,12 @@
             <a href="redirect.vm$reqAddr">login</a>
         #end
      </div>
-    
-    <select style="display:none;" id="langSelector" onchange="K5.i18n.askForDictionary( $('#langSelector').val() )">
-        <option #if($i18n.language == 'cs')selected="selected" #end>cs</option>
-        <option #if($i18n.language == 'en')selected="selected" #end>en</option>
-    </select>
+        <div style="text-align:right;bottom: 2px;right:2px;position: absolute;">    
+        #if($i18n.language == 'cs')
+        <a href="javascript:vdk.changeLanguage('en')">en</a>
+        #else
+        <a href="javascript:vdk.changeLanguage('cs')">cs</a>
+        #end
+        </div>
     
 </div>

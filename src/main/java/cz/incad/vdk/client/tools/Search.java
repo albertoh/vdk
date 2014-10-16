@@ -140,11 +140,18 @@ public class Search {
             hasFilters = true;
         }
         
+        if(req.getParameter("onlyMatches") != null){
+            query.addFilterQuery("nabidka:[* TO *]");
+            query.addFilterQuery("poptavka:" + LoggedController.knihovna(req).getCode());
+            hasFilters = true;
+        }
+
+        
         if(req.getParameter("onlyOffers") != null){
             query.addFilterQuery("nabidka:[* TO *]");
             hasFilters = true;
         }
-
+        
         if (req.getParameterValues("offer") != null) {
             for (String offer : req.getParameterValues("offer")) {
                 query.addFilterQuery("nabidka:" + offer);
@@ -161,6 +168,16 @@ public class Search {
             for (String demand : req.getParameterValues("demand")) {
                 query.addFilterQuery("poptavka:" + demand);
             }
+            hasFilters = true;
+        }
+        
+        if(req.getParameter("wanted") != null){
+            query.addFilterQuery("chci:" + LoggedController.knihovna(req).getCode());
+            hasFilters = true;
+        }
+        
+        if(req.getParameter("nowanted") != null){
+            query.addFilterQuery("nechci:" + LoggedController.knihovna(req).getCode());
             hasFilters = true;
         }
         
