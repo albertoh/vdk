@@ -15,6 +15,7 @@
         <tool key="logControl" class="cz.incad.vdk.client.tools.LoggedControllerTool" />
         <tool key="xslt" class="cz.incad.vdk.client.tools.XSLTool" />
         <tool key="search" class="cz.incad.vdk.client.tools.Search" />
+        <tool key="report" class="cz.incad.vdk.client.tools.ReportTool" />
 <!--
         <tool class="cz.incad.kramerius.client.tools.CSSTool"
               bundles="res.css"

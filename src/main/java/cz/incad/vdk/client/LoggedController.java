@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Pavel Stastny
+ * Copyright (C) 2014 Alberto Hernandez
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,9 +16,7 @@
  */
 package cz.incad.vdk.client;
 
-import cz.incad.vdk.client.tools.*;
 import java.sql.SQLException;
-import java.util.Map;
 import javax.naming.NamingException;
 
 import javax.servlet.http.HttpServletRequest;

@@ -251,7 +251,7 @@ function Export() {
 
 Export.prototype = {
     open: function () {
-        var url = "csv/export.vm" + window.location.search + "&rows=10000";
+        var url = "csv/export.vm" + window.location.search + "&export=true";
         window.open(url, "export");
     }
 };

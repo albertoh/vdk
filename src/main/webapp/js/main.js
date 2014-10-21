@@ -404,6 +404,46 @@ Confirm.prototype = {
 };
 
 
+
+function PriceAndComment() {
+
+}
+
+PriceAndComment.prototype = {
+    open: function (f) {
+        if ($("#dialog-comment").length === 0) {
+            this.create();
+        } else {
+            $("#dialog-comment>div input").val('');
+        }
+        $("#dialog-comment").dialog({
+            resizable: false,
+            modal: true,
+            title: vdk.translate('common.addCommentDialog'),
+            buttons: {
+                "OK": function () {
+                    if (f)
+                        f.apply(null, [{comment:$("#cp_comment").val(), price:$("#cp_price").val()}]);
+                    $(this).dialog("close");
+                },
+                Cancel: function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+    },
+    create: function () {
+        var dialog = $('<div id="dialog-comment"><div>');
+        //div.attr('title', vdk.translate('common.addCommentDialog'));
+        var div = $('<div/>');
+        div.append('<div><label for="cp_price">price</label><input id="cp_price" name="price" type="text" /></div>');
+        div.append('<div><label for="cp_comment">comment</label><input id="cp_comment" name="comment" type="text" /></div>');
+        dialog.append(div);
+        $('body').append(dialog);
+    }
+};
+
+
 function addButtons(iconButtons, obj) {
 
     $.each(iconButtons, function (i, v) {

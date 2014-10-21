@@ -5,6 +5,7 @@ function Offers() {
 
 Offers.prototype = {
     init: function(){
+        this.importDialog = null;
         this.retrieve();
     },
     openForm: function () {
@@ -18,9 +19,16 @@ Offers.prototype = {
         });
     },
     openImportDialog: function () {
-        this.importDialog = $("<div/>", {title: dict['select.offerImport']});
-        $("body").append(this.importDialog);
-        this.importDialog.load("forms/import_offer.vm");
+        if(this.importDialog === null){
+            this.importDialog = $("<div/>", {title: dict['select.offerImport']});
+            $("body").append(this.importDialog);
+            this.importDialog.load("forms/import_offer.vm", _.bind(function () {
+                $("#importOfferFormId").val(this.activeid);
+            }, this));
+        }else{
+            $("#importOfferFormId").val(this.activeid);
+        }
+        
         this.importDialog.dialog({
             modal: true,
             width: 580,
@@ -54,6 +62,13 @@ Offers.prototype = {
                         click: function (e) {
                             vdk.offers.openImportDialog();
                         }
+                    },
+                    {
+                        text: "View report",
+                        icon: "ui-icon-note",
+                        click: function (e) {
+                            window.open("reports/offer.vm?id=" + vdk.offers.activeid, "report");
+                        }
                     }
                 ];
                 addButtons(bs, "#useroffer>div.buttons");
@@ -66,10 +81,10 @@ Offers.prototype = {
             height: 600,
             iconButtons: [
                 {
-                    text: "Search",
-                    icon: "ui-icon-search",
+                    text: "Refresh",
+                    icon: "ui-icon-refresh",
                     click: function (e) {
-                        $("#dialog").html("<p>Searching...</p>");
+                        vdk.offers.getActive();
                     }
                 },
                 {
@@ -159,21 +174,27 @@ Offers.prototype = {
             this.parseUser();            
             
             $(".nabidka>div").each(function () {
-                var offerid = $(this).data("offer");
-                if (json.hasOwnProperty(offerid)) {
-                    var val = json[offerid];
+                var offerId = $(this).data("offer");
+                if (json.hasOwnProperty(offerId)) {
+                    var val = json[offerId];
                     var expired = val.expired ? " expired" : "";
-                    var text = '<label class="' + expired + '">' + val.nazev + " (" + val.knihovna + ")</label>";
-                    $(this).html(text);
-
-                    var zaznam = $(this).data("zaznam");
-                    if (zaznam === "none") {
-                        //je to nabidka zvenku, nemame zaznam.
-                    } else {
-                        $("tr[data-zaznam~='" + zaznam + "']");
-                    }
-                    var offerId = $(this).data("offer");
+                    var label = $('<label class="' + expired + '">');
+                    var text = val.knihovna + ' in offer ' + val.nazev;
                     var zaznamOffer = $(this).data("offer_ext")[offerId].zaznamOffer;
+
+                    if ($(this).data("zaznam")) {
+                        var zaznam = $(this).data("zaznam");
+                        $("tr[data-zaznam~='" + zaznam + "']");
+                    } else {
+                        //je to nabidka zvenku, nemame zaznam.
+                        
+                    }
+                    // pridame cenu jestli ma
+                    if($(this).data("offer_ext")[offerId].fields.hasOwnProperty('cena'))
+                        text += ' (' + $(this).data("offer_ext")[offerId].fields.cena + ')';
+                    label.text(text);
+                    $(this).append(label);
+                    
                     
                     if(vdk.isLogged && vdk.user.code !== val.knihovna){
                         var wanted = vdk.offers.isWanted(zaznamOffer, vdk.user.code);
@@ -275,11 +296,13 @@ Offers.prototype = {
             label.html(val.title + " (" + val.fields.comment + ")");
         } else {
             var html = "";
-            if (val.fields.hasOwnProperty('245a')) {
-                html += val.fields['245a'];
-            }
-            if (val.fields.hasOwnProperty('comment')) {
-                html += val.fields['comment'];
+            if(val.hasOwnProperty('fields')){
+                if (val.fields.hasOwnProperty('245a')) {
+                    html += val.fields['245a'];
+                }
+                if (val.fields.hasOwnProperty('comment')) {
+                    html += val.fields['comment'];
+                }
             }
             label.html(html);
         }
@@ -294,9 +317,11 @@ Offers.prototype = {
                 }];
             addButtons(iconButtons, doc);
         }
-        $.each(val.wanted, function(key, wanted){
-            doc.append('<span class="'+ (wanted.wanted ? '':'no') +'wanted">' + wanted.knihovna + "</span>" );
-        });
+        if(val.hasOwnProperty('wanted')){
+            $.each(val.wanted, function(key, wanted){
+                doc.append('<span class="'+ (wanted.wanted ? '':'no') +'wanted">' + wanted.knihovna + "</span>" );
+            });
+        }
         $('#useroffer>ul').append(doc);
     },
     getActive: function () {
@@ -411,16 +436,28 @@ Offers.prototype = {
 
     },
     addToActive: function (code, zaznam, ex) {
-        var comment = prompt("Poznamka", "");
-        if (comment === null)
-            return;
-        $.getJSON("db", {action: "ADDDOCTOOFFER", id: this.activeid, docCode: code, zaznam: zaznam, ex: ex, comment: comment}, function (data) {
-            if (data.error) {
-                alert("error ocurred: " + vdk.translate(data.error));
-            } else {
-                alert(data.message);
+        new PriceAndComment().open(function(data){
+            var opts = {
+                action: "ADDDOCTOOFFER", 
+                id: vdk.offers.activeid, 
+                docCode: code, 
+                comment: data.comment, 
+                cena: data.price
+            };
+            if(zaznam){
+                opts.zaznam = zaznam;
             }
+            if(ex){
+                opts.exemplar = ex;
+            }
+            $.getJSON("db", opts, function (data) {
+                if (data.error) {
+                    alert("error ocurred: " + vdk.translate(data.error));
+                } else {
+                    alert(data.message);
+                }
 
+            });
         });
 
     },
@@ -443,7 +480,7 @@ Offers.prototype = {
         if (this.activeid === -1 || this.activeid === null) {
             alert("Neni zadna nabidka activni");
         } else {
-            $("#importOfferForm input[name~='id']").val(this.activeid);
+            $("#importOfferFormId").val(this.activeid);
             $.getJSON("db", $("#importOfferForm").serialize(), function (data) {
                 if (data.error) {
                     alert("error ocurred: " + vdk.translate(data.error));

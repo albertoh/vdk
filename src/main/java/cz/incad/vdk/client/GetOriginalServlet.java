@@ -10,6 +10,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.io.StringReader;
 import java.io.StringWriter;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
@@ -56,31 +58,32 @@ public class GetOriginalServlet extends HttpServlet {
             String signatura = request.getParameter("signatura");
             String carkod = request.getParameter("carkod");
             if (signatura != null && !signatura.equals("")) {
-                
+
                 ArrayList<String> fq = new ArrayList<String>();
                 String fqp = request.getParameter("format");
-                if(fqp!= null && !"".equals(fqp)){
+                if (fqp != null && !"".equals(fqp)) {
                     fq.add("format:" + fqp);
                 }
                 String zdroj = request.getParameter("zdroj");
-                if(zdroj!= null && !"".equals(zdroj)){
+                if (zdroj != null && !"".equals(zdroj)) {
                     fq.add("zdroj:\"" + zdroj + "\"");
                 }
                 byIndexField("signatura", signatura, out, (String[]) fq.toArray(new String[fq.size()]), zdroj);
             } else if (carkod != null && !carkod.equals("")) {
-                
+
                 ArrayList<String> fq = new ArrayList<String>();
                 String fqp = request.getParameter("format");
-                if(fqp!= null && !"".equals(fqp)){
+                if (fqp != null && !"".equals(fqp)) {
                     fq.add("format:" + fqp);
                 }
                 String zdroj = request.getParameter("zdroj");
-                if(zdroj!= null && !"".equals(zdroj)){
+                if (zdroj != null && !"".equals(zdroj)) {
                     fq.add("zdroj:\"" + zdroj + "\"");
                 }
                 byIndexField("carkod", carkod, out, (String[]) fq.toArray(new String[fq.size()]), zdroj);
             } else if (path == null || path.equals("")) {
-                fromDb(id, out);
+                response.setContentType("text/html;charset=UTF-8");
+                fromDb(id, out, true);
             } else {
                 Transformer transformer;
 
@@ -107,41 +110,55 @@ public class GetOriginalServlet extends HttpServlet {
         }
     }
 
-    private void fromDb(String id, PrintWriter out) throws SQLException {
-        out.println(DbUtils.getXml(id));
+    private void fromDb(String id, PrintWriter out, boolean html) throws SQLException, TransformerException {
+        if (html) {
+            Transformer transformer;
+
+            TransformerFactory tfactory = TransformerFactory.newInstance();
+
+            InputStream stylesheet = this.getServletContext().getResourceAsStream("/WEB-INF/marc.xsl");
+            StreamSource xslt = new StreamSource(stylesheet);
+            transformer = tfactory.newTransformer(xslt);
+            StreamResult destStream = new StreamResult(new StringWriter());
+            transformer.transform(new StreamSource(new StringReader(DbUtils.getXml(id))), destStream);
+            StringWriter sw = (StringWriter) destStream.getWriter();
+            out.print(sw.toString());
+        } else {
+            out.println(DbUtils.getXml(id));
+        }
     }
 
-    private void byIndexField(String field, String value, PrintWriter out, String[] fq, String zdroj) throws SQLException, SolrServerException, IOException {
+    private void byIndexField(String field, String value, PrintWriter out, String[] fq, String zdroj) throws SQLException, SolrServerException, IOException, TransformerException {
         LOGGER.log(Level.INFO, "getting by " + field);
         SolrDocumentList docs = IndexerQuery.queryOneField(field + ":\"" + value + "\"", new String[]{"id", "zdroj"}, fq);
-        
+
         out.println("<recordList>");
         Iterator<SolrDocument> iter = docs.iterator();
         while (iter.hasNext()) {
-            
+
             SolrDocument resultDoc = iter.next();
             Collection<Object> vals = resultDoc.getFieldValues("zdroj");
-            
+
             Iterator<Object> it = vals.iterator();
             int i = 0;
             boolean inZdroj = false;
-            while(it.hasNext()){
+            while (it.hasNext()) {
                 String zd = (String) it.next();
-                if(zd.equals(zdroj)){
+                if (zd.equals(zdroj)) {
                     inZdroj = true;
                     break;
                 }
                 i++;
             }
-            if(inZdroj){
+            if (inZdroj) {
                 Collection<Object> ids = resultDoc.getFieldValues("id");
                 String id = (String) ids.toArray()[i];
                 LOGGER.log(Level.INFO, "getting xml for id: " + id);
-                fromDb(id, out);
+                fromDb(id, out, false);
             }
-        } 
+        }
         out.println("</recordList>");
-        
+
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

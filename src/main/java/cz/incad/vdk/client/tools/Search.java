@@ -76,27 +76,27 @@ public class Search {
             query.setFacet(true);
             query.setStart(getStart());
             query.setRows(getRows());
-            
-            if(LoggedController.isLogged(req)){
+
+            if (LoggedController.isLogged(req)) {
                 query.addFacetField(opts.getStrings("user_facets"));
             }
             query.addFacetField(opts.getStrings("facets"));
-            
+
             query.setFacetMinCount(1);
-            
-            JSONObject others  = opts.getJSONObject("otherParams");
+
+            JSONObject others = opts.getJSONObject("otherParams");
             Iterator keys = others.keys();
-            while (keys.hasNext() ) {
+            while (keys.hasNext()) {
                 String key = (String) keys.next();
                 Object val = others.get(key);
-                if(val instanceof Integer){
-                    query.set(key, (Integer)val);
-                }else if(val instanceof String){
-                    query.set(key, (String)val);
-                }else if(val instanceof Boolean){
-                    query.set(key, (Boolean)val);
+                if (val instanceof Integer) {
+                    query.set(key, (Integer) val);
+                } else if (val instanceof String) {
+                    query.set(key, (String) val);
+                } else if (val instanceof Boolean) {
+                    query.set(key, (Boolean) val);
                 }
-                
+
             }
             addFilters(query);
 
@@ -108,11 +108,13 @@ public class Search {
     }
 
     private void addFilters(SolrQuery query) {
+        //Dame pryc periodika
+        query.addFilterQuery("-leader_format:s");
         if (req.getParameterValues("zdroj") != null) {
             for (String zdroj : req.getParameterValues("zdroj")) {
-                if(zdroj.startsWith("-")){
+                if (zdroj.startsWith("-")) {
                     query.addFilterQuery("-zdroj:\"" + zdroj.substring(1) + "\"");
-                }else{
+                } else {
                     query.addFilterQuery("zdroj:\"" + zdroj + "\"");
                 }
             }
@@ -139,86 +141,85 @@ public class Search {
             }
             hasFilters = true;
         }
-        
-        if(req.getParameter("onlyMatches") != null){
+
+        if (req.getParameter("onlyMatches") != null) {
             query.addFilterQuery("nabidka:[* TO *]");
             query.addFilterQuery("poptavka:" + LoggedController.knihovna(req).getCode());
             hasFilters = true;
         }
 
-        
-        if(req.getParameter("onlyOffers") != null){
+        if (req.getParameter("onlyOffers") != null) {
             query.addFilterQuery("nabidka:[* TO *]");
             hasFilters = true;
         }
-        
+
         if (req.getParameterValues("offer") != null) {
             for (String offer : req.getParameterValues("offer")) {
                 query.addFilterQuery("nabidka:" + offer);
             }
             hasFilters = true;
         }
-        
-        if(req.getParameter("onlyDemands") != null){
+
+        if (req.getParameter("onlyDemands") != null) {
             query.addFilterQuery("poptavka:[* TO *]");
             hasFilters = true;
         }
-        
+
         if (req.getParameterValues("demand") != null) {
             for (String demand : req.getParameterValues("demand")) {
                 query.addFilterQuery("poptavka:" + demand);
             }
             hasFilters = true;
         }
-        
-        if(req.getParameter("wanted") != null){
+
+        if (req.getParameter("wanted") != null) {
             query.addFilterQuery("chci:" + LoggedController.knihovna(req).getCode());
             hasFilters = true;
         }
-        
-        if(req.getParameter("nowanted") != null){
+
+        if (req.getParameter("nowanted") != null) {
             query.addFilterQuery("nechci:" + LoggedController.knihovna(req).getCode());
             hasFilters = true;
         }
-        
-        if(req.getParameter("title") != null && !req.getParameter("title").equals("")){
+
+        if (req.getParameter("title") != null && !req.getParameter("title").equals("")) {
             query.addFilterQuery("title:" + req.getParameter("title"));
             hasFilters = true;
         }
-        
-        if(req.getParameter("author") != null && !req.getParameter("author").equals("")){
+
+        if (req.getParameter("author") != null && !req.getParameter("author").equals("")) {
             query.addFilterQuery("author:" + req.getParameter("author"));
             hasFilters = true;
         }
-        
-        if(req.getParameter("rok") != null && !req.getParameter("rok").equals("")){
+
+        if (req.getParameter("rok") != null && !req.getParameter("rok").equals("")) {
             query.addFilterQuery("rokvydani:" + req.getParameter("rok"));
             hasFilters = true;
         }
-        
-        if(req.getParameter("isbn") != null && !req.getParameter("isbn").equals("")){
+
+        if (req.getParameter("isbn") != null && !req.getParameter("isbn").equals("")) {
             query.addFilterQuery("isbn:\"" + req.getParameter("isbn") + "\"");
             hasFilters = true;
         }
-        
-        if(req.getParameter("issn") != null && !req.getParameter("issn").equals("")){
+
+        if (req.getParameter("issn") != null && !req.getParameter("issn").equals("")) {
             query.addFilterQuery("issn:\"" + req.getParameter("issn") + "\"");
             hasFilters = true;
         }
-        
-        if(req.getParameter("ccnb") != null && !req.getParameter("ccnb").equals("")){
+
+        if (req.getParameter("ccnb") != null && !req.getParameter("ccnb").equals("")) {
             query.addFilterQuery("ccnb:\"" + req.getParameter("ccnb") + "\"");
             hasFilters = true;
         }
-        
-        if(req.getParameter("vydavatel") != null && !req.getParameter("vydavatel").equals("")){
+
+        if (req.getParameter("vydavatel") != null && !req.getParameter("vydavatel").equals("")) {
             query.addFilterQuery("vydavatel:" + req.getParameter("vydavatel"));
             hasFilters = true;
         }
- 
+
     }
-    
-    public boolean getHasFilters(){
+
+    public boolean getHasFilters() {
         return hasFilters;
     }
 
@@ -231,11 +232,15 @@ public class Search {
     }
 
     private int getRows() throws UnsupportedEncodingException {
-        String rows = req.getParameter("hits");
-        if (rows == null || rows.equals("")) {
-            rows = "40";
+        if (req.getParameter("export") != null) {
+            return 1000;
+        } else {
+            String rows = req.getParameter("hits");
+            if (rows == null || rows.equals("")) {
+                rows = "40";
+            }
+            return Integer.parseInt(rows);
         }
-        return Integer.parseInt(rows);
     }
 
 }

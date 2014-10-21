@@ -63,7 +63,6 @@ public class XSLTool {
             }
             transformer.transform(new StreamSource(new StringReader(source)), destStream);
             StringWriter sw = (StringWriter) destStream.getWriter();
-            //logger.info(sw.toString());
             return sw.toString();
         }catch (TransformerConfigurationException ex2) {
             Logger.getLogger(XSLTool.class.getName()).log(Level.SEVERE, null, ex2);

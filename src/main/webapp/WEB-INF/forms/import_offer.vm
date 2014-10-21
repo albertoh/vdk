@@ -1,7 +1,7 @@
 <div>Import</div>
 
 <form name="importOfferForm" id="importOfferForm" action="db?action=IMPORTTOOFFER" method="POST" enctype="multipart/mixed" >
-    <input name="id" value="" type="hidden" />
+    <input name="id" id="importOfferFormId" value="" type="hidden" />
     <div><label for="offerFile">$params.nabidka.file:</label><input type="file" name="offerFile" id="offerFile" /></div>
     
     <button id="btnImport" type="submit" >Přídat soubor do nabídky</button>
@@ -18,6 +18,12 @@ $(document).ready(function(){
     
     var options = { 
     beforeSend: function(){
+       if (vdk.offers.activeid > 0) {
+            $("#importOfferFormId").val(vdk.offers.activeid);
+        } else {
+            alert("Neni zadna nabidka activni");
+            return false;
+        }
         $("#progress").show();
         //clear everything
         $("#bar").width('0%');
@@ -25,11 +31,12 @@ $(document).ready(function(){
         $("#percent").html("0%");
     },
     beforeSubmit: function(){
-       if (vdk.offers.activeid === -1 || vdk.offers.activeid === null) {
+       if (vdk.offers.activeid > 0) {
+            $("#importOfferFormId").val(vdk.offers.activeid);
+            return true;
+        } else {
             alert("Neni zadna nabidka activni");
             return false;
-        } else {
-            $("#importOfferForm input[name~='id']").val(vdk.offers.activeid);
         }
     },
     uploadProgress: function(event, position, total, percentComplete){

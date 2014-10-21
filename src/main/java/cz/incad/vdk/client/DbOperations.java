@@ -1,6 +1,8 @@
 package cz.incad.vdk.client;
 
+import au.com.bytecode.opencsv.CSVReader;
 import cz.incad.vdkcommon.DbUtils;
+import cz.incad.vdkcommon.Options;
 import cz.incad.vdkcommon.Slouceni;
 import static cz.incad.vdkcommon.Slouceni.csvToMap;
 import cz.incad.vdkcommon.solr.IndexerQuery;
@@ -47,7 +49,6 @@ public class DbOperations extends HttpServlet {
     public static final Logger LOGGER = Logger.getLogger(DbOperations.class.getName());
     public static final String ACTION_NAME = "action";
     static SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy");
-    static final int EXPIRATION_DAYS = 35;
 
     /**
      * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
@@ -167,7 +168,7 @@ public class DbOperations extends HttpServlet {
 
     public static int insertWantOffer(Connection conn, int zaznam_offer, int knihovna, boolean wanted) throws Exception {
 
-        if (isOracle(conn)) {
+        if (DbUtils.isOracle(conn)) {
             String sql1 = "select Wanted_ID_SQ.nextval from dual";
             ResultSet rs = conn.prepareStatement(sql1).executeQuery();
             int newid = 1;
@@ -175,7 +176,7 @@ public class DbOperations extends HttpServlet {
                 newid = rs.getInt(1);
             }
 
-            String sql = "insert into WANTED (ZaznamOffer, wants, knihovna, wanted_id, update_timestamp) values (?,?,?,?,sysdate)";
+            String sql = "insert into WANTED (ZaznamOffer, knihovna, wants, wanted_id, update_timestamp) values (?,?,?,?,sysdate)";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setInt(1, zaznam_offer);
             ps.setInt(2, knihovna);
@@ -198,9 +199,15 @@ public class DbOperations extends HttpServlet {
         }
     }
 
-    public static int insertNabidka(Connection conn, int idKnihovna, String zaznam_id, String exemplar_id, String docCode, int idOffer, String line) throws Exception {
+    public static int insertNabidka(Connection conn,
+            int idKnihovna,
+            String zaznam_id,
+            String exemplar_id,
+            String docCode,
+            int idOffer,
+            String line) throws SQLException {
 
-        if (isOracle(conn)) {
+        if (DbUtils.isOracle(conn)) {
             String sql1 = "select ZaznamOffer_ID_SQ.nextval from dual";
             ResultSet rs = conn.prepareStatement(sql1).executeQuery();
             int idW = 1;
@@ -213,12 +220,8 @@ public class DbOperations extends HttpServlet {
                     + "values (?,?,?,?,?,?,?,sysdate)";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, docCode);
-            ps.setString(2, zaznam_id);
-            if (exemplar_id == null) {
-                ps.setNull(3, Types.VARCHAR);
-            } else {
-                ps.setString(3, exemplar_id);
-            }
+            ps.setString(2, zaznam_id == null ? "" : zaznam_id);
+            ps.setString(3, exemplar_id == null ? "" : exemplar_id);
             ps.setInt(4, idKnihovna);
             ps.setInt(5, idW);
             ps.setInt(6, idOffer);
@@ -231,12 +234,8 @@ public class DbOperations extends HttpServlet {
                     + "values (?,?,?,?,?,?,NOW())";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, docCode);
-            ps.setString(2, zaznam_id);
-            if (exemplar_id == null) {
-                ps.setNull(3, Types.VARCHAR);
-            } else {
-                ps.setString(3, exemplar_id);
-            }
+            ps.setString(2, zaznam_id == null ? "" : zaznam_id);
+            ps.setString(3, exemplar_id == null ? "" : exemplar_id);
             ps.setInt(4, idKnihovna);
             ps.setInt(5, idOffer);
             ps.setString(6, line);
@@ -275,7 +274,7 @@ public class DbOperations extends HttpServlet {
             String docCode,
             String line) throws Exception {
 
-        if (isOracle(conn)) {
+        if (DbUtils.isOracle(conn)) {
             String sql1 = "select ZaznamDemand_ID_SQ.nextval from dual";
             ResultSet rs = conn.prepareStatement(sql1).executeQuery();
             int idW = 1;
@@ -337,15 +336,18 @@ public class DbOperations extends HttpServlet {
 
     public static void processStream(Connection conn, InputStream is, int idKnihovna, int idOffer, JSONObject json) throws Exception {
         try {
-            CSVStrategy strategy = new CSVStrategy('\t', '\"', '#');
-            CSVParser parser = new CSVParser(new InputStreamReader(is), strategy);
-            int lines = parser.getLineNumber();
-            String[] parts = parser.getLine();
+            CSVReader parser = new CSVReader(new InputStreamReader(is), '\t', '\"', false);
+            String[] parts = parser.readNext();
+            int lines = 0;
             while (parts != null) {
-                String docCode;
-                docCode = Slouceni.generateMD5(parts);
-                insertNabidka(conn, idKnihovna, null, null, docCode, idOffer, Slouceni.toJSON(csvToMap(parts)).toString());
-                parts = parser.getLine();
+                if(!(parts.length == 1 && parts[0].equals(""))){
+                    String docCode;
+                    Map map = csvToMap(parts);
+                    docCode = Slouceni.generateMD5(map);
+                    insertNabidka(conn, idKnihovna, null, null, docCode, idOffer, Slouceni.toJSON(map, docCode).toString());
+                    lines++;
+                }
+                parts = parser.readNext();
             }
             json.put("message", "imported " + lines + " lines to offer: " + idOffer);
         } catch (Exception ex) {
@@ -362,6 +364,7 @@ public class DbOperations extends HttpServlet {
             j.put("zaznamoffer", rs.getInt("zaznamoffer"));
             j.put("wanted", rs.getBoolean("wants"));
             j.put("knihovna", rs.getString("code"));
+            j.put("priorita", rs.getString("priorita"));
             j.put("date", rs.getString("update_timestamp"));
             ja.put(j);
         }
@@ -369,9 +372,10 @@ public class DbOperations extends HttpServlet {
     }
 
     private static JSONArray getWantedById(Connection conn, int ZaznamOffer_id) throws Exception {
-        String sql = "select w.zaznamoffer, w.wanted_id, w.wants, w.update_timestamp, k.code from WANTED w, KNIHOVNA k, ZAZNAMOFFER zo "
+        String sql = "select w.zaznamoffer, w.wanted_id, w.wants, w.update_timestamp, k.code, k.priorita "
+                + "from WANTED w, KNIHOVNA k, ZAZNAMOFFER zo "
                 + "where zo.ZaznamOffer_id=? "
-                + "and w.knihovna=k.knihovna_id and zo.zaznamoffer_id=w.zaznamoffer";
+                + "and w.knihovna=k.knihovna_id and zo.zaznamoffer_id=w.zaznamoffer order by k.priorita, zo.update_timestamp";
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setInt(1, ZaznamOffer_id);
 
@@ -382,8 +386,9 @@ public class DbOperations extends HttpServlet {
     }
 
     private static JSONArray getWanted(Connection conn) throws Exception {
-        String sql = "select w.zaznamoffer, w.wanted_id, w.wants, w.update_timestamp, k.code from WANTED w, KNIHOVNA k, ZAZNAMOFFER zo "
-                + "where w.knihovna=k.knihovna_id and zo.zaznamoffer_id=w.zaznamoffer";
+        String sql = "select w.zaznamoffer, w.wanted_id, w.wants, w.update_timestamp, k.code, k.priorita "
+                + "from WANTED w, KNIHOVNA k, ZAZNAMOFFER zo "
+                + "where w.knihovna=k.knihovna_id and zo.zaznamoffer_id=w.zaznamoffer order by k.priorita, zo.update_timestamp";
         PreparedStatement ps = conn.prepareStatement(sql);
 
         ResultSet rs = ps.executeQuery();
@@ -395,7 +400,7 @@ public class DbOperations extends HttpServlet {
     private static JSONArray getLibraryWantedByCode(Connection conn, String docCode, int idKnihovna) throws Exception {
         String sql = "select w.zaznamoffer, w.wanted_id, w.wants, w.update_timestamp, k.code from WANTED w, KNIHOVNA k, ZAZNAMOFFER zo "
                 + "where zo.uniquecode=? and w.knihovna=? "
-                + "and w.knihovna=k.knihovna_id and zo.zaznamoffer_id=w.zaznamoffer";
+                + "and w.knihovna=k.knihovna_id and zo.zaznamoffer_id=w.zaznamoffer order by zo.update_timestamp";
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setString(1, docCode);
         ps.setInt(2, idKnihovna);
@@ -409,7 +414,7 @@ public class DbOperations extends HttpServlet {
     private static JSONArray getLibraryWanted(Connection conn, int idKnihovna) throws Exception {
         String sql = "select w.zaznamoffer, w.wanted_id, w.wants, w.update_timestamp, k.code from WANTED w, KNIHOVNA k, ZAZNAMOFFER zo "
                 + "where k.knihovna_id=? "
-                + "and w.knihovna=k.knihovna_id and zo.zaznamoffer_id=w.zaznamoffer";
+                + "and w.knihovna=k.knihovna_id and zo.zaznamoffer_id=w.zaznamoffer order by zo.update_timestamp";
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setInt(1, idKnihovna);
 
@@ -420,7 +425,8 @@ public class DbOperations extends HttpServlet {
     }
 
     private static JSONArray getWantedByCode(Connection conn, String docCode) throws Exception {
-        String sql = "select w.zaznamoffer, w.wanted_id, w.wants, w.update_timestamp, k.code from WANTED w, KNIHOVNA k, ZAZNAMOFFER zo "
+        String sql = "select w.zaznamoffer, w.wanted_id, w.wants, w.update_timestamp, k.code, k.priorita "
+                + "from WANTED w, KNIHOVNA k, ZAZNAMOFFER zo "
                 + "where zo.uniquecode=? "
                 + "and w.knihovna=k.knihovna_id and zo.zaznamoffer_id=w.zaznamoffer";
         PreparedStatement ps = conn.prepareStatement(sql);
@@ -443,18 +449,24 @@ public class DbOperations extends HttpServlet {
         JSONObject j = new JSONObject();
         j.put("ZaznamOffer_id", ZaznamOffer_id);
         j.put("uniqueCode", uniqueCode);
+        Object solrTitle = null;
+        if (title == null || zaznam == null) {
+            SolrQuery query = new SolrQuery("code:" + uniqueCode);
+            query.addField("title");
+            query.addField("id");
+            SolrDocumentList docs = IndexerQuery.query(query);
+            Iterator<SolrDocument> iter = docs.iterator();
+            if (iter.hasNext()) {
+                SolrDocument resultDoc = iter.next();
+                solrTitle = resultDoc.getFirstValue("title");
+                j.put("zaznam_asoc", new JSONArray(resultDoc.getFieldValues("id")));
+            }
+        }
         if (title == null) {
-            if(fields.has("245a")){
+            if (fields.has("245a")) {
                 j.put("title", fields.getString("245a"));
-            }else{
-                SolrQuery query = new SolrQuery("code:" + uniqueCode);
-                query.addField("title");
-                SolrDocumentList docs = IndexerQuery.query(query);
-                Iterator<SolrDocument> iter = docs.iterator();
-                if (iter.hasNext()) {
-                    SolrDocument resultDoc = iter.next();
-                    j.put("title", resultDoc.getFirstValue("title"));
-                }
+            } else {
+                j.put("title", solrTitle);
             }
         } else {
             j.put("title", title);
@@ -469,7 +481,21 @@ public class DbOperations extends HttpServlet {
         return j;
     }
 
-    public static JSONObject getOffer(String id) throws Exception {
+    public static ResultSet reportOffer(String id) throws Exception {
+
+        Connection conn = DbUtils.getConnection();
+
+        String sql = "SELECT z.hlavniNazev, zo.zaznamoffer_id, zo.uniqueCode, zo.zaznam, zo.exemplar, zo.fields "
+                + "FROM Zaznam z "
+                + "RIGHT OUTER JOIN zaznamOffer zo "
+                + "ON zo.zaznam=z.identifikator "
+                + "where zo.offer=" + id;
+        PreparedStatement ps = conn.prepareStatement(sql);
+
+        return ps.executeQuery();
+    }
+
+    public static JSONObject getOfferRows(String id) throws Exception {
 
         Connection conn = null;
         JSONObject json = new JSONObject();
@@ -558,11 +584,11 @@ public class DbOperations extends HttpServlet {
             String id,
             String nazev,
             String knihovna,
-            boolean closed) throws JSONException {
+            boolean closed) throws JSONException, IOException {
         Calendar now = Calendar.getInstance();
         Calendar o = Calendar.getInstance();
         o.setTime(offerDate);
-        o.add(Calendar.DATE, EXPIRATION_DAYS);
+        o.add(Calendar.DATE, Options.getInstance().getInt("expirationDays", 35));
         JSONObject j = new JSONObject();
         j.put("id", id);
         j.put("nazev", nazev);
@@ -573,6 +599,36 @@ public class DbOperations extends HttpServlet {
         j.put("expired", !o.after(now));
 
         return j;
+    }
+
+    public static JSONObject getOffer(int id) throws Exception {
+
+        Connection conn = null;
+        JSONObject json = new JSONObject();
+        try {
+            conn = DbUtils.getConnection();
+            String sql = "select OFFER.*, KNIHOVNA.code from OFFER, KNIHOVNA where OFFER.knihovna=KNIHOVNA.knihovna_id and offer_id=" + id;
+            PreparedStatement ps = conn.prepareStatement(sql);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                Date offerDate = rs.getDate("update_timestamp");
+                JSONObject j = offerJSON(offerDate,
+                        rs.getString("offer_id"),
+                        rs.getString("nazev"),
+                        rs.getString("code"),
+                        rs.getBoolean("closed"));
+
+                json.put(rs.getString("offer_id"), j);
+            }
+        } catch (Exception ex) {
+            json.put("error", ex);
+        } finally {
+            if (conn != null && !conn.isClosed()) {
+                conn.close();
+            }
+        }
+        return json;
     }
 
     public static JSONObject getOffers() throws Exception {
@@ -613,11 +669,6 @@ public class DbOperations extends HttpServlet {
             return kn.getId();
         }
         return 0;
-    }
-
-    public static boolean isOracle(Connection conn) throws SQLException {
-        DatabaseMetaData p = conn.getMetaData();
-        return p.getDatabaseProductName().toLowerCase().contains("oracle");
     }
 
     enum Actions {
@@ -796,7 +847,7 @@ public class DbOperations extends HttpServlet {
                         }
                         try {
                             conn = DbUtils.getConnection();
-                            if (isOracle(conn)) {
+                            if (DbUtils.isOracle(conn)) {
                                 String sql1 = "select Pohled_ID_SQ.nextval from dual";
                                 ResultSet rs = conn.prepareStatement(sql1).executeQuery();
                                 int idPohled = 1;
@@ -805,8 +856,8 @@ public class DbOperations extends HttpServlet {
                                 }
 
                                 String sql = "insert into POHLED "
-                                        + "(nazev, query, knihovna, isGlobal, pohled_id, update_timestamp) "
-                                        + "values (?,?,?,?,?,sysdate)";
+                                + "(nazev, query, knihovna, isGlobal, pohled_id, update_timestamp) "
+                                + "values (?,?,?,?,?,sysdate)";
                                 PreparedStatement ps = conn.prepareStatement(sql);
                                 ps.setString(1, name);
                                 ps.setString(2, query);
@@ -817,8 +868,8 @@ public class DbOperations extends HttpServlet {
                             } else {
 
                                 String sql = "insert into POHLED "
-                                        + "(nazev, query, knihovna, isGlobal,update_timestamp) "
-                                        + "values (?,?,?,?,NOW())";
+                                + "(nazev, query, knihovna, isGlobal,update_timestamp) "
+                                + "values (?,?,?,?,NOW())";
                                 PreparedStatement ps = conn.prepareStatement(sql);
                                 ps.setString(1, name);
                                 ps.setString(2, query);
@@ -939,7 +990,7 @@ public class DbOperations extends HttpServlet {
                         try {
                             conn = DbUtils.getConnection();
                             int id = 0;
-                            if (isOracle(conn)) {
+                            if (DbUtils.isOracle(conn)) {
                                 id = insertDemandOracle(conn, name, idKnihovna);
                             } else {
                                 id = insertDemandPg(conn, name, idKnihovna);
@@ -947,7 +998,7 @@ public class DbOperations extends HttpServlet {
 
                             Calendar now = Calendar.getInstance();
                             Calendar o = Calendar.getInstance();
-                            o.add(Calendar.DATE, EXPIRATION_DAYS);
+                            o.add(Calendar.DATE, Options.getInstance().getInt("expirationDays", 35));
                             JSONObject j = new JSONObject();
                             j.put("id", Integer.toString(id));
                             j.put("nazev", name);
@@ -985,7 +1036,7 @@ public class DbOperations extends HttpServlet {
                                 idKnihovna = kn.getId();
                                 conn = DbUtils.getConnection();
                                 int idOffer = 0;
-                                if (isOracle(conn)) {
+                                if (DbUtils.isOracle(conn)) {
                                     idOffer = insertOfferOracle(conn, name, idKnihovna, null);
                                 } else {
                                     idOffer = insertOfferPg(conn, name, idKnihovna, null);
@@ -1018,27 +1069,23 @@ public class DbOperations extends HttpServlet {
                         resp.setContentType("text/plain");
                         PrintWriter out = resp.getWriter();
 
-                        Map<String, String> parts = new HashMap<String, String>();
+                        Map<String, String> map = new HashMap<String, String>();
 
-                        parts.put("isbn", req.getParameter("isbn"));
-//            String pole = parts.get("isbn");
-//            pole = pole.toUpperCase().substring(0, Math.min(13, pole.length()));            
-//            ISBNValidator val =  new ISBNValidator();
-//            if(!"".equals(pole)){
-//                out.println(val.validate(pole));
-//            }
+                        map.put("isbn", req.getParameter("isbn"));
 
-                        parts.put("issn", req.getParameter("issn"));
-                        parts.put("ccnb", req.getParameter("ccnb"));
-                        parts.put("245a", req.getParameter("titul"));
-                        parts.put("245n", req.getParameter("f245n"));
-                        parts.put("245p", req.getParameter("f245p"));
-                        parts.put("250a", req.getParameter("f250a"));
-                        parts.put("100a", req.getParameter("f100a"));
-                        parts.put("110a", req.getParameter("f110a"));
-                        parts.put("111a", req.getParameter("f111a"));
-                        parts.put("260a", req.getParameter("f260"));
-                        out.println("Nabidka " + Slouceni.toJSON(parts).toString());
+                        map.put("issn", req.getParameter("issn"));
+                        map.put("ccnb", req.getParameter("ccnb"));
+                        map.put("245a", req.getParameter("titul"));
+                        map.put("245n", req.getParameter("f245n"));
+                        map.put("245p", req.getParameter("f245p"));
+                        map.put("250a", req.getParameter("f250a"));
+                        map.put("100a", req.getParameter("f100a"));
+                        map.put("110a", req.getParameter("f110a"));
+                        map.put("111a", req.getParameter("f111a"));
+                        map.put("260a", req.getParameter("f260"));
+
+                        String docCode = Slouceni.generateMD5(map);
+                        out.println("Nabidka " + Slouceni.toJSON(map, docCode).toString());
 
                     }
                 },
@@ -1211,12 +1258,12 @@ public class DbOperations extends HttpServlet {
                                 int idKnihovna = kn.getId();
 
                                 conn = DbUtils.getConnection();
-                                Map<String, String> parts = new HashMap<String, String>();
+
                                 boolean exists = false;
 
-                                parts.put("comment", req.getParameter("comment"));
-
-                                JSONObject fields = new JSONObject(parts);
+                                JSONObject fields = new JSONObject();
+                                fields.put("comment", req.getParameter("comment"));
+                                fields.put("cena", req.getParameter("cena"));
                                 int newid = insertNabidka(conn, idKnihovna, zaznam_id, exemplar_id, docCode, idOffer, fields.toString());
 
                                 json = jsonZaznamOffer(newid,
@@ -1235,9 +1282,10 @@ public class DbOperations extends HttpServlet {
                             } else {
                                 json.put("error", "nejste prihlasen");
                             }
-                        } catch (Exception ex) {
+                        } catch (SQLException ex) {
                             LOGGER.log(Level.SEVERE, "add to offer failed", ex);
                             json.put("error", ex.toString());
+                            json.put("getSQLState", ex.getSQLState());
                         } finally {
                             if (conn != null && !conn.isClosed()) {
                                 conn.close();
@@ -1447,7 +1495,7 @@ public class DbOperations extends HttpServlet {
                         try {
                             PrintWriter out = resp.getWriter();
                             String id = req.getParameter("id");
-                            out.println(getOffer(id).toString());
+                            out.println(getOfferRows(id).toString());
 
                         } catch (Exception ex) {
                             PrintWriter out = resp.getWriter();
@@ -1499,4 +1547,3 @@ public class DbOperations extends HttpServlet {
         return "Short description";
     }// </editor-fold>
 }
-

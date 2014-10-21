@@ -82,6 +82,12 @@ Results.prototype = {
             
     },
     renderDocExemplar: function(json, zaznam, zdroj, code){
+        
+        var sig = jsonElement(json, "signatura");
+        if (sig.indexOf("SF") === 0) {
+            return;
+        }
+                        
         var row = $('<tr class="" data-md5="' + json.md5 + '">');
         row.data("md5", json.md5);
         
@@ -136,7 +142,10 @@ Results.prototype = {
         var span = $('<button/>', {class: 'offerex', style: 'float:left;'});
         var a = $('<a class="ui-icon ui-icon-flag" >');
         a.attr('title', 'přidat do nabídky');
-        a.attr('href', 'javascript:vdk.offers.addToActive("' + code + '", "' + id + '", "' + ex + '")');
+        a.attr('href', 'javascript:void(0)');
+        a.click(function(){
+            vdk.offers.addToActive(code, id,ex);
+        });
         a.text('offer');
         span.append(a);
         return span;

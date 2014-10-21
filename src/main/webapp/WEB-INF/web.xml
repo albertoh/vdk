@@ -63,6 +63,15 @@
         <servlet-name>IndexOperations</servlet-name>
         <url-pattern>/index</url-pattern>
     </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>Harvester</servlet-name>
+        <servlet-class>cz.incad.vdk.client.HarvestOperations</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Harvester</servlet-name>
+        <url-pattern>/harvest</url-pattern>
+    </servlet-mapping>
     <session-config>
         <session-timeout>
             30

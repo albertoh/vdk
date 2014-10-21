@@ -4,11 +4,5 @@
 exclude-result-prefixes="java"
 version="1.0">
 <xsl:output method="text" omit-xml-declaration="yes"  encoding="UTF-8" indent="no" />
-<xsl:template match="/">
-<xsl:for-each select="//doc" >
-    <xsl:value-of select="./arr[@name='export']/str" />&#13;
-<xsl:text>
-</xsl:text>
-          </xsl:for-each>
-    </xsl:template>
-</xsl:stylesheet>
+<xsl:template match="/"><xsl:for-each select="//doc" >
+    <xsl:value-of select="./arr[@name='export']/str" /></xsl:for-each></xsl:template></xsl:stylesheet>
