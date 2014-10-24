@@ -11,12 +11,98 @@ Offers.prototype = {
     openForm: function () {
         this.formDialog = $("<div/>", {title: dict['select.offerForm']});
         $("body").append(this.formDialog);
-        this.formDialog.load("forms/add_to_offer.vm");
-        this.formDialog.dialog({
-            modal: true,
-            width: 580,
-            height: 500
+        this.formDialog.load("forms/add_to_offer.vm", _.bind(function () {
+            this.formDialog.dialog({
+                modal: true,
+                width: 580,
+                height: 500,
+                create: function(){
+                    vdk.offers.formDialog.find('input.searcher').change(function(e){
+                        vdk.offers.searchDoc($(this));
+                    });
+                }
+            });
+        }, this));    
+    },
+    openSearchForm: function () {
+        this.searchFormDialog = $("<div/>", {title: dict['select.offerForm']});
+        $("body").append(this.searchFormDialog);
+        this.searchFormDialog.load("forms/search_to_offer.vm", _.bind(function () {
+            this.searchFormDialog.dialog({
+                modal: true,
+                width: 580,
+                height: 500,
+                create: function(){
+                    vdk.offers.searchFormDialog.find('input.searcher').change(function(e){
+                        vdk.offers.searchDocs($(this));
+                    });
+                }
+            });
+        }, this));    
+    },
+    searchDoc: function(obj){
+        var value = $(obj).val();
+        if(value.length > 3){
+            $.getJSON("search", {action: "BYFIELD", field: $(obj).data("field"), value: value}, _.bind(function(resp){
+                if(resp.error){
+                    $(obj).next().text("");
+                }else{
+                    if(resp.response.numFound > 0){
+                        var doc = resp.response.docs[0];
+                        var li = $("<div/>");
+                        li.append('<div><b>' + doc.title[0] + '</b> ' + doc.author[0] + '</div>');
+                        li.append('<div>' + doc.mistovydani[0] + doc.datumvydani[0] + ' (' + doc.isbn[0] + ')</div>');
+                        li.append(vdk.actionOffer(doc.code));
+                        $(obj).next().html(li);
+                    }else{
+                        $(obj).next().text("");
+                    }
+                }
+            }, this));
+            
+        }
+    },
+    searchDocs: function(obj){
+        var fq = [];
+        this.searchFormDialog.find('input.searcher').each(function(){
+            var value = $(this).val();
+            if(value.length > 3){
+                fq.push($(this).data("field") + ":" + value);
+            }
         });
+        if(fq.length>0){
+            $.getJSON("search", {action: "BYQUERY", q: "*:*", 'fq': fq}, _.bind(function(resp){
+                if(resp.error){
+                    $(obj).next().text("");
+                }else{
+                    var ul = this.searchFormDialog.find("ul.results");
+                    ul.find("li").remove();
+                    $.each(resp.response.docs, function(i, doc){
+                        var li = $("<li/>");
+                        li.append(vdk.actionOffer(doc.code));
+                        var title = $('<div/>');
+                        title.append('<b>' + doc.title[0] + '</b> ');
+                        if(doc.hasOwnProperty('author')){
+                            title.append(doc.author[0]);
+                        }
+                        li.append(title);
+                        var ext = $('<div/>');
+                        if(doc.hasOwnProperty('mistovydani')){
+                            ext.append(doc.mistovydani[0]);
+                        }
+                        if(doc.hasOwnProperty('datumvydani')){
+                            ext.append(doc.datumvydani[0]);
+                        }
+                        if(doc.hasOwnProperty('isbn')){
+                            ext.append(' (' + doc.isbn[0] + ')');
+                        }
+                        li.append(ext);
+                        ul.append(li);
+                    });
+                }
+            }, this));
+        }    
+        
     },
     openImportDialog: function () {
         if(this.importDialog === null){
@@ -43,10 +129,10 @@ Offers.prototype = {
                 this.parseUser();
                 var bs = [
                     {
-                        text: "Přídat do nabídky z katalogu",
+                        text: "Přídat do nabídky z katalogu hledanim",
                         icon: "ui-icon-search",
                         click: function (e) {
-                            alert("hledat");
+                            vdk.offers.openSearchForm();
                         }
                     },
                     {
@@ -199,15 +285,15 @@ Offers.prototype = {
                     if(vdk.isLogged && vdk.user.code !== val.knihovna){
                         var wanted = vdk.offers.isWanted(zaznamOffer, vdk.user.code);
                         if(wanted == null){
-                            $(this).append(vdk.results.actionWant(zaznamOffer));
-                            $(this).append(vdk.results.actionDontWant(zaznamOffer));
+                            $(this).append(vdk.actionWant(zaznamOffer));
+                            $(this).append(vdk.actionDontWant(zaznamOffer));
                             $(this).attr('title', dict['offer.want.unknown']);
                         }else if(wanted){
                             $(this).addClass('wanted');
-                            $(this).append(vdk.results.actionDontWant(zaznamOffer));
+                            $(this).append(vdk.actionDontWant(zaznamOffer));
                             $(this).attr('title', dict['chci.do.fondu']);
                         }else{
-                            $(this).append(vdk.results.actionWant(zaznamOffer));
+                            $(this).append(vdk.actionWant(zaznamOffer));
                             $(this).addClass('nowanted');
                             $(this).attr('title', dict['nechci.do.fondu']);
                         }
@@ -221,8 +307,8 @@ Offers.prototype = {
                         tr.addClass("nabidka");
                         tr.find(".offerex, .demandexadd").remove();
                         if(vdk.isLogged && vdk.user.code !== val.knihovna){
-                            tr.find("td.actions").append(vdk.results.actionWant(zaznamOffer));
-                            tr.find("td.actions").append(vdk.results.actionDontWant(zaznamOffer));
+                            tr.find("td.actions").append(vdk.actionWant(zaznamOffer));
+                            tr.find("td.actions").append(vdk.actionDontWant(zaznamOffer));
                         }
                         $(this).mouseenter(function () {
                             tr.addClass("nabidka_over");

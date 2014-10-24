@@ -3,11 +3,11 @@
     <input name="id" value="" type="hidden" />
     <input name="action" value="ADDFORMTOOFFER" type="hidden" />
 
-    <div><label for="isbn">ISBN (020a):</label><input type="text" name="isbn" id="isbn" /></div>
-    <div><label for="issn">ISSN (022a):</label><input type="text" name="issn" id="issn" /></div>
-    <div><label for="ccnb">čČNB (015a):</label><input type="text" name="ccnb" id="ccnb" /></div>
+    <div><label for="isbn">ISBN (020a):</label><input type="text" name="isbn" id="isbn" data-field="isbn" class="searcher" /><div style="float:right;"></div></div>
+    <div><label for="issn">ISSN (022a):</label><input type="text" name="issn" id="issn" data-field="issn" class="searcher" /><div style="float:right;"></div></div>
+    <div><label for="ccnb">čČNB (015a):</label><input type="text" name="ccnb" id="ccnb" data-field="ccnb" class="searcher" /><div style="float:right;"></div></div>
 
-    <div><label for="titul">Titul (245a) (245b) (245c):</label><input type="text" name="titul" id="titul" /></div>
+    <div><label for="titul">Titul (245a) (245b) (245c):</label><input type="text" name="titul" data-field="title" id="titul" class="searcher" /><div style="float:right;"></div></div>
     <div><label for="f245n">Cislo casti (245n):</label><input type="text" name="f245n" id="f245n" /></div>
     <div><label for="f245p">Název části (245p):</label><input type="text" name="f245p" id="f245p" /></div>
 

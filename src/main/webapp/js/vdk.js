@@ -66,13 +66,7 @@ ApplicationEvents.prototype = {
 }
 
 function VDK() {
-    /** 
-    * Handlers 
-    * <pre><code>
-    *  K5.eventsHandler
-    * </code></pre>
-    * @member
-    */
+    
    this.eventsHandler =  new ApplicationEvents();
    
     this.user = null;
@@ -83,18 +77,90 @@ function VDK() {
         'UKF': 'UKF',
         'MZK': 'MZK',
         'VKOL': 'VKOLOAI'};
-    this.setUser = function(){
+}
+VDK.prototype = {
+    
+    actionOriginal: function (id) {
+        var span = $('<button/>', {class: 'original', style: 'float:left;'});
+        var a = $('<a class="ui-icon ui-icon-extlink" >');
+        a.attr('title', 'nahlédnout originální metadata');
+        a.attr('href', 'javascript:vdk.showOriginal("' + id + '")');
+        a.text('original');
+        span.append(a);
+        return span;
+    },
+    actionCSV: function (csv) {
+        var span = $('<button/>', {class: 'original', style: 'float:left;'});
+        var a = $('<a class="ui-icon ui-icon-document" >');
+        a.attr('title', 'csv format');
+        //a.attr('href', 'javascript:vdk.showCSV("'+csv+'")');
+        a.attr('href', 'javascript:void(0);');
+        a.click(function(){vdk.showCSV(csv)});
+        a.text('csv');
+        span.append(a);
+        return span;
+    },
+    actionOffer: function (code, id, ex) {
+        var span = $('<button/>', {class: 'offerex', style: 'float:left;'});
+        var a = $('<a class="ui-icon ui-icon-flag" >');
+        a.attr('title', 'přidat do nabídky');
+        a.attr('href', 'javascript:void(0)');
+        a.click(function(){
+            vdk.offers.addToActive(code, id,ex);
+        });
+        a.text('offer');
+        span.append(a);
+        return span;
+    },
+    actionAddDemand: function (code, id, ex) {
+        var span = $('<button/>', {class: 'demandexadd', style: 'float:left;'});
+        var a = $('<a class="ui-icon ui-icon-cart" >');
+        a.attr('title', 'přidat do poptávky');
+        a.attr('href', 'javascript:vdk.demands.add("' + code + '", "' + id + '", "' + ex + '")');
+        a.text('demand');
+        span.append(a);
+        return span;
+    },
+    actionWant: function (zaznamOffer) {
+        var span = $('<button/>', {class: 'wanteddoc', 'data-wanted': zaznamOffer, style: 'float:left;'});
+        var a = $('<a class="ui-icon ui-icon-star" >');
+        a.attr('title', dict['offer.want'] + ' "' + dict['chci.do.fondu'] + '"');
+        a.attr('href', 'javascript:vdk.offers.wantDoc(' + zaznamOffer + ', true)');
+        a.text('chci');
+        span.append(a);
+        return span;
+    },
+    actionDontWant: function (zaznamOffer) {
+        var span = $('<button/>', {class: 'wanteddoc', 'data-wanted': zaznamOffer, style: 'float:left;'});
+        
+        var a = $('<a class="ui-icon ui-icon-cancel" >');
+        a.attr('title', dict['offer.want'] + ' "' + dict['nechci.do.fondu'] + '"');
+        a.attr('href', 'javascript:vdk.offers.wantDoc(' + zaznamOffer + ', false)');
+        a.text('chci');
+        span.append(a);
+        return span;
+    },
+    actionRemoveDemand: function (code, id, ex) {
+        var span = $('<button/>', {class: 'demandexrem', style: 'float:left;'});
+        var a = $('<a class="ui-icon ui-icon-cancel" >');
+        a.attr('title', 'odstranit z poptávky');
+        a.attr('href', 'javascript:vdk.demands.remove("' + code + '", "' + id + '", "' + ex + '")');
+        a.text('demand');
+        span.append(a);
+        return span;
+    },
+    setUser: function(){
         $.getJSON("user.vm", _.bind(function(data){
             this.user = data;
             this.isLogged = true;
         }, this));
         
-    };
-    this.changeLanguage = function(lang){
+    },
+    changeLanguage : function(lang){
         $("#searchForm").append('<input name="language" value="'+lang+'" type="hidden" />');
         document.getElementById("searchForm").submit();
-    };
-    this.init = function () {
+    },
+    init : function () {
         this.demands = new Demand();
         this.results = new Results();
         this.offers = new Offers();
@@ -118,15 +184,15 @@ function VDK() {
             }
         });
 
-    }
-    this.translate = function(key){
+    },
+    translate : function(key){
         if(dict.hasOwnProperty(key)){
             return dict[key];
         }else{
             return key;
         }
-    };
-    this.userOpts = function () {
+    },
+    userOpts: function () {
         if (this.isLogged && this.zdrojUser[vdk.user.code]) {
             //Prihlaseny uzivatel je NKP, MZK nebo VKOL
             $(".offerdoc").hide();
@@ -142,32 +208,32 @@ function VDK() {
         $("li.res").each(function () {
             var id = $(this).find("input.groupid").val();
         });
-    };
-    this.selectView = function () {
+    },
+    selectView : function () {
         this.views.select();
-    };
-    this.getViews = function () {
+    },
+    getViews: function () {
         this.views.get();
-    };
-    this.saveView = function () {
+    },
+    saveView: function () {
         this.views.save();
-    }
-    this.openView = function () {
+    },
+    openView: function () {
         this.views.open();
-    }
-    this.addToNabidka = function (id) {
+    },
+    addToNabidka : function (id) {
         this.nabidka.add(id);
-    };
-    this.openNabidka = function () {
+    },
+    openNabidka: function () {
         this.nabidka.open();
-    };
-    this.openExport = function () {
+    },
+    openExport: function () {
         this.export.open();
-    };
-    this.showOriginal = function(id){
+    },
+    showOriginal: function(id){
         window.open("original?id="+id, "original");
-    };
-    this.showCSV = function (csv) {
+    },
+    showCSV: function (csv) {
         if (!this.csv) {
             this.csvdialog = $('<div title="CSV format" class="csv1" ></div>');
             this.csv = $('<input style="width:100%;" type="text" value=""/>');
@@ -179,16 +245,14 @@ function VDK() {
         }
         this.csv.val(csv);
         this.csvdialog.dialog({modal: true, width: 700});
-    };
-    
-
-    this.filterOnlyMatches = function() {
+    },
+    filterOnlyMatches: function() {
         var i = $("input.fq").length + 1;
         var input = '<input type="hidden" name="onlyMatches" id="onlyMatches" class="fq" value="yes" />';
         $("#searchForm").append(input);
         $("#offset").val("0");
         document.getElementById("searchForm").submit();
-    };
+    }
 };
 
 function LoginDialog() {

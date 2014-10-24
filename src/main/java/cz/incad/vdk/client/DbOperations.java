@@ -4,7 +4,6 @@ import au.com.bytecode.opencsv.CSVReader;
 import cz.incad.vdkcommon.DbUtils;
 import cz.incad.vdkcommon.Options;
 import cz.incad.vdkcommon.Slouceni;
-import static cz.incad.vdkcommon.Slouceni.csvToMap;
 import cz.incad.vdkcommon.solr.IndexerQuery;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -341,10 +340,10 @@ public class DbOperations extends HttpServlet {
             int lines = 0;
             while (parts != null) {
                 if(!(parts.length == 1 && parts[0].equals(""))){
-                    String docCode;
-                    Map map = csvToMap(parts);
-                    docCode = Slouceni.generateMD5(map);
-                    insertNabidka(conn, idKnihovna, null, null, docCode, idOffer, Slouceni.toJSON(map, docCode).toString());
+                    
+                    JSONObject slouceni = Slouceni.fromCSVStringArray(parts);
+                    String docCode = slouceni.getString("docCode");
+                    insertNabidka(conn, idKnihovna, null, null, docCode, idOffer, slouceni.toString());
                     lines++;
                 }
                 parts = parser.readNext();
@@ -1083,9 +1082,9 @@ public class DbOperations extends HttpServlet {
                         map.put("110a", req.getParameter("f110a"));
                         map.put("111a", req.getParameter("f111a"));
                         map.put("260a", req.getParameter("f260"));
-
-                        String docCode = Slouceni.generateMD5(map);
-                        out.println("Nabidka " + Slouceni.toJSON(map, docCode).toString());
+                        
+                        JSONObject slouceni = Slouceni.fromMap(map);
+                        out.println(slouceni);
 
                     }
                 },
@@ -1198,8 +1197,10 @@ public class DbOperations extends HttpServlet {
                                 parts.put("cena", req.getParameter("cena"));
                                 parts.put("comment", req.getParameter("comment"));
 
-                                String docCode = Slouceni.generateMD5(parts);
-                                String sql = "select * from ZAZNAM where uniquecode='" + docCode + "'";
+                                
+                                JSONObject slouceni = Slouceni.fromMap(parts);
+                                String docCode = slouceni.getString("docCode");
+                                String sql = "select * from ZAZNAM where uniquecode='" + docCode  + "'";
                                 PreparedStatement ps = conn.prepareStatement(sql);
                                 ResultSet rs = ps.executeQuery();
                                 if (rs.next()) {
@@ -1503,7 +1504,23 @@ public class DbOperations extends HttpServlet {
                         }
 
                     }
-                };
+                },
+        REGENERATECODES{
+            @Override
+            void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                resp.setContentType("application/json");
+                PrintWriter out = resp.getWriter();
+                JSONObject json = new JSONObject();
+                try {
+                    out.println(DbUtils.regenerateCodes());
+                } catch (Exception ex) {
+                    LOGGER.log(Level.SEVERE, "remove demand failed", ex);
+                    json.put("error", ex.toString());
+                }
+                out.println(json.toString());
+
+            }
+        };
 
         abstract void doPerform(HttpServletRequest req, HttpServletResponse response) throws Exception;
     }

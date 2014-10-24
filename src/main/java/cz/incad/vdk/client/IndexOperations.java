@@ -670,7 +670,7 @@ public class IndexOperations extends HttpServlet {
                                 json.put("error", "rights.notlogged");
                             } else {
                                 
-                                if (kn.hasRole(DbUtils.Roles.SOURCELIB)) {
+                                if (kn.hasRole(DbUtils.Roles.ADMIN)) {
                                     Indexer indexer = new Indexer();
                                     indexer.reindex(DbUtils.getConnection());
                                 } else {
@@ -696,7 +696,7 @@ public class IndexOperations extends HttpServlet {
                                 json.put("error", "rights.notlogged");
                             } else {
                                 
-                                if (kn.hasRole(DbUtils.Roles.SOURCELIB)) {
+                                if (kn.hasRole(DbUtils.Roles.ADMIN)) {
                                     Indexer indexer = new Indexer();
                                     indexer.reindex(DbUtils.getConnection());
                                     indexAllOffers(DbUtils.getConnection());
@@ -725,7 +725,7 @@ public class IndexOperations extends HttpServlet {
                                 json.put("error", "rights.notlogged");
                             } else {
                                 
-                                if (kn.hasRole(DbUtils.Roles.SOURCELIB)) {
+                                if (kn.hasRole(DbUtils.Roles.ADMIN)) {
                                     Indexer indexer = new Indexer();
                                     indexer.reindexDoc(DbUtils.getConnection(), req.getParameter("code"));
                                 } else {

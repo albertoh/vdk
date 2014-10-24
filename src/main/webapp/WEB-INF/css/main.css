@@ -430,11 +430,11 @@ table.tex td.RZ{
     overflow: visible;
 }
 
-#useroffer label{
+#useroffer label, #searchToOfferForm label{
     color: #767676;
     display: block;
 }
-#useroffer input{
+#useroffer input, #searchToOfferForm input{
     width: 98%;
 }
 #useroffer div.buttons, #userdemands div.buttons{
@@ -482,7 +482,7 @@ table.tex td.RZ{
      position:relative;
      min-height: 20px;
 }
-#useroffer li:nth-child(odd), #userdemands li:nth-child(odd){
+#useroffer li:nth-child(odd), #userdemands li:nth-child(odd), #searchToOfferForm li:nth-child(odd){
      background: #eeeeee;
 }
 #useroffer li>div.label, #userdemands li>div.label{
@@ -493,6 +493,15 @@ table.tex td.RZ{
 #userdemands li{
      position:relative;
      min-height: 20px;
+    list-style: none;
+    padding: 3px;
+}
+
+#searchToOfferForm ul{
+    padding:0px;
+}
+
+#searchToOfferForm li{
     list-style: none;
     padding: 3px;
 }

@@ -72,6 +72,16 @@
         <servlet-name>Harvester</servlet-name>
         <url-pattern>/harvest</url-pattern>
     </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>Search</servlet-name>
+        <servlet-class>cz.incad.vdk.client.SearchServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>Search</servlet-name>
+        <url-pattern>/search</url-pattern>
+    </servlet-mapping>
+    
     <session-config>
         <session-timeout>
             30

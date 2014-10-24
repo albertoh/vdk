@@ -71,8 +71,11 @@ public class Search {
             if (q == null || q.equals("")) {
                 q = "*:*";
                 query.setSort("_version_", SolrQuery.ORDER.desc);
+//            }else{
+//                q = "{!q.op=AND}" + q;
             }
             query.setQuery(q);
+            query.set("q.op", "AND");
             query.setFacet(true);
             query.setStart(getStart());
             query.setRows(getRows());

@@ -84,6 +84,9 @@ public class HarvestOperations extends HttpServlet {
                                     if(req.getParameter("path") != null){
                                         oh.setPathToData(req.getParameter("path"));
                                     }
+                                    if(req.getParameter("full") != null){
+                                        oh.setFullIndex(true);
+                                    }
                                     oh.harvest();
 
                                     json.put("message", "harvest finished.");
