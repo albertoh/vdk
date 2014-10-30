@@ -67,7 +67,7 @@ Offers.prototype = {
         this.searchFormDialog.find('input.searcher').each(function(){
             var value = $(this).val();
             if(value.length > 3){
-                fq.push($(this).data("field") + ":" + value);
+                fq.push($(this).data("field") + ":" + value + "*");
             }
         });
         if(fq.length>0){

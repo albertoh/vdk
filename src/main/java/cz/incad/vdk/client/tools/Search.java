@@ -201,12 +201,12 @@ public class Search {
         }
 
         if (req.getParameter("isbn") != null && !req.getParameter("isbn").equals("")) {
-            query.addFilterQuery("isbn:\"" + req.getParameter("isbn") + "\"");
+            query.addFilterQuery("isbn:" + req.getParameter("isbn") + "*");
             hasFilters = true;
         }
 
         if (req.getParameter("issn") != null && !req.getParameter("issn").equals("")) {
-            query.addFilterQuery("issn:\"" + req.getParameter("issn") + "\"");
+            query.addFilterQuery("issn:" + req.getParameter("issn") + "*");
             hasFilters = true;
         }
 

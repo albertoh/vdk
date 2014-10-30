@@ -1,5 +1,5 @@
 <div>Pridat</div>
-<form name="addToOfferForm" id="addToOfferForm" action="db" method="POST" >
+<form name="addToOfferForm" id="addToOfferForm" action="db" method="POST" class="form" >
     <input name="id" value="" type="hidden" />
     <input name="action" value="ADDFORMTOOFFER" type="hidden" />
 

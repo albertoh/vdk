@@ -104,6 +104,7 @@ a.image:hover {
     height:17px;
     padding: 1px 0;
 }
+
 #adv_fields{
     display:none;
     position:absolute;
@@ -114,18 +115,18 @@ a.image:hover {
     border: 1px solid gray;
 }
 
-#adv_fields label{
+.form label{
     font-size: 1.3em;
     width: 100px;
 }
 
 
-#adv_fields div{
+.form div{
     padding: 5px;
     float:right;
 }
 
-#adv_fields input{
+.form input{
     width:280px;
 }
 

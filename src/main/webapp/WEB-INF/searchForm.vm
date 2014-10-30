@@ -36,7 +36,7 @@
         <input type="hidden" name="zdroj" id="zdroj${foreach.index}" class="zdroj" value="$!esc.html(${zdroj})" />
 #end
 <button onclick="$('#adv_fields').toggle();return false;" >+</button>
-<div id="adv_fields">
+<div id="adv_fields" class="form">
     <div><label for="f_title">název:</label>
     <input type="text" name="title" id="f_title" value="$!esc.html(${params.title})" />
     </div>
