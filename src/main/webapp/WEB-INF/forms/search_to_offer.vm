@@ -1,4 +1,3 @@
-<div>Pridat</div>
 <form name="searchToOfferForm" id="searchToOfferForm" action="search" method="POST" >
     <input name="action" value="BYQUERY" type="hidden" />
     

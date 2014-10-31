@@ -156,6 +156,7 @@ a.image:hover {
 #content{
     overflow: hidden;
     box-sizing: border-box;
+    width:100%;
 }
 
 
@@ -431,11 +432,11 @@ table.tex td.RZ{
     overflow: visible;
 }
 
-#useroffer label, #searchToOfferForm label{
+#useroffer label, #searchToOfferForm label, #addToOfferForm label{
     color: #767676;
     display: block;
 }
-#useroffer input, #searchToOfferForm input{
+#useroffer input, #searchToOfferForm input, #addToOfferForm input{
     width: 98%;
 }
 #useroffer div.buttons, #userdemands div.buttons{
@@ -476,7 +477,11 @@ table.tex td.RZ{
     list-style: none;
     padding: 3px;
 }
-#offersdialog li.active{
+#offersdialog li.active a{
+    color: red;
+}
+
+#offersdialog li.selected{
     font-weight: bold;
 }
 #useroffer li{

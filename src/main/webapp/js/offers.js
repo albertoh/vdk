@@ -9,7 +9,7 @@ Offers.prototype = {
         this.retrieve();
     },
     openForm: function () {
-        this.formDialog = $("<div/>", {title: dict['select.offerForm']});
+        this.formDialog = $("<div/>", {title: vdk.translate('offers.addToOfferForm')});
         $("body").append(this.formDialog);
         this.formDialog.load("forms/add_to_offer.vm", _.bind(function () {
             this.formDialog.dialog({
@@ -25,7 +25,7 @@ Offers.prototype = {
         }, this));    
     },
     openSearchForm: function () {
-        this.searchFormDialog = $("<div/>", {title: dict['select.offerForm']});
+        this.searchFormDialog = $("<div/>", {title: vdk.translate('offers.searchToOfferForm')});
         $("body").append(this.searchFormDialog);
         this.searchFormDialog.load("forms/search_to_offer.vm", _.bind(function () {
             this.searchFormDialog.dialog({
@@ -50,9 +50,9 @@ Offers.prototype = {
                     if(resp.response.numFound > 0){
                         var doc = resp.response.docs[0];
                         var li = $("<div/>");
+                        li.append(vdk.actionOffer(doc.code));
                         li.append('<div><b>' + doc.title[0] + '</b> ' + doc.author[0] + '</div>');
                         li.append('<div>' + doc.mistovydani[0] + doc.datumvydani[0] + ' (' + doc.isbn[0] + ')</div>');
-                        li.append(vdk.actionOffer(doc.code));
                         $(obj).next().html(li);
                     }else{
                         $(obj).next().text("");
@@ -129,21 +129,21 @@ Offers.prototype = {
                 this.parseUser();
                 var bs = [
                     {
-                        text: "Přídat do nabídky z katalogu hledanim",
+                        text: vdk.translate('offers.searchToOfferForm'),
                         icon: "ui-icon-search",
                         click: function (e) {
                             vdk.offers.openSearchForm();
                         }
                     },
                     {
-                        text: "Přídat do nabídky ze sablony",
+                        text: vdk.translate('offers.addToOfferForm'),
                         icon: "ui-icon-contact",
                         click: function (e) {
                             vdk.offers.openForm();
                         }
                     },
                     {
-                        text: "Přídat do nabídky ze souboru",
+                        text: vdk.translate('offers.importToOfferForm'),
                         icon: "ui-icon-folder-open",
                         click: function (e) {
                             vdk.offers.openImportDialog();
@@ -170,7 +170,7 @@ Offers.prototype = {
                     text: "Refresh",
                     icon: "ui-icon-refresh",
                     click: function (e) {
-                        vdk.offers.getActive();
+                        vdk.offers.getSelected();
                     }
                 },
                 {
@@ -410,11 +410,12 @@ Offers.prototype = {
         }
         $('#useroffer>ul').append(doc);
     },
-    getActive: function () {
+    getSelected: function () {
         $('#useroffer>ul>li').remove();
-        $.getJSON("db?action=GETOFFER&id=" + this.activeid, _.bind(function (json) {
+        $.getJSON("db?action=GETOFFER&id=" + this.selectedid, _.bind(function (json) {
             this.active = json;
-            var closed = this.json[this.activeid].closed;
+            this.selected = json;
+            var closed = this.json[this.selectedid].closed;
             $.each(json, _.bind(function (key, val) {
                 this.renderDoc(val, closed);
 
@@ -423,17 +424,31 @@ Offers.prototype = {
 
     },
     setActive: function (id) {
-        this.activeid = id;
-        $("#useroffers li.offer").removeClass("active");
+        this.selectedid = id;
+        if(!this.json[id].closed){
+            this.activeid = id;
+            $("#useroffers li.offer").removeClass("active");
+            $("#useroffers li.offer").each(function () {
+                if (id === $(this).data("offer")) {
+                    $(this).addClass("active");
+                    return;
+                }
+            });
+            $("#importOfferForm input[name~='id']").val(this.activeid);
+            $("#addToOfferForm input[name~='id']").val(this.activeid);
+            $("#useroffer button").attr("disabled", false);
+            
+        }else{
+            $("#useroffer button").attr("disabled", true);
+        }
+        $("#useroffers li.offer").removeClass("selected");
         $("#useroffers li.offer").each(function () {
             if (id === $(this).data("offer")) {
-                $(this).addClass("active");
+                $(this).addClass("selected");
                 return;
             }
         });
-        $("#importOfferForm input[name~='id']").val(this.activeid);
-        $("#addToOfferForm input[name~='id']").val(this.activeid);
-        this.getActive();
+        this.getSelected();
         $("#useroffer").show();
     },
     clickUser: function (id) {
@@ -579,177 +594,5 @@ Offers.prototype = {
     }
 };
 
-
-
-this.getOffers = function () {
-    $("#offers li.nabidka").remove();
-    this.offers = {};
-    $.getJSON("db?action=GETOFFERS", function (json) {
-        vdk.offers = json;
-        $.each(json, function (key, val) {
-            var label = val.nazev + ' (' + val.knihovna + ' do ' + val.expires + ')';
-            var expired = val.expired ? " expired" : "";
-            if (val.closed) {
-                $("#nav_nabidka").append('<li class="nabidka' + expired + '" data-offer="' + val.offerId + '"><a href="javascript:filterOffer(' + val.offerId + ');">' + label + '</a></li>');
-            }
-        });
-        $(".nabidka>span").each(function () {
-            var offerid = $(this).data("offer");
-            if (json.hasOwnProperty(offerid)) {
-                var val = json[offerid];
-                var expired = val.expired ? " expired" : "";
-                var text = '<label class="' + expired + '">' + val.nazev + " (" + val.knihovna + ")</label>";
-                $(this).html(text);
-
-                var zaznam = $(this).data("zaznam");
-                if (zaznam === "none") {
-                    //je to nabidka zvenku, nemame zaznam.
-                } else {
-                    $("tr[data-zaznam~='" + zaznam + "']");
-                }
-                var ex = $(this).data("ex");
-                if (ex === "none") {
-                    //je to nabidka na cely zaznam.
-                } else {
-                    $(this).mouseenter(function () {
-                        $("tr[data-md5~='" + ex + "']").addClass("nabidka");
-                    });
-                    $(this).mouseleave(function () {
-                        $("tr[data-md5~='" + ex + "']").removeClass("nabidka");
-                    });
-
-                }
-            }
-        });
-        vdk.getUserOffers();
-    });
-};
-this.getUserOffers = function () {
-    $("#activeOffers>option").remove();
-    $("#useroffers li.nabidka").remove();
-    $.each(vdk.offers, function (key, val) {
-        if (vdk.isLogged && val.knihovna === vdk.user.code) {
-            vdk.renderUserOffer(val);
-        }
-    });
-
-};
-this.renderUserOffer = function (val) {
-    var label = val.nazev + ' (do ' + val.expires + ')';
-    $("#activeOffers").append('<option value="' + val.offerId + '">' + label + '</option>');
-    var expired = val.expired ? " expired" : "";
-    var li = $("<li/>");
-    li.addClass("nabidka");
-    li.data("offer", val.offerId);
-    var span1 = $('<span class="ui-icon" style="float:left;" />');
-    if (val.expired) {
-        span1.addClass("ui-icon-clock");
-        span1.attr("title", "expired");
-    } else {
-        span1.addClass("ui-icon-check");
-    }
-    li.append(span1);
-    var span = $('<span class="closed ui-icon" style="float:left;" />');
-    if (val.closed) {
-        span.addClass("ui-icon-locked");
-        span.attr("title", "nabidka je zavrena");
-    } else {
-        span.addClass("ui-icon-unlocked");
-        span.attr("title", "zavrit nabidku");
-        span.click(function () {
-            $.post("db", {action: "CLOSEOFFER", id: val.offerId}, function (resp) {
-                if (resp.trim() === "1") {
-                    vdk.offers[val.offerId].closed = true;
-                    $("#useroffers li.nabidka").each(function () {
-                        if ($(this).data("offer") === val.offerId) {
-                            $(this).find("span.closed").removeClass("ui-icon-unlocked").addClass("ui-icon-locked");
-                        }
-                    });
-                    //indexujeme
-                    $.getJSON("index", {action: "INDEXOFFER", id: val.offerId}, function (resp) {
-                        if (resp.error) {
-                            alert("error ocurred: " + vdk.translate(resp.error));
-                        } else {
-                            alert("Nabidka uspesne indexovana");
-                        }
-                    });
-                }
-
-            });
-        });
-    }
-    li.append(span);
-    var a = $("<a/>");
-    a.text(label);
-    a.attr("href", "javascript:vdk.clickUserOffer('" + val.offerId + "');");
-    li.append(a);
-    $("#useroffers>ul").append(li);
-};
-this.getActiveOffer = function () {
-
-    $.getJSON("db?action=GETOFFER&id=" + vdk.activeofferid, function (json) {
-        console.log(json);
-        vdk.activeoffer = json;
-        $.each(json, function (key, val) {
-
-
-        });
-    });
-
-};
-this.setActiveOffer = function (offerid) {
-    this.activeofferid = offerid;
-    $("#useroffers li.nabidka").removeClass("active");
-    $("#useroffers li.nabidka").each(function () {
-        if (offerid === $(this).data("offer")) {
-            $(this).addClass("active");
-            return;
-        }
-    });
-    $("#importOfferForm input[name~='idOffer']").val(vdk.activeofferid);
-    $("#addToOfferForm input[name~='idOffer']").val(vdk.activeofferid);
-    this.getActiveOffer();
-    $("#useroffer").show();
-};
-this.clickUserOffer = function (offerid) {
-    this.setActiveOffer(offerid);
-    $('#activeOffers').val(offerid);
-};
-this.selectActiveOffer = function () {
-    var offerid = $('#activeOffers').val();
-    this.setActiveOffer(offerid);
-};
-this.addOffer = function () {
-    var nazev = prompt("Nazev nabidky", "");
-    if (nazev !== null && nazev !== "") {
-        $.post("db", {offerName: nazev, action: 'NEWOFFER'}, function (data) {
-            var json = jQuery.parseJSON(data);
-            vdk.offers[json.offerId] = json;
-            vdk.renderUserOffer(json);
-
-            vdk.setActiveOffer(json.offerId);
-            $('#activeOffers').val(json.offerId);
-        });
-    }
-};
-this.addFormToOffer = function () {
-    if (this.activeofferid === -1) {
-        alert("Neni zadna nabidka activni");
-        return;
-    }
-    $.post("db", $("#addToOfferForm").serialize(), function (data) {
-        alert(data);
-    });
-};
-this.addToOffer = function (code, id, ex) {
-    if (this.activeofferid === -1) {
-        alert("Neni zadna nabidka activni");
-        return;
-    }
-    var comment = prompt("Poznamka", "");
-    $.post("db", {action: "ADDTOOFFER", idOffer: vdk.activeofferid, docCode: code, id: id, ex: ex, comment: comment}, function (data) {
-        alert(data);
-    });
-};
 
  
