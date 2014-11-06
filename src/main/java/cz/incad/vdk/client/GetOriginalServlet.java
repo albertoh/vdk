@@ -82,8 +82,13 @@ public class GetOriginalServlet extends HttpServlet {
                 }
                 byIndexField("carkod", carkod, out, (String[]) fq.toArray(new String[fq.size()]), zdroj);
             } else if (path == null || path.equals("")) {
-                response.setContentType("text/html;charset=UTF-8");
-                fromDb(id, out, true);
+                if(request.getParameter("wt") != null && request.getParameter("wt").equals("xml")){
+                    response.setContentType("text/xml;charset=UTF-8");
+                    fromDb(id, out, false);
+                }else{
+                    response.setContentType("text/html;charset=UTF-8");
+                    fromDb(id, out, true);
+                }
             } else {
                 Transformer transformer;
 
@@ -124,7 +129,11 @@ public class GetOriginalServlet extends HttpServlet {
             StringWriter sw = (StringWriter) destStream.getWriter();
             out.print(sw.toString());
         } else {
-            out.println(DbUtils.getXml(id));
+            String xml = DbUtils.getXml(id);
+            if(xml.startsWith("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")){
+                xml = xml.substring("<?xml version=\"1.0\" encoding=\"UTF-8\"?>".length());
+            }
+            out.println(xml);
         }
     }
 
