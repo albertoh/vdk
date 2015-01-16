@@ -65,9 +65,9 @@ public class GetOriginalServlet extends HttpServlet {
                     fq.add("format:" + fqp);
                 }
                 String zdroj = request.getParameter("zdroj");
-                if (zdroj != null && !"".equals(zdroj)) {
-                    fq.add("zdroj:\"" + zdroj + "\"");
-                }
+//                if (zdroj != null && !"".equals(zdroj)) {
+//                    fq.add("zdroj:\"" + zdroj + "\"");
+//                }
                 byIndexField("signatura", signatura, out, (String[]) fq.toArray(new String[fq.size()]), zdroj);
             } else if (carkod != null && !carkod.equals("")) {
 
@@ -77,9 +77,9 @@ public class GetOriginalServlet extends HttpServlet {
                     fq.add("format:" + fqp);
                 }
                 String zdroj = request.getParameter("zdroj");
-                if (zdroj != null && !"".equals(zdroj)) {
-                    fq.add("zdroj:\"" + zdroj + "\"");
-                }
+                //if (zdroj != null && !"".equals(zdroj)) {
+                //    fq.add("zdroj:\"" + zdroj + "\"");
+                //}
                 byIndexField("carkod", carkod, out, (String[]) fq.toArray(new String[fq.size()]), zdroj);
             } else if (path == null || path.equals("")) {
                 if(request.getParameter("wt") != null && request.getParameter("wt").equals("xml")){
@@ -136,6 +136,11 @@ public class GetOriginalServlet extends HttpServlet {
             out.println(xml);
         }
     }
+    
+    private boolean matchIdZdroj(String id, String zdroj){
+        return id.contains(zdroj);
+    }
+    
 
     private void byIndexField(String field, String value, PrintWriter out, String[] fq, String zdroj) throws SQLException, SolrServerException, IOException, TransformerException {
         LOGGER.log(Level.INFO, "getting by " + field);
@@ -146,24 +151,15 @@ public class GetOriginalServlet extends HttpServlet {
         while (iter.hasNext()) {
 
             SolrDocument resultDoc = iter.next();
-            Collection<Object> vals = resultDoc.getFieldValues("zdroj");
+            Collection<Object> ids = resultDoc.getFieldValues("id");
 
-            Iterator<Object> it = vals.iterator();
-            int i = 0;
-            boolean inZdroj = false;
+            Iterator<Object> it = ids.iterator();
             while (it.hasNext()) {
-                String zd = (String) it.next();
-                if (zd.equals(zdroj)) {
-                    inZdroj = true;
-                    break;
+                String id = (String) it.next();
+                if (zdroj == null || matchIdZdroj(id, zdroj)) {
+                    LOGGER.log(Level.INFO, "getting xml for id: {0}", id);
+                    fromDb(id, out, false);
                 }
-                i++;
-            }
-            if (inZdroj) {
-                Collection<Object> ids = resultDoc.getFieldValues("id");
-                String id = (String) ids.toArray()[i];
-                LOGGER.log(Level.INFO, "getting xml for id: " + id);
-                fromDb(id, out, false);
             }
         }
         out.println("</recordList>");

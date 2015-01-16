@@ -14,8 +14,8 @@ Offers.prototype = {
         this.formDialog.load("forms/add_to_offer.vm", _.bind(function () {
             this.formDialog.dialog({
                 modal: true,
-                width: 580,
-                height: 500,
+                width: "90%",
+                height: 750,
                 create: function(){
                     vdk.offers.formDialog.find('input.searcher').change(function(e){
                         vdk.offers.searchDoc($(this));
@@ -30,8 +30,8 @@ Offers.prototype = {
         this.searchFormDialog.load("forms/search_to_offer.vm", _.bind(function () {
             this.searchFormDialog.dialog({
                 modal: true,
-                width: 580,
-                height: 500,
+                width: "90%",
+                height: 750,
                 create: function(){
                     vdk.offers.searchFormDialog.find('input.searcher').change(function(e){
                         vdk.offers.searchDocs($(this));
@@ -117,8 +117,8 @@ Offers.prototype = {
         
         this.importDialog.dialog({
             modal: true,
-            width: 580,
-            height: 500
+            width: "90%",
+            height: 750
         });
     },
     open: function () {
@@ -163,8 +163,8 @@ Offers.prototype = {
         }
         this.dialog.dialog({
             modal: true,
-            width: 750,
-            height: 600,
+            width: "90%",
+            height: 800,
             iconButtons: [
                 {
                     text: "Refresh",
@@ -206,11 +206,11 @@ Offers.prototype = {
         var nazev = prompt("Nazev nabidky", "");
         if (nazev !== null && nazev !== "") {
             $.getJSON("db", {offerName: nazev, action: 'NEWOFFER'}, _.bind(function (data) {
-                this.json[data.offerId] = data;
+                this.json[data.id] = data;
                 this.renderUserOffer(data);
 
-                this.setActiveOffer(data.offerId);
-                $('#activeOffers').val(data.offerId);
+                this.setActive(data.id);
+                $('#activeOffers').val(data.id);
             }, this));
         }
     },
@@ -284,7 +284,7 @@ Offers.prototype = {
                     
                     if(vdk.isLogged && vdk.user.code !== val.knihovna){
                         var wanted = vdk.offers.isWanted(zaznamOffer, vdk.user.code);
-                        if(wanted == null){
+                        if(wanted === null){
                             $(this).append(vdk.actionWant(zaznamOffer));
                             $(this).append(vdk.actionDontWant(zaznamOffer));
                             $(this).attr('title', dict['offer.want.unknown']);
