@@ -31,6 +31,11 @@
         <servlet-name>IndexOperations</servlet-name>
         <servlet-class>cz.incad.vdk.client.IndexOperations</servlet-class>
     </servlet>
+    <servlet>
+        <servlet-name>InitServlet</servlet-name>
+        <servlet-class>cz.incad.vdk.client.InitServlet</servlet-class>
+        <load-on-startup>1</load-on-startup>
+    </servlet>
     <servlet-mapping>
         <servlet-name>velocity</servlet-name>
         <url-pattern>*.vm</url-pattern>
@@ -63,7 +68,6 @@
         <servlet-name>IndexOperations</servlet-name>
         <url-pattern>/index</url-pattern>
     </servlet-mapping>
-    
     <servlet>
         <servlet-name>Harvester</servlet-name>
         <servlet-class>cz.incad.vdk.client.HarvestOperations</servlet-class>
@@ -72,7 +76,6 @@
         <servlet-name>Harvester</servlet-name>
         <url-pattern>/harvest</url-pattern>
     </servlet-mapping>
-    
     <servlet>
         <servlet-name>Search</servlet-name>
         <servlet-class>cz.incad.vdk.client.SearchServlet</servlet-class>
@@ -81,7 +84,10 @@
         <servlet-name>Search</servlet-name>
         <url-pattern>/search</url-pattern>
     </servlet-mapping>
-    
+    <servlet-mapping>
+        <servlet-name>InitServlet</servlet-name>
+        <url-pattern>/init</url-pattern>
+    </servlet-mapping>
     <session-config>
         <session-timeout>
             30
@@ -99,11 +105,7 @@
         </web-resource-collection>
         <auth-constraint>
             <role-name>sourcelib</role-name>
-        </auth-constraint>
-        <auth-constraint>
             <role-name>lib</role-name>
-        </auth-constraint>
-        <auth-constraint>
             <role-name>user</role-name>
         </auth-constraint>
         <user-data-constraint>

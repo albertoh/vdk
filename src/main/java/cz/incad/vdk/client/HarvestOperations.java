@@ -9,6 +9,9 @@ import cz.incad.vdkcommon.DbUtils;
 import cz.incad.vdkcommon.oai.OAIHarvester;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -64,6 +67,20 @@ public class HarvestOperations extends HttpServlet {
             out.print(e1.toString());
         }
     }
+    
+    private static boolean isLocalHost(HttpServletRequest req) throws ServletException{
+        Set<String> localAddresses = new HashSet<String>(); 
+        try {
+            localAddresses.add(InetAddress.getLocalHost().getHostAddress());
+            for (InetAddress inetAddress : InetAddress.getAllByName("localhost")) {
+                localAddresses.add(inetAddress.getHostAddress());
+            }
+            return localAddresses.contains(req.getRemoteAddr());
+        } catch (IOException e) {
+            throw new ServletException("Unable to lookup local addresses");
+        }
+        
+    }
 
     enum Actions {
         DISKTODB {
@@ -74,18 +91,20 @@ public class HarvestOperations extends HttpServlet {
                         JSONObject json = new JSONObject();
                         try {
                             Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
-                            if (kn == null) {
+                            if (kn == null && !isLocalHost(req)) {
                                 json.put("error", "rights.notlogged");
                             } else {
-                                if (kn.hasRole(DbUtils.Roles.ADMIN)) {
+                                if (isLocalHost(req) || kn.hasRole(DbUtils.Roles.ADMIN)) {
                                     OAIHarvester oh = new OAIHarvester(req.getParameter("conf"));
                                     oh.setFromDisk(true);
-                                    oh.setSklizen(Integer.parseInt(req.getParameter("sklizen")));
                                     if(req.getParameter("path") != null){
                                         oh.setPathToData(req.getParameter("path"));
                                     }
                                     if(req.getParameter("full") != null){
                                         oh.setFullIndex(true);
+                                    }
+                                    if(req.getParameter("dontIndex") != null){
+                                        oh.setDontIndex(true);
                                     }
                                     oh.harvest();
 
@@ -111,10 +130,10 @@ public class HarvestOperations extends HttpServlet {
                         JSONObject json = new JSONObject();
                         try {
                             Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
-                            if (kn == null) {
+                            if (kn == null && !isLocalHost(req)) {
                                 json.put("error", "rights.notlogged");
                             } else {
-                                if (kn.hasRole(DbUtils.Roles.ADMIN)) {
+                                if (isLocalHost(req) || kn.hasRole(DbUtils.Roles.ADMIN)) {
                                     OAIHarvester oh = new OAIHarvester(req.getParameter("conf"));
                                     oh.setSaveToDisk(true);
                                     oh.setFullIndex(true);
@@ -142,10 +161,10 @@ public class HarvestOperations extends HttpServlet {
                         JSONObject json = new JSONObject();
                         try {
                             Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
-                            if (kn == null) {
+                            if (kn == null && !isLocalHost(req)) {
                                 json.put("error", "rights.notlogged");
                             } else {
-                                if (kn.hasRole(DbUtils.Roles.ADMIN)) {
+                                if (isLocalHost(req) || kn.hasRole(DbUtils.Roles.ADMIN)) {
                                     OAIHarvester oh = new OAIHarvester(req.getParameter("conf"));
                                     oh.setSaveToDisk(true);
                                     oh.setResumptionToken(req.getParameter("token"));
