@@ -522,6 +522,31 @@ table.tex td.RZ{
 
 
 /* Admin */
+#admin {
+    font-size:1.2em;
+}
 #admin input{
     margin: 3px;
+}
+#admin th{
+    background-color: #aaa;
+}
+
+#admin td{
+    padding: 3px;
+}
+#admin tr:nth-child(odd){
+    background-color: #ddd;
+}
+
+#jobs li button{
+    margin-left: 5px;
+}
+
+#jobs li.running{
+    color: green;
+}
+
+#jobs li.waiting{
+    color: orangered;
 }

@@ -16,11 +16,17 @@
             <h4>$i18n.user.roles:</h4><ul class="roles"></ul>
         </div>
     </div>
-    <div>
+    <div style="clear: both;">
         <h3>$i18n.jobs</h3>
         <ul id="jobs">
         
         </ul>
+    </div>
+    <div style="clear: both;">
+        <h3>$i18n.sources</h3>
+        <table id="sources">
+            <thead><th>name</th><th>conf</th><th>cron</th><th>|</th></thead>
+        </table>
     </div>
 </div>
 <script type="text/javascript" src="js/admin.js"></script>

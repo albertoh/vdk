@@ -82,7 +82,7 @@ public class InitServlet extends HttpServlet {
                     
                     String cronVal = rs.getString("cron");
                     if (cronVal != null) {
-                        addJob(rs.getString("nazev"), 
+                        VDKScheduler.addJob(rs.getString("nazev"), 
                                 cronVal, 
                                 rs.getString("parametry"));
                     }
@@ -91,42 +91,38 @@ public class InitServlet extends HttpServlet {
                 }
             } catch (Exception ex) {
                 LOGGER.log(Level.SEVERE, null, ex);
-            } finally {
-                if (conn != null && !conn.isClosed()) {
-                    conn.close();
-                }
-            }
+            } 
             
             
     }
     
-    private void addJob(String name, String cronVal, 
-            String conf) throws SchedulerException, Exception {
-
-        
-        Map<String, Object> map = new HashMap<String, Object>();
-        HarvesterJobData jobdata = new HarvesterJobData(name, conf);
-        map.put("jobdata", jobdata);
-        JobDataMap data = JobDataMapSupport.newJobDataMap(map);
-
-        JobDetail job = JobBuilder.newJob(HarvesterJob.class)
-                .withIdentity("job_" + name, "Zdroj")
-                .setJobData(data)
-                .build();
-        if (sched.checkExists(job.getKey())) {
-            sched.deleteJob(job.getKey());
-        }
-        if(cronVal.equals("")){
-            LOGGER.log(Level.INFO, "Cron for {0} cleared ", name);
-        }else{
-            CronTrigger trigger = TriggerBuilder.newTrigger()
-                    .withIdentity("trigger_" + name, "Zdroj")
-                    .withSchedule(CronScheduleBuilder.cronSchedule(cronVal))
-                    .build();
-            sched.scheduleJob(job, trigger);
-            LOGGER.log(Level.INFO, "Cron for {0} scheduled with {1}", new Object[]{name, cronVal});
-        }
-    }
+//    private void addJob(String name, String cronVal, 
+//            String conf) throws SchedulerException, Exception {
+//
+//        
+//        Map<String, Object> map = new HashMap<String, Object>();
+//        HarvesterJobData jobdata = new HarvesterJobData(conf);
+//        map.put("jobdata", jobdata);
+//        JobDataMap data = JobDataMapSupport.newJobDataMap(map);
+//
+//        JobDetail job = JobBuilder.newJob(HarvesterJob.class)
+//                .withIdentity("job_" + name)
+//                .setJobData(data)
+//                .build();
+//        if (sched.checkExists(job.getKey())) {
+//            sched.deleteJob(job.getKey());
+//        }
+//        if(cronVal.equals("")){
+//            LOGGER.log(Level.INFO, "Cron for {0} cleared ", name);
+//        }else{
+//            CronTrigger trigger = TriggerBuilder.newTrigger()
+//                    .withIdentity("trigger_" + name)
+//                    .withSchedule(CronScheduleBuilder.cronSchedule(cronVal))
+//                    .build();
+//            sched.scheduleJob(job, trigger);
+//            LOGGER.log(Level.INFO, "Cron for {0} scheduled with {1}", new Object[]{name, cronVal});
+//        }
+//    }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**

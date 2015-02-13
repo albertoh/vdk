@@ -5,11 +5,9 @@
  */
 package cz.incad.vdk.client;
 
-import static cz.incad.vdk.client.DbOperations.getRoles;
 import cz.incad.vdkcommon.VDKScheduler;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,7 +15,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
@@ -77,6 +74,29 @@ public class SchedulerServlet extends HttpServlet {
 
     enum Actions {
 
+        STARTJOB {
+                    @Override
+                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+
+                        resp.setContentType("application/json");
+                        try {
+                            PrintWriter out = resp.getWriter();
+                            JSONObject json = new JSONObject();
+                            Scheduler scheduler = VDKScheduler.getInstance().getScheduler();
+                            String[] key = req.getParameter("key").split("\\.");
+                            scheduler.triggerJob(new JobKey(key[1],key[0]));
+                            json.put("message", "Job started");
+                            out.println(json.toString());
+                        } catch (SchedulerException ex) {
+                            LOGGER.log(Level.SEVERE, null, ex);
+                            PrintWriter out = resp.getWriter();
+                            JSONObject json = new JSONObject();
+                            json.put("error", ex.toString());
+                            out.println(json.toString());
+                        }
+                    }
+                },
+
         STOPJOB {
                     @Override
                     void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
@@ -86,8 +106,8 @@ public class SchedulerServlet extends HttpServlet {
                             PrintWriter out = resp.getWriter();
                             JSONObject json = new JSONObject();
                             Scheduler scheduler = VDKScheduler.getInstance().getScheduler();
-
-                            scheduler.interrupt(new JobKey(req.getParameter("name"), req.getParameter("group")));
+                            String[] key = req.getParameter("key").split("\\.");
+                            scheduler.interrupt(new JobKey(key[1],key[0]));
                             json.put("message", "Job stopped");
                             out.println(json.toString());
                         } catch (SchedulerException ex) {
@@ -107,38 +127,32 @@ public class SchedulerServlet extends HttpServlet {
                         try {
                             PrintWriter out = resp.getWriter();
                             JSONObject ret = new JSONObject();
-                            JSONArray ja = new JSONArray();
                             Scheduler scheduler = VDKScheduler.getInstance().getScheduler();
 
                             for (String groupName : scheduler.getJobGroupNames()) {
                                 for (JobKey jobKey : scheduler.getJobKeys(GroupMatcher
                                         .jobGroupEquals(groupName))) {
-                                    String jobName = jobKey.getName();
-                                    String jobGroup = jobKey.getGroup();
 
                                     JSONObject json = new JSONObject();
-                                    json.put("jobName", jobName);
-                                    json.put("groupName", jobGroup);
+                                    json.put("jobKey", jobKey);
 
                                     JobDetail jd = scheduler.getJobDetail(jobKey);
 
                                     List<Trigger> triggers = (List<Trigger>) scheduler.getTriggersOfJob(jobKey);
-                                    json.put("fireTime", triggers.get(0).getNextFireTime());
-                                    ja.put(json);
+                                    json.put("nextFireTime", triggers.get(0).getNextFireTime());
+                                    json.put("state", "waiting");
+                                    ret.put(jobKey.toString(), json);
                                 }
                             }
-                            ret.put("jobs", ja);
-
-                            JSONArray r = new JSONArray();
+                            
                             for (JobExecutionContext jec : scheduler.getCurrentlyExecutingJobs()) {
-                                JSONObject json = new JSONObject();
+                                String jobKey = jec.getJobDetail().getKey().toString();
+                                JSONObject json = ret.getJSONObject(jobKey);
                                 json.put("fireTime", jec.getFireTime());
-                                json.put("jobRunTime", jec.getJobRunTime());
-                                json.put("jobKey", jec.getJobDetail().getKey());
-                                r.put(json);
+                                json.put("state", "running");
+                                
                             }
-                            ret.put("running", r);
-
+                            
                             out.println(ret.toString());
                         } catch (SchedulerException ex) {
                             LOGGER.log(Level.SEVERE, null, ex);

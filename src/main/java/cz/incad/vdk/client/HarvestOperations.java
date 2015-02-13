@@ -1,8 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
+
 package cz.incad.vdk.client;
 
 import cz.incad.vdkcommon.DbUtils;
@@ -97,7 +93,7 @@ public class HarvestOperations extends HttpServlet {
                                 json.put("error", "rights.notlogged");
                             } else {
                                 if (isLocalHost(req) || kn.hasRole(DbUtils.Roles.ADMIN)) {
-                                    HarvesterJobData jobdata = new HarvesterJobData(kn.getCode(), req.getParameter("conf"));
+                                    HarvesterJobData jobdata = new HarvesterJobData(req.getParameter("conf"));
                                     jobdata.setFromDisk(true);
                                     if(req.getParameter("path") != null){
                                         jobdata.setPathToData(req.getParameter("path"));
@@ -145,7 +141,7 @@ public class HarvestOperations extends HttpServlet {
 //                                    oh.setFullIndex(true);
 //                                    oh.harvest();
                                     HarvesterJob hj = new HarvesterJob();
-                                    HarvesterJobData jobdata = new HarvesterJobData(kn.getCode(), req.getParameter("conf"));
+                                    HarvesterJobData jobdata = new HarvesterJobData(req.getParameter("conf"));
                                     if(req.getParameter("todisk") != null){
                                         jobdata.setSaveToDisk(true);
                                     }
@@ -180,7 +176,7 @@ public class HarvestOperations extends HttpServlet {
                                 json.put("error", "rights.notlogged");
                             } else {
                                 if (isLocalHost(req) || kn.hasRole(DbUtils.Roles.ADMIN)) {
-                                    HarvesterJobData jobdata = new HarvesterJobData(kn.getCode(), req.getParameter("conf"));
+                                    HarvesterJobData jobdata = new HarvesterJobData(req.getParameter("conf"));
                                     jobdata.setSaveToDisk(true);
                                     jobdata.setResumptionToken(req.getParameter("token"));
                                     OAIHarvester oh = new OAIHarvester(jobdata);
@@ -214,7 +210,7 @@ public class HarvestOperations extends HttpServlet {
                                     
                                     
                                     HarvesterJob hj = new HarvesterJob();
-                                    HarvesterJobData jobdata = new HarvesterJobData(kn.getCode(), req.getParameter("conf"));
+                                    HarvesterJobData jobdata = new HarvesterJobData(req.getParameter("conf"));
                                     if(req.getParameter("todisk") != null){
                                         jobdata.setSaveToDisk(true);
                                     }

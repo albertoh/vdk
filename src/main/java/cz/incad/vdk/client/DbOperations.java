@@ -4,6 +4,7 @@ import au.com.bytecode.opencsv.CSVReader;
 import cz.incad.vdkcommon.DbUtils;
 import cz.incad.vdkcommon.Options;
 import cz.incad.vdkcommon.Slouceni;
+import cz.incad.vdkcommon.VDKScheduler;
 import cz.incad.vdkcommon.solr.IndexerQuery;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -524,11 +525,7 @@ public class DbOperations extends HttpServlet {
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
             json.put("error", ex);
-        } finally {
-            if (conn != null && !conn.isClosed()) {
-                conn.close();
-            }
-        }
+        } 
         return json;
     }
 
@@ -1005,10 +1002,6 @@ public class DbOperations extends HttpServlet {
                         } catch (Exception ex) {
                             LOGGER.log(Level.SEVERE, "upload failed", ex);
                             out.println(ex);
-                        } finally {
-                            if (conn != null && !conn.isClosed()) {
-                                conn.close();
-                            }
                         }
                     }
                 },
@@ -1047,11 +1040,7 @@ public class DbOperations extends HttpServlet {
                         } catch (Exception ex) {
                             LOGGER.log(Level.SEVERE, "upload failed", ex);
                             out.println(ex);
-                        } finally {
-                            if (conn != null && !conn.isClosed()) {
-                                conn.close();
-                            }
-                        }
+                        } 
                     }
                 },
         OFFERTOJSON {
@@ -1142,10 +1131,6 @@ public class DbOperations extends HttpServlet {
                                 } catch (Exception ex) {
                                     LOGGER.log(Level.SEVERE, "import to offer failed", ex);
                                     json.put("error", ex.toString());
-                                } finally {
-                                    if (conn != null && !conn.isClosed()) {
-                                        conn.close();
-                                    }
                                 }
                                 uploadedStream.close();
                             }
@@ -1222,10 +1207,6 @@ public class DbOperations extends HttpServlet {
                         } catch (Exception ex) {
                             LOGGER.log(Level.SEVERE, "add to offer failed", ex);
                             json.put("error", ex.toString());
-                        } finally {
-                            if (conn != null && !conn.isClosed()) {
-                                conn.close();
-                            }
                         }
                         out.println(json.toString());
                     }
@@ -1280,11 +1261,7 @@ public class DbOperations extends HttpServlet {
                             LOGGER.log(Level.SEVERE, "add to offer failed", ex);
                             json.put("error", ex.toString());
                             json.put("getSQLState", ex.getSQLState());
-                        } finally {
-                            if (conn != null && !conn.isClosed()) {
-                                conn.close();
-                            }
-                        }
+                        } 
                         out.println(json.toString());
                     }
                 },
@@ -1322,11 +1299,7 @@ public class DbOperations extends HttpServlet {
                         } catch (Exception ex) {
                             LOGGER.log(Level.SEVERE, "add to demand failed", ex);
                             json.put("error", ex.toString());
-                        } finally {
-                            if (conn != null && !conn.isClosed()) {
-                                conn.close();
-                            }
-                        }
+                        } 
                         out.println(json.toString());
                     }
                 },
@@ -1358,11 +1331,7 @@ public class DbOperations extends HttpServlet {
                         } catch (Exception ex) {
                             LOGGER.log(Level.SEVERE, "remove offer failed", ex);
                             json.put("error", ex.toString());
-                        } finally {
-                            if (conn != null && !conn.isClosed()) {
-                                conn.close();
-                            }
-                        }
+                        } 
                         out.println(json.toString());
                     }
                 },
@@ -1389,11 +1358,7 @@ public class DbOperations extends HttpServlet {
                         } catch (Exception ex) {
                             LOGGER.log(Level.SEVERE, "remove demand failed", ex);
                             json.put("error", ex.toString());
-                        } finally {
-                            if (conn != null && !conn.isClosed()) {
-                                conn.close();
-                            }
-                        }
+                        } 
                         out.println(json.toString());
                     }
                 },
@@ -1419,11 +1384,7 @@ public class DbOperations extends HttpServlet {
                         } catch (Exception ex) {
                             PrintWriter out = resp.getWriter();
                             out.println(ex);
-                        } finally {
-                            if (conn != null && !conn.isClosed()) {
-                                conn.close();
-                            }
-                        }
+                        } 
 
                     }
                 },
@@ -1443,11 +1404,7 @@ public class DbOperations extends HttpServlet {
                         } catch (Exception ex) {
                             PrintWriter out = resp.getWriter();
                             out.println(ex);
-                        } finally {
-                            if (conn != null && !conn.isClosed()) {
-                                conn.close();
-                            }
-                        }
+                        } 
 
                     }
                 },
@@ -1514,6 +1471,68 @@ public class DbOperations extends HttpServlet {
 
             }
         },
+        GETSOURCES {
+                    @Override
+                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                        resp.setContentType("application/json");
+                        try {
+                            PrintWriter out = resp.getWriter();
+                            JSONObject ret = new JSONObject();
+                            Connection conn = DbUtils.getConnection();
+                            String sql = "select * from ZDROJ";
+                            PreparedStatement ps = conn.prepareStatement(sql);
+
+                            ResultSet rs = ps.executeQuery();
+                            while (rs.next()) {
+                                JSONObject json = new JSONObject();
+                                json.put("name", rs.getString("nazev"));
+                                json.put("conf", rs.getString("parametry"));
+                                json.put("cron", rs.getString("cron"));
+                                ret.put(rs.getString("nazev"), json);
+                            }
+                            out.println(ret.toString());
+
+                        } catch (Exception ex) {
+                            PrintWriter out = resp.getWriter();
+                            JSONObject json = new JSONObject();
+                            json.put("error", ex.toString());
+                            out.println(json.toString());
+                        }
+
+                    }
+                },
+        SAVESOURCE {
+                    @Override
+                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                        resp.setContentType("application/json");
+                        try {
+                            PrintWriter out = resp.getWriter();
+                            JSONObject ret = new JSONObject();
+                            Connection conn = DbUtils.getConnection();
+                            String sql = "update ZDROJ set cron=? where nazev=?";
+                            PreparedStatement ps = conn.prepareStatement(sql);
+                            ps.setString(1, req.getParameter("cron"));
+                            ps.setString(2, req.getParameter("name"));
+
+                            ps.executeUpdate();
+                            
+                            VDKScheduler.addJob(req.getParameter("name"), 
+                                req.getParameter("cron"), 
+                                req.getParameter("conf"));
+                            
+                            
+                            ret.put("message", "Source saved.");
+                            out.println(ret.toString());
+
+                        } catch (Exception ex) {
+                            PrintWriter out = resp.getWriter();
+                            JSONObject json = new JSONObject();
+                            json.put("error", ex.toString());
+                            out.println(json.toString());
+                        }
+
+                    }
+                },
         GETUSERS {
                     @Override
                     void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
