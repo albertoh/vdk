@@ -7,6 +7,7 @@ package cz.incad.vdk.client;
 
 import static cz.incad.vdk.client.DbOperations.LOGGER;
 import cz.incad.vdkcommon.DbUtils;
+import cz.incad.vdkcommon.VDKScheduler;
 import cz.incad.vdkcommon.oai.HarvesterJob;
 import cz.incad.vdkcommon.oai.HarvesterJobData;
 import java.io.IOException;
@@ -29,10 +30,8 @@ import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
-import org.quartz.SchedulerFactory;
 import org.quartz.TriggerBuilder;
 import org.quartz.core.jmx.JobDataMapSupport;
-import org.quartz.impl.StdSchedulerFactory;
 
 /**
  *
@@ -59,8 +58,7 @@ public class InitServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         try {
-            SchedulerFactory sf = new StdSchedulerFactory();
-            sched = sf.getScheduler();
+            sched = VDKScheduler.getInstance().getScheduler();
             setCron();
             sched.start();
         } catch (SQLException ex) {
@@ -103,11 +101,11 @@ public class InitServlet extends HttpServlet {
     }
     
     private void addJob(String name, String cronVal, 
-            String conf) throws SchedulerException {
+            String conf) throws SchedulerException, Exception {
 
         
         Map<String, Object> map = new HashMap<String, Object>();
-        HarvesterJobData jobdata = new HarvesterJobData(conf);
+        HarvesterJobData jobdata = new HarvesterJobData(name, conf);
         map.put("jobdata", jobdata);
         JobDataMap data = JobDataMapSupport.newJobDataMap(map);
 

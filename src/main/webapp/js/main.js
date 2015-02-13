@@ -404,6 +404,89 @@ Confirm.prototype = {
 };
 
 
+function Form() {
+
+}
+
+Form.prototype = {
+    open: function (opts, f) {
+        if ($("#dialog-form").length === 0) {
+            this.create(opts);
+        } else {
+            $("#dialog-form>div input").val('');
+        }
+        $("#dialog-form").dialog({
+            resizable: false,
+            modal: true,
+            title: vdk.translate('common.formDialog'),
+            buttons: {
+                "OK": function () {
+                    if (f){
+                        var data = [];
+                        for(var i = 0; i< opts.length; i++){
+                            var opt = {};
+                            opt[opts[i].name] = $("#cp_form _" + opts[i].name).val();
+                            data.push(opt);
+                        }
+                        f.apply(null, data);
+                    }
+                    $(this).dialog("close");
+                },
+                Cancel: function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+    },
+    create: function (opts) {
+        var dialog = $('<div id="dialog-form"><div>');
+        var div = $('<div/>');
+        for(var i = 0; i< opts.length; i++){
+            div.append('<div><label for="cp_form_'+opts[i].name+'">'+opts[i].label+'</label><input id="cp_form_'+opts[i].name+'" name="prompt" type="text" /></div>');
+        }
+        
+        
+        dialog.append(div);
+        $('body').append(dialog);
+    }
+};
+
+function Prompt() {
+
+}
+
+Prompt.prototype = {
+    open: function (f) {
+        if ($("#dialog-prompt").length === 0) {
+            this.create();
+        } else {
+            $("#dialog-prompt>div input").val('');
+        }
+        $("#dialog-prompt").dialog({
+            resizable: false,
+            modal: true,
+            title: vdk.translate('common.promptDialog'),
+            buttons: {
+                "OK": function () {
+                    if (f)
+                        f.apply(null, [{comment:$("#cp_prompt").val()}]);
+                    $(this).dialog("close");
+                },
+                Cancel: function () {
+                    $(this).dialog("close");
+                }
+            }
+        });
+    },
+    create: function () {
+        var dialog = $('<div id="dialog-prompt"><div>');
+        var div = $('<div/>');
+        
+        div.append('<div><label for="cp_prompt">comment</label><input id="cp_prompt" name="prompt" type="text" /></div>');
+        dialog.append(div);
+        $('body').append(dialog);
+    }
+};
 
 function PriceAndComment() {
 

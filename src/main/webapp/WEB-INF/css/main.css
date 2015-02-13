@@ -43,6 +43,17 @@ a.image:hover {
 }
 
 
+.link {
+    cursor:pointer;
+}
+.link:hover {
+    text-decoration:underline;
+}
+.selected{
+    font-weight: bold;
+}
+
+
 .clear{
     display:block;
     clear:both;
@@ -481,9 +492,6 @@ table.tex td.RZ{
     color: red;
 }
 
-#offersdialog li.selected{
-    font-weight: bold;
-}
 #useroffer li{
      position:relative;
      min-height: 20px;
@@ -510,4 +518,10 @@ table.tex td.RZ{
 #searchToOfferForm li{
     list-style: none;
     padding: 3px;
+}
+
+
+/* Admin */
+#admin input{
+    margin: 3px;
 }

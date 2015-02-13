@@ -36,6 +36,10 @@
         <servlet-class>cz.incad.vdk.client.InitServlet</servlet-class>
         <load-on-startup>1</load-on-startup>
     </servlet>
+    <servlet>
+        <servlet-name>SchedulerServlet</servlet-name>
+        <servlet-class>cz.incad.vdk.client.SchedulerServlet</servlet-class>
+    </servlet>
     <servlet-mapping>
         <servlet-name>velocity</servlet-name>
         <url-pattern>*.vm</url-pattern>
@@ -87,6 +91,10 @@
     <servlet-mapping>
         <servlet-name>InitServlet</servlet-name>
         <url-pattern>/init</url-pattern>
+    </servlet-mapping>
+    <servlet-mapping>
+        <servlet-name>SchedulerServlet</servlet-name>
+        <url-pattern>/sched</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

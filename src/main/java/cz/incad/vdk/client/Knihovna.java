@@ -3,10 +3,12 @@ package cz.incad.vdk.client;
 
 import cz.incad.vdkcommon.DbUtils;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Calendar;
 import javax.naming.Context;
 import javax.naming.InitialContext;
 import javax.naming.NamingException;
@@ -42,6 +44,19 @@ public class Knihovna {
             this.telefon = rs.getString("telefon");
             this.email = rs.getString("email");
         }
+    }
+    
+    public void saveToDb() throws NamingException, SQLException{
+        Connection conn = getConnection();
+        String sql = "update KNIHOVNA set "
+                    + "nazev=?, priorita=?, telefon=?, email=?, update_timestamp=? where code='" + this.code + "'";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setString(1, this.nazev);
+            ps.setInt(2, this.priorita);
+            ps.setString(3, this.telefon);
+            ps.setString(4, this.email);
+            ps.setDate(5, new Date(Calendar.getInstance().getTime().getTime()));
+            ps.executeUpdate();
     }
     
     private ArrayList<String> getRoles(Connection conn, String code) throws SQLException{

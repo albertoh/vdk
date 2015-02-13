@@ -6,6 +6,8 @@
 package cz.incad.vdk.client;
 
 import cz.incad.vdkcommon.DbUtils;
+import cz.incad.vdkcommon.oai.HarvesterJob;
+import cz.incad.vdkcommon.oai.HarvesterJobData;
 import cz.incad.vdkcommon.oai.OAIHarvester;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -95,17 +97,18 @@ public class HarvestOperations extends HttpServlet {
                                 json.put("error", "rights.notlogged");
                             } else {
                                 if (isLocalHost(req) || kn.hasRole(DbUtils.Roles.ADMIN)) {
-                                    OAIHarvester oh = new OAIHarvester(req.getParameter("conf"));
-                                    oh.setFromDisk(true);
+                                    HarvesterJobData jobdata = new HarvesterJobData(kn.getCode(), req.getParameter("conf"));
+                                    jobdata.setFromDisk(true);
                                     if(req.getParameter("path") != null){
-                                        oh.setPathToData(req.getParameter("path"));
+                                        jobdata.setPathToData(req.getParameter("path"));
                                     }
                                     if(req.getParameter("full") != null){
-                                        oh.setFullIndex(true);
+                                        jobdata.setFullIndex(true);
                                     }
                                     if(req.getParameter("dontIndex") != null){
-                                        oh.setDontIndex(true);
+                                        jobdata.setDontIndex(true);
                                     }
+                                    OAIHarvester oh = new OAIHarvester(jobdata);
                                     oh.harvest();
 
                                     json.put("message", "harvest finished.");
@@ -134,10 +137,22 @@ public class HarvestOperations extends HttpServlet {
                                 json.put("error", "rights.notlogged");
                             } else {
                                 if (isLocalHost(req) || kn.hasRole(DbUtils.Roles.ADMIN)) {
-                                    OAIHarvester oh = new OAIHarvester(req.getParameter("conf"));
-                                    oh.setSaveToDisk(true);
-                                    oh.setFullIndex(true);
-                                    oh.harvest();
+//                                    OAIHarvester oh = new OAIHarvester(req.getParameter("conf"));
+//                                    if(req.getParameter("todisk") != null){
+//                                        oh.setSaveToDisk(true);
+//                                    }
+//                                    
+//                                    oh.setFullIndex(true);
+//                                    oh.harvest();
+                                    HarvesterJob hj = new HarvesterJob();
+                                    HarvesterJobData jobdata = new HarvesterJobData(kn.getCode(), req.getParameter("conf"));
+                                    if(req.getParameter("todisk") != null){
+                                        jobdata.setSaveToDisk(true);
+                                    }
+                                    
+                                    jobdata.setFullIndex(true);
+                                    
+                                    hj.harvestScheduled(jobdata);
 
                                     json.put("message", "harvest finished.");
                                 } else {
@@ -165,9 +180,10 @@ public class HarvestOperations extends HttpServlet {
                                 json.put("error", "rights.notlogged");
                             } else {
                                 if (isLocalHost(req) || kn.hasRole(DbUtils.Roles.ADMIN)) {
-                                    OAIHarvester oh = new OAIHarvester(req.getParameter("conf"));
-                                    oh.setSaveToDisk(true);
-                                    oh.setResumptionToken(req.getParameter("token"));
+                                    HarvesterJobData jobdata = new HarvesterJobData(kn.getCode(), req.getParameter("conf"));
+                                    jobdata.setSaveToDisk(true);
+                                    jobdata.setResumptionToken(req.getParameter("token"));
+                                    OAIHarvester oh = new OAIHarvester(jobdata);
                                     oh.harvest();
 
                                     json.put("message", "harvest finished.");
@@ -195,11 +211,22 @@ public class HarvestOperations extends HttpServlet {
                                 json.put("error", "rights.notlogged");
                             } else {
                                 if (kn.hasRole(DbUtils.Roles.ADMIN)) {
-                                    OAIHarvester oh = new OAIHarvester(req.getParameter("conf"));
-                                    oh.setSaveToDisk(true);
-                                    oh.harvest();
+                                    
+                                    
+                                    HarvesterJob hj = new HarvesterJob();
+                                    HarvesterJobData jobdata = new HarvesterJobData(kn.getCode(), req.getParameter("conf"));
+                                    if(req.getParameter("todisk") != null){
+                                        jobdata.setSaveToDisk(true);
+                                    }
+                                    
+                                    hj.harvestScheduled(jobdata);
+                                    
+                                    
+//                                    OAIHarvester oh = new OAIHarvester(req.getParameter("conf"));
+//                                    oh.setSaveToDisk(true);
+//                                    oh.harvest();
 
-                                    json.put("message", "harvest finished.");
+                                    json.put("message", "harvest scheduled.");
                                 } else {
                                     json.put("error", "rights.insuficient");
                                 }

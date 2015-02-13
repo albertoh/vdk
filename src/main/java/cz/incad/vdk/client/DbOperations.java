@@ -17,6 +17,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -571,11 +572,7 @@ public class DbOperations extends HttpServlet {
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
             json.put("error", ex);
-        } finally {
-            if (conn != null && !conn.isClosed()) {
-                conn.close();
-            }
-        }
+        } 
         return json;
     }
 
@@ -622,11 +619,7 @@ public class DbOperations extends HttpServlet {
             }
         } catch (Exception ex) {
             json.put("error", ex);
-        } finally {
-            if (conn != null && !conn.isClosed()) {
-                conn.close();
-            }
-        }
+        } 
         return json;
     }
 
@@ -652,11 +645,7 @@ public class DbOperations extends HttpServlet {
             }
         } catch (Exception ex) {
             json.put("error", ex);
-        } finally {
-            if (conn != null && !conn.isClosed()) {
-                conn.close();
-            }
-        }
+        } 
         return json;
     }
 
@@ -668,6 +657,46 @@ public class DbOperations extends HttpServlet {
             return kn.getId();
         }
         return 0;
+    }
+    
+    
+    public static ArrayList<String> getRoles() throws Exception {
+
+        Connection conn = null;
+        ArrayList<String> ret = new ArrayList<String>();
+        try {
+            conn = DbUtils.getConnection();
+            String sql = "select distinct(name) from ROLE";
+            PreparedStatement ps = conn.prepareStatement(sql);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                ret.add(rs.getString(1));
+            }
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+        } 
+        return ret;
+    }
+    
+
+    public static ArrayList<Knihovna> getUsers() throws Exception {
+
+        Connection conn = null;
+        ArrayList<Knihovna> ret = new ArrayList<Knihovna>();
+        try {
+            conn = DbUtils.getConnection();
+            String sql = "select code from KNIHOVNA";
+            PreparedStatement ps = conn.prepareStatement(sql);
+
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                ret.add(new Knihovna(rs.getString("code")));
+            }
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+        } 
+        return ret;
     }
 
     enum Actions {
@@ -694,11 +723,7 @@ public class DbOperations extends HttpServlet {
                         } catch (Exception ex) {
                             LOGGER.log(Level.SEVERE, "get wanted failed", ex);
                             json.put("error", ex.toString());
-                        } finally {
-                            if (conn != null && !conn.isClosed()) {
-                                conn.close();
-                            }
-                        }
+                        } 
                         out.println(json.toString());
                     }
                 },
@@ -725,11 +750,7 @@ public class DbOperations extends HttpServlet {
                         } catch (Exception ex) {
                             LOGGER.log(Level.SEVERE, "get wanted failed", ex);
                             json.put("error", ex.toString());
-                        } finally {
-                            if (conn != null && !conn.isClosed()) {
-                                conn.close();
-                            }
-                        }
+                        } 
                         out.println(json.toString());
                     }
                 },
@@ -756,11 +777,7 @@ public class DbOperations extends HttpServlet {
                         } catch (Exception ex) {
                             LOGGER.log(Level.SEVERE, "get wanted failed", ex);
                             json.put("error", ex.toString());
-                        } finally {
-                            if (conn != null && !conn.isClosed()) {
-                                conn.close();
-                            }
-                        }
+                        } 
                         out.println(json.toString());
                     }
                 },
@@ -781,11 +798,7 @@ public class DbOperations extends HttpServlet {
                             LOGGER.log(Level.SEVERE, "get wanted failed", ex);
                             JSONObject json = new JSONObject();
                             json.put("error", ex.toString());
-                        } finally {
-                            if (conn != null && !conn.isClosed()) {
-                                conn.close();
-                            }
-                        }
+                        } 
                     }
                 },
         WANTOFFER {
@@ -816,11 +829,7 @@ public class DbOperations extends HttpServlet {
                         } catch (Exception ex) {
                             LOGGER.log(Level.SEVERE, "want offer failed", ex);
                             json.put("error", ex.toString());
-                        } finally {
-                            if (conn != null && !conn.isClosed()) {
-                                conn.close();
-                            }
-                        }
+                        } 
                         out.println(json.toString());
                     }
                 },
@@ -882,11 +891,7 @@ public class DbOperations extends HttpServlet {
 
                         } catch (Exception ex) {
                             out.println(ex);
-                        } finally {
-                            if (conn != null && !conn.isClosed()) {
-                                conn.close();
-                            }
-                        }
+                        } 
 
                     }
                 },
@@ -918,11 +923,7 @@ public class DbOperations extends HttpServlet {
 
                         } catch (Exception ex) {
                             out.println(ex);
-                        } finally {
-                            if (conn != null && !conn.isClosed()) {
-                                conn.close();
-                            }
-                        }
+                        } 
 
                     }
                 },
@@ -942,11 +943,7 @@ public class DbOperations extends HttpServlet {
                         } catch (Exception ex) {
                             LOGGER.log(Level.SEVERE, "upload failed", ex);
                             out.println(ex);
-                        } finally {
-                            if (conn != null && !conn.isClosed()) {
-                                conn.close();
-                            }
-                        }
+                        } 
                     }
                 },
         CLOSEDEMAND {
@@ -965,11 +962,7 @@ public class DbOperations extends HttpServlet {
                         } catch (Exception ex) {
                             LOGGER.log(Level.SEVERE, "action failed", ex);
                             out.println(ex);
-                        } finally {
-                            if (conn != null && !conn.isClosed()) {
-                                conn.close();
-                            }
-                        }
+                        } 
                     }
                 },
         NEWDEMAND {
@@ -1520,7 +1513,88 @@ public class DbOperations extends HttpServlet {
                 out.println(json.toString());
 
             }
-        };
+        },
+        GETUSERS {
+                    @Override
+                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                        resp.setContentType("application/json");
+                        try {
+                            PrintWriter out = resp.getWriter();
+                            ArrayList<Knihovna> kns = getUsers();
+                            
+                            JSONObject json = new JSONObject();
+                            for(Knihovna k : kns){
+                                json.put(k.getCode(), k.getJson());
+                            }
+                            out.println(json.toString());
+
+                        } catch (Exception ex) {
+                            PrintWriter out = resp.getWriter();
+                            JSONObject json = new JSONObject();
+                            json.put("error", ex.toString());
+                            out.println(json.toString());
+                        }
+
+                    }
+                },
+        SAVEUSER {
+                    @Override
+                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                        resp.setContentType("application/json");
+                        PrintWriter out = resp.getWriter();
+                        JSONObject json = new JSONObject();
+                        try {
+                            Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                            if (kn == null) {
+                                json.put("error", "rights.notlogged");
+                            } else {
+                                if (kn.hasRole(DbUtils.Roles.ADMIN)) {
+                                    
+                                    String code= req.getParameter("code");
+                                    Knihovna uk = new Knihovna(code);
+                                    uk.setNazev(req.getParameter("name"));
+                                    uk.setEmail(req.getParameter("email"));
+                                    uk.setTelefon(req.getParameter("telefon"));
+                                    uk.setPriorita(Integer.parseInt(req.getParameter("priorita")));
+                                    uk.saveToDb();
+            
+                                    json.put("message", "User saved.");
+                                } else {
+                                    json.put("error", "rights.insuficient");
+                                }
+                            }
+                        } catch (Exception ex) {
+                            LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
+                            json.put("error", ex.toString());
+                        }
+
+                        out.println(json.toString());
+
+                    }
+                },
+        GETROLES {
+                    @Override
+                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                        resp.setContentType("application/json");
+                        try {
+                            PrintWriter out = resp.getWriter();
+                            ArrayList<String> rs = getRoles();
+                            
+                            JSONArray json = new JSONArray();
+                            for(String r : rs){
+                                json.put(r);
+                            }
+                            out.println(json.toString());
+
+                        } catch (Exception ex) {
+                            PrintWriter out = resp.getWriter();
+                            JSONObject json = new JSONObject();
+                            json.put("error", ex.toString());
+                            out.println(json.toString());
+                        }
+
+                    }
+                };
 
         abstract void doPerform(HttpServletRequest req, HttpServletResponse response) throws Exception;
     }
