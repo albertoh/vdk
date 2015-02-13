@@ -216,11 +216,7 @@ public class Reports extends HttpServlet {
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
             json.put("error", ex);
-        } finally {
-            if (conn != null && !conn.isClosed()) {
-                conn.close();
-            }
-        }
+        } 
         return json;
     }
 
@@ -264,11 +260,7 @@ public class Reports extends HttpServlet {
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
             json.put("error", ex);
-        } finally {
-            if (conn != null && !conn.isClosed()) {
-                conn.close();
-            }
-        }
+        } 
         return json;
     }
 
@@ -315,11 +307,7 @@ public class Reports extends HttpServlet {
             }
         } catch (Exception ex) {
             json.put("error", ex);
-        } finally {
-            if (conn != null && !conn.isClosed()) {
-                conn.close();
-            }
-        }
+        } 
         return json;
     }
 
@@ -349,11 +337,7 @@ public class Reports extends HttpServlet {
                         } catch (Exception ex) {
                             LOGGER.log(Level.SEVERE, "get wanted failed", ex);
                             json.put("error", ex.toString());
-                        } finally {
-                            if (conn != null && !conn.isClosed()) {
-                                conn.close();
-                            }
-                        }
+                        } 
                         out.println(json.toString());
                     }
                 },
@@ -380,11 +364,7 @@ public class Reports extends HttpServlet {
                         } catch (Exception ex) {
                             LOGGER.log(Level.SEVERE, "get wanted failed", ex);
                             json.put("error", ex.toString());
-                        } finally {
-                            if (conn != null && !conn.isClosed()) {
-                                conn.close();
-                            }
-                        }
+                        } 
                         out.println(json.toString());
                     }
                 },
@@ -411,11 +391,7 @@ public class Reports extends HttpServlet {
                         } catch (Exception ex) {
                             LOGGER.log(Level.SEVERE, "get wanted failed", ex);
                             json.put("error", ex.toString());
-                        } finally {
-                            if (conn != null && !conn.isClosed()) {
-                                conn.close();
-                            }
-                        }
+                        } 
                         out.println(json.toString());
                     }
                 },
@@ -436,11 +412,7 @@ public class Reports extends HttpServlet {
                             LOGGER.log(Level.SEVERE, "get wanted failed", ex);
                             JSONObject json = new JSONObject();
                             json.put("error", ex.toString());
-                        } finally {
-                            if (conn != null && !conn.isClosed()) {
-                                conn.close();
-                            }
-                        }
+                        } 
                     }
                 },
         GETDEMANDS {
