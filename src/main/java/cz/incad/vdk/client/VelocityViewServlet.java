@@ -5,6 +5,7 @@
  */
 package cz.incad.vdk.client;
 
+import cz.incad.vdkcommon.Options;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -16,6 +17,7 @@ public class VelocityViewServlet extends org.apache.velocity.tools.view.Velocity
     @Override
     protected void setContentType(HttpServletRequest request,
             HttpServletResponse response) {
+        Options.resetInstance();
         LoggedController logControl =  new LoggedController(request);
         request.getSession().setAttribute(LoggedController.LOG_CONTROL_KEY, logControl);
         if (request.getRequestURI().endsWith(".css")) {

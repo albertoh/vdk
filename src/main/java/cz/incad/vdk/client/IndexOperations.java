@@ -671,7 +671,7 @@ public class IndexOperations extends HttpServlet {
                                 
                                 if (kn.hasRole(DbUtils.Roles.ADMIN)) {
                                     Indexer indexer = new Indexer();
-                                    indexer.reindex(DbUtils.getConnection());
+                                    indexer.reindex();
                                 } else {
                                     json.put("error", "rights.insuficient");
                                 }
@@ -697,7 +697,7 @@ public class IndexOperations extends HttpServlet {
                                 
                                 if (kn.hasRole(DbUtils.Roles.ADMIN)) {
                                     Indexer indexer = new Indexer();
-                                    indexer.reindex(DbUtils.getConnection());
+                                    indexer.reindex();
                                     indexAllOffers(DbUtils.getConnection());
                                     indexAllDemands(DbUtils.getConnection());
                                     indexAllWanted(DbUtils.getConnection());
@@ -726,7 +726,7 @@ public class IndexOperations extends HttpServlet {
                                 
                                 if (kn.hasRole(DbUtils.Roles.ADMIN)) {
                                     Indexer indexer = new Indexer();
-                                    indexer.reindexDoc(DbUtils.getConnection(), req.getParameter("code"));
+                                    indexer.reindexDoc(req.getParameter("code"));
                                 } else {
                                     json.put("error", "rights.insuficient");
                                 }

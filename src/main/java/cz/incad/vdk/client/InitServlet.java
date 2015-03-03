@@ -8,30 +8,19 @@ package cz.incad.vdk.client;
 import static cz.incad.vdk.client.DbOperations.LOGGER;
 import cz.incad.vdkcommon.DbUtils;
 import cz.incad.vdkcommon.VDKScheduler;
-import cz.incad.vdkcommon.oai.HarvesterJob;
-import cz.incad.vdkcommon.oai.HarvesterJobData;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.quartz.CronScheduleBuilder;
-import org.quartz.CronTrigger;
-import org.quartz.JobBuilder;
-import org.quartz.JobDataMap;
-import org.quartz.JobDetail;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
-import org.quartz.TriggerBuilder;
-import org.quartz.core.jmx.JobDataMapSupport;
 
 /**
  *
@@ -53,6 +42,15 @@ public class InitServlet extends HttpServlet {
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+    }
+    
+    @Override
+    public void destroy(){
+        try {
+            sched.shutdown(false);
+        } catch (SchedulerException ex) {
+            Logger.getLogger(InitServlet.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     @Override
@@ -95,34 +93,6 @@ public class InitServlet extends HttpServlet {
             
             
     }
-    
-//    private void addJob(String name, String cronVal, 
-//            String conf) throws SchedulerException, Exception {
-//
-//        
-//        Map<String, Object> map = new HashMap<String, Object>();
-//        HarvesterJobData jobdata = new HarvesterJobData(conf);
-//        map.put("jobdata", jobdata);
-//        JobDataMap data = JobDataMapSupport.newJobDataMap(map);
-//
-//        JobDetail job = JobBuilder.newJob(HarvesterJob.class)
-//                .withIdentity("job_" + name)
-//                .setJobData(data)
-//                .build();
-//        if (sched.checkExists(job.getKey())) {
-//            sched.deleteJob(job.getKey());
-//        }
-//        if(cronVal.equals("")){
-//            LOGGER.log(Level.INFO, "Cron for {0} cleared ", name);
-//        }else{
-//            CronTrigger trigger = TriggerBuilder.newTrigger()
-//                    .withIdentity("trigger_" + name)
-//                    .withSchedule(CronScheduleBuilder.cronSchedule(cronVal))
-//                    .build();
-//            sched.scheduleJob(job, trigger);
-//            LOGGER.log(Level.INFO, "Cron for {0} scheduled with {1}", new Object[]{name, cronVal});
-//        }
-//    }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
     /**
