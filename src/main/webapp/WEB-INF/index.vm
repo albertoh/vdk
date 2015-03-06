@@ -9,7 +9,7 @@
     #parse("searchForm.vm")
     <div class="clear"></div>
     #parse("content.vm")
-    <div class="clear"></div>
+    <div class="clear" style="height: 32px;"></div>
     #parse("footer.vm")
     </div>
 </div>

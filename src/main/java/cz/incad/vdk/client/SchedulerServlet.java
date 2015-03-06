@@ -135,6 +135,8 @@ public class SchedulerServlet extends HttpServlet {
 
                                     JSONObject json = new JSONObject();
                                     json.put("jobKey", jobKey);
+                                    json.put("group", jobKey.getGroup());
+                                    json.put("name", jobKey.getName());
 
                                     JobDetail jd = scheduler.getJobDetail(jobKey);
 

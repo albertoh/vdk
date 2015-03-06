@@ -1,6 +1,12 @@
 <div id="admin">
     <h2>$i18n.administration</h2>
-    <div>
+<div class="tabs">
+<ul>
+    <li><a href="#tabs-user">$i18n.users</a></li>
+    <li><a href="#tabs-jobs">$i18n.admin.jobs</a></li>
+    <li><a href="#tabs-sources">$i18n.admin.sources</a></li>
+</ul>
+    <div id="tabs-user">
         <h3>$i18n.users</h3>
         <ul id="users" style="float: left; border-right: 1px solid #ccc; width: 200px;padding: 3px;">
         </ul>
@@ -15,19 +21,22 @@
             <label for="i_email">email: </label><input id="i_email" class="email"></input>
             <h4>$i18n.user.roles:</h4><ul class="roles"></ul>
         </div>
+<div style="clear:both;">
+</div>
     </div>
-    <div style="clear: both;">
-        <h3>$i18n.jobs</h3>
+    <div id="tabs-jobs">
+        <h3>$i18n.admin.jobs</h3>
         <ul id="jobs">
         
         </ul>
     </div>
-    <div style="clear: both;">
-        <h3>$i18n.sources</h3>
+    <div id="tabs-sources">
+        <h3>$i18n.admin.sources</h3>
         <table id="sources">
             <thead><th>name</th><th>conf</th><th>cron</th><th>|</th></thead>
         </table>
     </div>
+</div>
 </div>
 <script type="text/javascript" src="js/admin.js"></script>
 <script type="text/javascript">

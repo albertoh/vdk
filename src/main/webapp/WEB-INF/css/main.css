@@ -1,6 +1,6 @@
 #wrapper
 {
-    overflow-y: scroll;
+    overflow-y: auto;
     height: 100%;
 }
 html, body{
@@ -66,6 +66,16 @@ a.image:hover {
     border-style: solid;
     border-width:0px 3px;
     */
+}
+
+#foot{
+    text-align: center;
+    position: fixed;
+    bottom: 0px;
+    box-shadow: 0px -3px 5px rgba(0,0,0,0.75);
+    background-color: white;
+    width:100%;
+    padding: 5px;
 }
 
 /*** header ***/
@@ -529,14 +539,17 @@ table.tex td.RZ{
     margin: 3px;
 }
 #admin th{
-    background-color: #aaa;
+    background-color: #ddd;
 }
 
 #admin td{
     padding: 3px;
 }
 #admin tr:nth-child(odd){
-    background-color: #ddd;
+    background-color: #f5f5f5;
+}
+#admin li:nth-child(odd){
+    background-color: #f5f5f5;
 }
 
 #jobs li button{

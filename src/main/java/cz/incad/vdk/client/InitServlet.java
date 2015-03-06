@@ -84,9 +84,9 @@ public class InitServlet extends HttpServlet {
                                 cronVal, 
                                 rs.getString("parametry"));
                     }
-
-                    
                 }
+                VDKScheduler.addIndexerJob();
+                
             } catch (Exception ex) {
                 LOGGER.log(Level.SEVERE, null, ex);
             } 

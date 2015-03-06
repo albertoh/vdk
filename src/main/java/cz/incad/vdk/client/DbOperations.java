@@ -1178,10 +1178,13 @@ public class DbOperations extends HttpServlet {
                                 
                                 JSONObject slouceni = Slouceni.fromMap(parts);
                                 String docCode = slouceni.getString("docCode");
-                                String sql = "select * from ZAZNAM where uniquecode='" + docCode  + "'";
-                                PreparedStatement ps = conn.prepareStatement(sql);
-                                ResultSet rs = ps.executeQuery();
-                                if (rs.next()) {
+                                
+                                SolrQuery query = new SolrQuery("code:\"" + docCode + "\"");
+                                query.addField("id");
+                                query.setRows(1);
+                                SolrDocumentList docs = IndexerQuery.query(Options.getInstance().getString("solrIdCore", "vdk_id"), query);
+                                Iterator<SolrDocument> iter = docs.iterator();
+                                if (iter.hasNext()) {
                                     exists = true;
                                 }
 
@@ -1196,7 +1199,6 @@ public class DbOperations extends HttpServlet {
                                         kn.getCode(),
                                         fields);
                                 if (exists) {
-
                                     json.put("message", "Nabidka pridana. Generovany kod: " + docCode + " uz existuje");
                                 } else {
                                     json.put("message", "Nabidka pridana. Kod: " + docCode);

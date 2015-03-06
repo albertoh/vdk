@@ -5,6 +5,7 @@ function VDK_ADMIN() {
 
 VDK_ADMIN.prototype = {
     _init: function(){
+        $('#admin>div.tabs').tabs();
         this.getRoles();
         this.getUsers();
         this.getJobs();
@@ -19,11 +20,12 @@ VDK_ADMIN.prototype = {
             if (data.error) {
                 alert("error ocurred: " + vdk.translate(data.error));
             } else {
+                $("#jobs").empty();
                 this.jobs = data;
                 $.each(this.jobs, _.bind(function (i, val) {
                     var li = $('<li/>', {class: 'link', "data-jobKey": val.jobKey});
                     //var running = this.jobs.running.hasOwnProperty("val.jobName")
-                    li.text(val.jobKey + " (" + val.state + "): " + val.nextFireTime);
+                    li.text(val.name + " (" + val.state + "): " + val.nextFireTime);
                     li.data("jobKey", val.jobKey);
                     li.addClass(val.state);
                     if(val.state === "waiting"){
@@ -55,27 +57,30 @@ VDK_ADMIN.prototype = {
         var opts = {
                 action: "STARTJOB", key: jobKey
             };
-        $.getJSON("sched", opts, function (data) {
+        $.getJSON("sched", opts, _.bind(function (data) {
             if (data.error) {
                 alert("error ocurred: " + vdk.translate(data.error));
             } else {
                 alert(vdk.translate(data.message));
+                this.getJobs();
+                
             }
 
-        });
+        }, this));
     },
     stopJob: function(jobKey){
         var opts = {
                 action: "STOPJOB", key: jobKey
             };
-        $.getJSON("sched", opts, function (data) {
+        $.getJSON("sched", opts, _.bind(function (data) {
             if (data.error) {
                 alert("error ocurred: " + vdk.translate(data.error));
             } else {
                 alert(vdk.translate(data.message));
+                this.getJobs();
             }
 
-        });
+        }, this));
     },
     getRoles: function(){
         var opts = {
@@ -136,14 +141,15 @@ VDK_ADMIN.prototype = {
                 conf: conf
                 
             };
-            $.getJSON("db", opts, function (data) {
+            $.getJSON("db", opts, _.bind(function (data) {
                 if (data.error) {
                     alert("error ocurred: " + vdk.translate(data.error));
                 } else {
+                    this.getJobs();
                     alert(data.message);
                 }
 
-            });
+            }, this));
 
         }, this));
     },
