@@ -8,6 +8,7 @@ package cz.incad.vdk.client;
 import static cz.incad.vdk.client.DbOperations.LOGGER;
 import cz.incad.vdkcommon.DbUtils;
 import cz.incad.vdkcommon.VDKScheduler;
+import java.io.File;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -19,6 +20,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.commons.io.FileUtils;
+import org.json.JSONObject;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 
@@ -57,7 +60,7 @@ public class InitServlet extends HttpServlet {
     public void init() throws ServletException {
         try {
             sched = VDKScheduler.getInstance().getScheduler();
-            setCron();
+            getJobs();
             sched.start();
         } catch (SQLException ex) {
             Logger.getLogger(InitServlet.class.getName()).log(Level.SEVERE, null, ex);
@@ -66,26 +69,36 @@ public class InitServlet extends HttpServlet {
         } 
     }
     
-    private void setCron() throws SQLException, SchedulerException{
-        Connection conn = null;
+    private void getJobs() throws SQLException, SchedulerException{
+        
             
             try {
-                conn = DbUtils.getConnection();
-
-                String sql = "select * from Zdroj";
-                PreparedStatement ps = conn.prepareStatement(sql);
-
-                ResultSet rs = ps.executeQuery();
-                while (rs.next()) {
+                
+                File dir = new File(System.getProperty("user.home") + File.separator + 
+                            ".vdkcr" + File.separator + "jobs" + File.separator);
+                File[] children = dir.listFiles();
+                for (File child : children) {// check interrupted thread
+                
                     
-                    String cronVal = rs.getString("cron");
-                    if (cronVal != null) {
-                        VDKScheduler.addJob(rs.getString("nazev"), 
-                                cronVal, 
-                                rs.getString("parametry"));
+                    if (!child.isDirectory()) {
+                        VDKScheduler.addJob(child);
                     }
                 }
-                VDKScheduler.addIndexerJob();
+
+//                String sql = "select * from Zdroj";
+//                PreparedStatement ps = conn.prepareStatement(sql);
+//
+//                ResultSet rs = ps.executeQuery();
+//                while (rs.next()) {
+//                    
+//                    String cronVal = rs.getString("cron");
+//                    if (cronVal != null) {
+//                        VDKScheduler.addJob(rs.getString("nazev"), 
+//                                cronVal, 
+//                                rs.getString("parametry"));
+//                    }
+//                }
+//                VDKScheduler.addIndexerJob();
                 
             } catch (Exception ex) {
                 LOGGER.log(Level.SEVERE, null, ex);

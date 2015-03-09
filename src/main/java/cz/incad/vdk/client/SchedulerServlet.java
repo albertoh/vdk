@@ -1,11 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package cz.incad.vdk.client;
 
+import cz.incad.vdkcommon.VDKJobData;
 import cz.incad.vdkcommon.VDKScheduler;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
@@ -15,7 +12,9 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import org.apache.commons.io.FileUtils;
 import org.json.JSONObject;
+import org.quartz.JobDataMap;
 import org.quartz.JobDetail;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobKey;
@@ -74,6 +73,32 @@ public class SchedulerServlet extends HttpServlet {
 
     enum Actions {
 
+        RELOADJOB {
+                    @Override
+                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+
+                        resp.setContentType("application/json");
+                        try {
+                            PrintWriter out = resp.getWriter();
+                            JSONObject json = new JSONObject();
+                            //Scheduler scheduler = VDKScheduler.getInstance().getScheduler();
+                            String[] key = req.getParameter("key").split("\\.");
+                            //scheduler.triggerJob(new JobKey(key[1],key[0]));
+                            File f = new File(System.getProperty("user.home") + File.separator + 
+                            ".vdkcr" + File.separator + "jobs" + File.separator + key[1] + ".json");
+                            VDKScheduler.addJob(f);
+                            json.put("message", "Job reloaded");
+                            out.println(json.toString());
+                        } catch (SchedulerException ex) {
+                            LOGGER.log(Level.SEVERE, null, ex);
+                            PrintWriter out = resp.getWriter();
+                            JSONObject json = new JSONObject();
+                            json.put("error", ex.toString());
+                            out.println(json.toString());
+                        }
+                    }
+                },
+
         STARTJOB {
                     @Override
                     void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
@@ -128,6 +153,7 @@ public class SchedulerServlet extends HttpServlet {
                             PrintWriter out = resp.getWriter();
                             JSONObject ret = new JSONObject();
                             Scheduler scheduler = VDKScheduler.getInstance().getScheduler();
+                            String homeDir = System.getProperty("user.home") + File.separator + ".vdkcr" + File.separator;
 
                             for (String groupName : scheduler.getJobGroupNames()) {
                                 for (JobKey jobKey : scheduler.getJobKeys(GroupMatcher
@@ -141,8 +167,23 @@ public class SchedulerServlet extends HttpServlet {
                                     JobDetail jd = scheduler.getJobDetail(jobKey);
 
                                     List<Trigger> triggers = (List<Trigger>) scheduler.getTriggersOfJob(jobKey);
-                                    json.put("nextFireTime", triggers.get(0).getNextFireTime());
+                                    if(triggers.isEmpty()){
+                                        json.put("nextFireTime", "not scheduled");
+                                    }else{
+                                        json.put("nextFireTime", triggers.get(0).getNextFireTime());
+                                    }
                                     json.put("state", "waiting");
+                                    JobDataMap data = jd.getJobDataMap();
+                                    VDKJobData jobdata = (VDKJobData) data.get("jobdata");
+                                    jobdata.load();
+                                    json.put("conf", jobdata.getOpts());
+                                    LOGGER.log(Level.INFO, jobdata.getStatusFile());
+                                    File statusFile = new File(jobdata.getStatusFile());
+
+                                    if (statusFile.exists()) {
+                                        json.put("status", new JSONObject(FileUtils.readFileToString(statusFile, "UTF-8")));
+                                    } 
+                
                                     ret.put(jobKey.toString(), json);
                                 }
                             }

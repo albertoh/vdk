@@ -1,322 +1,172 @@
 {
-    "record": {
-        "xmlns": "http://www.openarchives.org/OAI/2.0/",
-        "header": {
-            "setSpec": "NKC-VDK",
-            "datestamp": "2014-08-28T09:20:45Z",
-            "identifier": "oai:aleph-nkp.cz:NKC01-000000096"
+    "DEFAULT.vkol": {
+        "status": {
+            "last_run": "2013-04-19T13:08:13Z",
+            "last_message": "Harvested 53769 records"
         },
-        "metadata": {
-            "marc:record": {
-                "marc:controlfield": [{
-                        "content": "ck8300078",
-                        "tag": "001"
-                    }, {
-                        "content": "CZ PrNK",
-                        "tag": "003"
-                    }, {
-                        "content": "830304s1982    xr a         u0|0   cze",
-                        "tag": "008"
-                    }],
-                "xmlns:marc": "http://www.loc.gov/MARC21/slim",
-                "marc:leader": "nam a22        4500",
-                "xmlns:xsi": "http://www.w3.org/2001/XMLSchema-instance",
-                "marc:datafield": [{
-                        "tag": "015",
-                        "marc:subfield": {
-                            "content": "cnb000000096",
-                            "code": "a"
-                        },
-                        "ind2": " ",
-                        "ind1": " "
-                    }, {
-                        "tag": "020",
-                        "marc:subfield": [{
-                                "content": "(Brož.) :",
-                                "code": "a"
-                            }, {
-                                "content": "9 Kčs",
-                                "code": "c"
-                            }],
-                        "ind2": " ",
-                        "ind1": " "
-                    }, {
-                        "tag": 100,
-                        "marc:subfield": [{
-                                "content": "Gabriel, Vladislav",
-                                "code": "a"
-                            }, {
-                                "content": "aut",
-                                "code": 4
-                            }],
-                        "ind2": " ",
-                        "ind1": 1
-                    }, {
-                        "tag": 245,
-                        "marc:subfield": [{
-                                "content": "Služby v systému národních výborů :",
-                                "code": "a"
-                            }, {
-                                "content": "vybrané kapitoly : určeno pro posl. fak. obchodní, obor Ekonomika služeb a cestovního ruchu /",
-                                "code": "b"
-                            }, {
-                                "content": "Vladislav Gabriel, Ladislav Zapadlo",
-                                "code": "c"
-                            }],
-                        "ind2": 0,
-                        "ind1": 1
-                    }, {
-                        "tag": 250,
-                        "marc:subfield": {
-                            "content": "1. vyd.",
-                            "code": "a"
-                        },
-                        "ind2": " ",
-                        "ind1": " "
-                    }, {
-                        "tag": 260,
-                        "marc:subfield": [{
-                                "content": "Praha :",
-                                "code": "a"
-                            }, {
-                                "content": "SPN,",
-                                "code": "b"
-                            }, {
-                                "content": 1982,
-                                "code": "c"
-                            }, {
-                                "content": "(Příbram :",
-                                "code": "e"
-                            }, {
-                                "content": "TZ 66)",
-                                "code": "f"
-                            }],
-                        "ind2": " ",
-                        "ind1": " "
-                    }, {
-                        "tag": 300,
-                        "marc:subfield": [{
-                                "content": "192 s. :",
-                                "code": "a"
-                            }, {
-                                "content": "schémata ;",
-                                "code": "b"
-                            }, {
-                                "content": "30 cm",
-                                "code": "c"
-                            }],
-                        "ind2": " ",
-                        "ind1": " "
-                    }, {
-                        "tag": 700,
-                        "marc:subfield": [{
-                                "content": "Zapadlo, Ladislav",
-                                "code": "a"
-                            }, {
-                                "content": "aut",
-                                "code": 4
-                            }],
-                        "ind2": " ",
-                        "ind1": 1
-                    }, {
-                        "tag": 910,
-                        "marc:subfield": {
-                            "content": "ABA001",
-                            "code": "a"
-                        },
-                        "ind2": " ",
-                        "ind1": " "
-                    }, {
-                        "tag": 990,
-                        "marc:subfield": {
-                            "content": "BK",
-                            "code": "a"
-                        },
-                        "ind2": " ",
-                        "ind1": " "
-                    }, {
-                        "tag": 996,
-                        "marc:subfield": [{
-                                "content": 1000249526,
-                                "code": "b"
-                            }, {
-                                "content": "SF I 066308",
-                                "code": "c"
-                            }, {
-                                "content": "SKLAD KLEMENTINUM",
-                                "code": "l"
-                            }, {
-                                "content": "sklad",
-                                "code": "r"
-                            }, {
-                                "content": "A",
-                                "code": "s"
-                            }],
-                        "ind2": " ",
-                        "ind1": " "
-                    }, {
-                        "tag": 996,
-                        "marc:subfield": [{
-                                "content": "96-20",
-                                "code": "b"
-                            }, {
-                                "content": "SF I 066302",
-                                "code": "c"
-                            }, {
-                                "content": "---",
-                                "code": "l"
-                            }, {
-                                "content": "---",
-                                "code": "r"
-                            }, {
-                                "content": "V",
-                                "code": "s"
-                            }],
-                        "ind2": " ",
-                        "ind1": " "
-                    }, {
-                        "tag": 996,
-                        "marc:subfield": [{
-                                "content": "96-30",
-                                "code": "b"
-                            }, {
-                                "content": "SF I 066303",
-                                "code": "c"
-                            }, {
-                                "content": "---",
-                                "code": "l"
-                            }, {
-                                "content": "---",
-                                "code": "r"
-                            }, {
-                                "content": "V",
-                                "code": "s"
-                            }],
-                        "ind2": " ",
-                        "ind1": " "
-                    }, {
-                        "tag": 996,
-                        "marc:subfield": [{
-                                "content": "96-40",
-                                "code": "b"
-                            }, {
-                                "content": "SF I 066304",
-                                "code": "c"
-                            }, {
-                                "content": "---",
-                                "code": "l"
-                            }, {
-                                "content": "---",
-                                "code": "r"
-                            }, {
-                                "content": "V",
-                                "code": "s"
-                            }],
-                        "ind2": " ",
-                        "ind1": " "
-                    }, {
-                        "tag": 996,
-                        "marc:subfield": [{
-                                "content": "96-50",
-                                "code": "b"
-                            }, {
-                                "content": "SF I 066305",
-                                "code": "c"
-                            }, {
-                                "content": "---",
-                                "code": "l"
-                            }, {
-                                "content": "---",
-                                "code": "r"
-                            }, {
-                                "content": "V",
-                                "code": "s"
-                            }],
-                        "ind2": " ",
-                        "ind1": " "
-                    }, {
-                        "tag": 996,
-                        "marc:subfield": [{
-                                "content": "96-60",
-                                "code": "b"
-                            }, {
-                                "content": "SF I 066306",
-                                "code": "c"
-                            }, {
-                                "content": "---",
-                                "code": "l"
-                            }, {
-                                "content": "---",
-                                "code": "r"
-                            }, {
-                                "content": "V",
-                                "code": "s"
-                            }],
-                        "ind2": " ",
-                        "ind1": " "
-                    }, {
-                        "tag": 996,
-                        "marc:subfield": [{
-                                "content": "96-70",
-                                "code": "b"
-                            }, {
-                                "content": "SF I 066307",
-                                "code": "c"
-                            }, {
-                                "content": "---",
-                                "code": "l"
-                            }, {
-                                "content": "---",
-                                "code": "r"
-                            }, {
-                                "content": "V",
-                                "code": "s"
-                            }],
-                        "ind2": " ",
-                        "ind1": " "
-                    }, {
-                        "tag": 996,
-                        "marc:subfield": [{
-                                "content": "96-80",
-                                "code": "b"
-                            }, {
-                                "content": "54 D 065140",
-                                "code": "c"
-                            }, {
-                                "content": "SKLAD KLEMENTINUM",
-                                "code": "l"
-                            }, {
-                                "content": "delší expedice",
-                                "code": "r"
-                            }, {
-                                "content": "P",
-                                "code": "s"
-                            }],
-                        "ind2": " ",
-                        "ind1": " "
-                    }, {
-                        "tag": 996,
-                        "marc:subfield": [{
-                                "content": "96-90",
-                                "code": "b"
-                            }, {
-                                "content": "III 092223",
-                                "code": "c"
-                            }, {
-                                "content": "NÁRODNÍ KONZERVAČNÍ FOND",
-                                "code": "l"
-                            }, {
-                                "content": "sklad (retro)",
-                                "code": "r"
-                            }, {
-                                "content": "AR",
-                                "code": "s"
-                            }],
-                        "ind2": " ",
-                        "ind1": " "
-                    }],
-                "xsi:schemaLocation": "http://www.loc.gov/MARC21/slim http://www.loc.gov/standards/marcxml/schema/MARC21slim.xsd"
-            }
-        }
+        "name": "vkol",
+        "jobKey": "DEFAULT.vkol",
+        "state": "waiting",
+        "nextFireTime": "Tue Mar 10 00:33:00 CET 2015",
+        "conf": {
+            "statusFile": "vkol.status",
+            "index": false,
+            "identifierPrefix": "oai:aleph.vkol.cz:",
+            "oaiDateFormat": "yyyy-MM-dd'T'HH:mm:ss'Z'",
+            "interval": "day",
+            "set": "VKOLOAI",
+            "charset": "UTF-8",
+            "knihovna": "VKOL",
+            "type": "harvest",
+            "metadataPrefix": "marc21",
+            "oaiDir": "/home/alberto/.vdkcr/OAI",
+            "saveToDisk": true,
+            "baseUrl": "http://aleph.vkol.cz/OAI",
+            "indexDirectory": "/home/alberto/.vdkcr/OAI/harvest/VKOL",
+            "cron": "0 33 0 * * ?",
+            "filePathFormat": "yyyy/MM/dd/HH",
+            "verb": "ListRecords",
+            "zdroj": "Vědecká knihovna v Olomouci",
+            "name": "generic job",
+            "base": "VKOLOAI",
+            "dateFormat": "yyyy-MM-dd",
+            "harvest": true,
+            "comment": "year|month|day|hour|minute|second",
+            "fullIndex": false
+        },
+        "group": "DEFAULT"
+    },
+    "DEFAULT.indexer": {
+        "status": {
+            "last_run": "2015-03-07T11:53:05Z",
+            "last_message": "Current indexed docs: 0"
+        },
+        "name": "indexer",
+        "jobKey": "DEFAULT.indexer",
+        "state": "waiting",
+        "nextFireTime": "Tue Mar 10 04:45:00 CET 2015",
+        "conf": {
+            "index": false,
+            "identifierPrefix": "oai:localhost:",
+            "oaiDateFormat": "yyyy-MM-dd'T'HH:mm:ss'Z'",
+            "interval": "day",
+            "charset": "UTF-8",
+            "type": "index",
+            "metadataPrefix": "marc21",
+            "cron": "0 45 04 * * ?",
+            "filePathFormat": "yyyy/MM/dd/HH",
+            "verb": "ListRecords",
+            "name": "generic job",
+            "dateFormat": "yyyy-MM-dd",
+            "harvest": true,
+            "comment": "year|month|day|hour|minute|second"
+        },
+        "group": "DEFAULT"
+    },
+    "DEFAULT.mzk01": {
+        "status": {
+            "last_run": "2014-12-28T00:11:39Z",
+            "last_message": "Harvested 38179 records"
+        },
+        "name": "mzk01",
+        "jobKey": "DEFAULT.mzk01",
+        "state": "waiting",
+        "nextFireTime": "Tue Mar 10 03:45:00 CET 2015",
+        "conf": {
+            "statusFile": "mzk01.status",
+            "index": false,
+            "identifierPrefix": "oai:aleph.mzk.cz:",
+            "oaiDateFormat": "yyyy-MM-dd'T'HH:mm:ss'Z'",
+            "interval": "day",
+            "set": "MZK01-VDK",
+            "charset": "UTF-8",
+            "knihovna": "MZK",
+            "type": "harvest",
+            "metadataPrefix": "marc21",
+            "oaiDir": "/home/alberto/.vdkcr/OAI",
+            "baseUrl": "http://aleph.mzk.cz/OAI",
+            "cron": "0 45 03 * * ?",
+            "indexDirectory": "/home/alberto/.vdkcr/OAI/harvest/MZK",
+            "filePathFormat": "yyyy/MM/dd/HH/mm/ss",
+            "verb": "ListRecords",
+            "zdroj": "Moravská zemská knihovna v Brně",
+            "name": "generic job",
+            "base": "MZK01-VDK",
+            "dateFormat": "yyyy-MM-dd",
+            "harvest": true,
+            "comment": "year|month|day|hour|minute|second"
+        },
+        "group": "DEFAULT"
+    },
+    "DEFAULT.nkp_vdk": {
+        "status": {
+            "last_run": "2014-12-28T17:39:45Z",
+            "last_message": "Harvested 71145 records"
+        },
+        "name": "nkp_vdk",
+        "jobKey": "DEFAULT.nkp_vdk",
+        "state": "waiting",
+        "nextFireTime": "Tue Mar 10 01:45:00 CET 2015",
+        "conf": {
+            "statusFile": "nkp_vdk.status",
+            "index": false,
+            "identifierPrefix": "oai:aleph-nkp.cz:",
+            "oaiDateFormat": "yyyy-MM-dd'T'HH:mm:ss'Z'",
+            "interval": "day",
+            "set": "NKC-VDK",
+            "charset": "UTF-8",
+            "knihovna": "NKP",
+            "type": "harvest",
+            "metadataPrefix": "marc21",
+            "oaiDir": "/home/alberto/.vdkcr/OAI",
+            "saveToDisk": true,
+            "baseUrl": "http://aleph.nkp.cz/OAI",
+            "indexDirectory": "/home/alberto/.vdkcr/OAI/harvest/NKC",
+            "cron": "0 45 01 * * ?",
+            "filePathFormat": "yyyy/MM/dd/HH/mm/ss",
+            "verb": "ListRecords",
+            "zdroj": "Národní knihovna České republiky",
+            "name": "generic job",
+            "base": "NKC-VDK",
+            "dateFormat": "yyyy-MM-dd",
+            "harvest": true,
+            "comment": "year|month|day|hour|minute|second",
+            "fullIndex": false
+        },
+        "group": "DEFAULT"
+    },
+    "DEFAULT.mzk03": {
+        "status": {
+            "last_run": "2015-03-06T15:01:47Z"
+        },
+        "name": "mzk03",
+        "jobKey": "DEFAULT.mzk03",
+        "state": "waiting",
+        "nextFireTime": "Tue Mar 10 02:45:00 CET 2015",
+        "conf": {
+            "statusFile": "mzk03.status",
+            "index": false,
+            "identifierPrefix": "oai:aleph.mzk.cz:",
+            "oaiDateFormat": "yyyy-MM-dd'T'HH:mm:ss'Z'",
+            "interval": "day",
+            "set": "MZK03-VDK",
+            "charset": "UTF-8",
+            "knihovna": "MZK",
+            "type": "harvest",
+            "metadataPrefix": "marc21",
+            "oaiDir": "/home/alberto/.vdkcr/OAI",
+            "baseUrl": "http://aleph.mzk.cz/OAI",
+            "cron": "0 45 02 * * ?",
+            "indexDirectory": "/home/alberto/.vdkcr/OAI/harvest/MZK03",
+            "filePathFormat": "yyyy/MM/dd/HH/mm/ss",
+            "verb": "ListRecords",
+            "zdroj": "Moravská zemská knihovna v Brně",
+            "name": "generic job",
+            "base": "MZK03-VDK",
+            "dateFormat": "yyyy-MM-dd",
+            "harvest": true,
+            "comment": "year|month|day|hour|minute|second"
+        },
+        "group": "DEFAULT"
     }
 }

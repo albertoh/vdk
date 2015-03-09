@@ -556,10 +556,10 @@ table.tex td.RZ{
     margin-left: 5px;
 }
 
-#jobs li.running{
+#jobs .running{
     color: green;
 }
 
-#jobs li.waiting{
+#jobs .waiting{
     color: orangered;
 }

@@ -9,7 +9,7 @@ VDK_ADMIN.prototype = {
         this.getRoles();
         this.getUsers();
         this.getJobs();
-        this.getSources();
+        //this.getSources();
     },
     getJobs: function(){
         var opts = {
@@ -20,21 +20,39 @@ VDK_ADMIN.prototype = {
             if (data.error) {
                 alert("error ocurred: " + vdk.translate(data.error));
             } else {
-                $("#jobs").empty();
+                $("#jobs tbody>tr").remove();
                 this.jobs = data;
                 $.each(this.jobs, _.bind(function (i, val) {
-                    var li = $('<li/>', {class: 'link', "data-jobKey": val.jobKey});
-                    //var running = this.jobs.running.hasOwnProperty("val.jobName")
-                    li.text(val.name + " (" + val.state + "): " + val.nextFireTime);
-                    li.data("jobKey", val.jobKey);
-                    li.addClass(val.state);
+                    var tr = $('<tr/>', {class: 'link', "data-jobKey": val.jobKey});
+                    tr.data("jobKey", val.jobKey);
+                    tr.attr("id", "job_"+val.jobKey);
+                    tr.addClass(val.state);
+                    
+                    tr.append('<td>' + val.name + '</td>');
+                    tr.append('<td>' + val.state + '</td>');
+                    tr.append('<td>' + val.nextFireTime + '</td>');
+                    
+                    
+                    if(val.hasOwnProperty('status')){
+                        tr.append('<td>' + val.status['last_run'] + '<br/>' + val.status['last_message'] + '</td>');
+                    }else{
+                        tr.append('<td></td>');
+                    }
                     if(val.state === "waiting"){
                         var bt = $('<button/>');
                         bt.text("start now");
                         bt.click(_.bind(function(){
                             this.startJob(val.jobKey);
                         }, this));
-                        li.append(bt);
+                        var td = $('<td/>').append(bt);
+                        
+                        bt = $('<button/>');
+                        bt.text("reload config");
+                        bt.click(_.bind(function(){
+                            this.reloadJob(val.jobKey);
+                        }, this));
+                        td.append(bt);
+                        tr.append(td);
                     }
                     
                     if(val.state === "running"){
@@ -43,12 +61,49 @@ VDK_ADMIN.prototype = {
                         bt2.click(_.bind(function(){
                             this.stopJob(val.jobKey);
                         }, this));
-                        li.append(bt2);
+                        var td = $('<td/>').append(bt2);
+                        tr.append(td);
                     }
                     
-                    $("#jobs").append(li);
+                    if(val.hasOwnProperty('conf')){
+                        var cfgs = "";
+                        var td= $("<td/>", {class: "settings"});
+                        for(var key in val.conf.settings){
+                            var setting = val.conf.settings[key];
+                            if(typeof(val.conf.settings[key]) === 'boolean'){
+                                var chid = val.jobKey+"_"+key;
+                                var check = $("<input/>", {type: "checkbox", id: chid, name: key});
+                                check.prop('checked', setting);
+                                var label = $('<label/>', {for: chid});
+                                label.text(key);
+                                td.append(label);
+                                td.append(check);
+                            }
+                            cfgs += key + " -> " + val.conf.settings[key] + " ("  +  + ")";
+                        }
+                        tr.append(td);
+                    }else{
+                        tr.append('<td></td>');
+                    }
+                    $("#jobs").append(tr);
 
                 }, this));
+            }
+
+        }, this));
+    },
+    reloadJob: function(jobKey){
+        
+        var opts = {
+                action: "RELOADJOB", key: jobKey
+            };
+        $.getJSON("sched", opts, _.bind(function (data) {
+            if (data.error) {
+                alert("error ocurred: " + vdk.translate(data.error));
+            } else {
+                alert(vdk.translate(data.message));
+                this.getJobs();
+                
             }
 
         }, this));
@@ -57,6 +112,12 @@ VDK_ADMIN.prototype = {
         var opts = {
                 action: "STARTJOB", key: jobKey
             };
+        
+        $(jq('job_' + jobKey) + " td.settings>input").each(function(){
+            opts[$(this).attr("name")] = $(this).is(":checked");
+        });
+        alert(opts);
+        return;
         $.getJSON("sched", opts, _.bind(function (data) {
             if (data.error) {
                 alert("error ocurred: " + vdk.translate(data.error));
