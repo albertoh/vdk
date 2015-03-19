@@ -9,6 +9,7 @@ import cz.incad.vdkcommon.DbUtils;
 import cz.incad.vdkcommon.SolrIndexerCommiter;
 import cz.incad.vdkcommon.solr.Indexer;
 import cz.incad.vdkcommon.solr.IndexerQuery;
+import cz.incad.vdkcommon.solr.Storage;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
@@ -92,6 +93,7 @@ public class IndexOperations extends HttpServlet {
         SolrIndexerCommiter.postData(sb.toString());
         SolrIndexerCommiter.postData("<commit/>");
     }
+
     private static void indexWanted(Connection conn, int wanted_id) throws Exception {
         String sql = "select w.wants, zo.knihovna, k.code, zo.uniquecode from WANTED w, KNIHOVNA k, ZAZNAMOFFER zo "
                 + "where w.wanted_id=? "
@@ -104,120 +106,65 @@ public class IndexOperations extends HttpServlet {
         StringBuilder sb = new StringBuilder();
         sb.append("<add>");
         while (rs.next()) {
-        sb.append("<doc>");
-            String uniquecode = rs.getString("uniquecode");
-            sb.append("<field name=\"code\">")
-                    .append(uniquecode)
-                    .append("</field>");
-            sb.append("<field name=\"md5\">")
-                    .append(uniquecode)
-                    .append("</field>");
-            if (rs.getBoolean(1)) {
-                sb.append("<field name=\"chci\" update=\"add\">")
-                        .append(rs.getString("code"))
-                        .append("</field>");
-            } else {
-                sb.append("<field name=\"nechci\" update=\"add\">")
-                        .append(rs.getString("code"))
-                        .append("</field>");
-            }
-            sb.append("</doc>");
-        }
-        sb.append("</add>");
-        SolrIndexerCommiter.postData(sb.toString());
-        SolrIndexerCommiter.postData("<commit/>");
-    }
-    private static void indexAllWanted(Connection conn) throws Exception {
-        String sql = "select w.wants, zo.knihovna, k.code, zo.uniquecode from WANTED w, KNIHOVNA k, ZAZNAMOFFER zo "
-                + "where w.knihovna=k.knihovna_id and zo.zaznamoffer_id=w.zaznamoffer";
-        PreparedStatement ps = conn.prepareStatement(sql);
-
-        ResultSet rs = ps.executeQuery();
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("<add>");
-        while (rs.next()) {
-        sb.append("<doc>");
-            String uniquecode = rs.getString("uniquecode");
-            sb.append("<field name=\"code\">")
-                    .append(uniquecode)
-                    .append("</field>");
-            sb.append("<field name=\"md5\">")
-                    .append(uniquecode)
-                    .append("</field>");
-            if (rs.getBoolean(1)) {
-                sb.append("<field name=\"chci\" update=\"add\">")
-                        .append(rs.getString("code"))
-                        .append("</field>");
-            } else {
-                sb.append("<field name=\"nechci\" update=\"add\">")
-                        .append(rs.getString("code"))
-                        .append("</field>");
-            }
-            sb.append("</doc>");
-        }
-        sb.append("</add>");
-        SolrIndexerCommiter.postData(sb.toString());
-        SolrIndexerCommiter.postData("<commit/>");
-    }
-    
-    private static StringBuilder doIndexOfferXml(int id, ResultSet rs) throws Exception {
-        StringBuilder sb = new StringBuilder();
-        String docCode = rs.getString("uniqueCode");
-            String codeType = rs.getString("codetype");
             sb.append("<doc>");
+            String uniquecode = rs.getString("uniquecode");
             sb.append("<field name=\"code\">")
-                    .append(docCode)
+                    .append(uniquecode)
                     .append("</field>");
             sb.append("<field name=\"md5\">")
-                    .append(docCode)
+                    .append(uniquecode)
                     .append("</field>");
-            sb.append("<field name=\"code_type\">")
-                    .append(codeType)
-                    .append("</field>");
-            sb.append("<field name=\"nabidka\" update=\"add\">")
-                    .append(id)
-                    .append("</field>");
-            JSONObject nabidka_ext = new JSONObject();
-            JSONObject nabidka_ext_n = new JSONObject();
-            nabidka_ext_n.put("zaznamOffer", rs.getInt("zaznamoffer_id"));
-            nabidka_ext_n.put("code", docCode);
-            nabidka_ext_n.put("zaznam", rs.getString("zaznam"));
-            nabidka_ext_n.put("ex", rs.getString("exemplar"));
-            nabidka_ext_n.put("fields", new JSONObject(rs.getString("fields")));
-            nabidka_ext.put(""+id, nabidka_ext_n);
-            sb.append("<field name=\"nabidka_ext\" update=\"add\">")
-                    .append(nabidka_ext)
-                    .append("</field>");
+            if (rs.getBoolean(1)) {
+                sb.append("<field name=\"chci\" update=\"add\">")
+                        .append(rs.getString("code"))
+                        .append("</field>");
+            } else {
+                sb.append("<field name=\"nechci\" update=\"add\">")
+                        .append(rs.getString("code"))
+                        .append("</field>");
+            }
             sb.append("</doc>");
-            return sb;
-    }
-    
-
-    private static void indexAllOffers(Connection conn) throws Exception {
-        
-        String sql = "SELECT ZaznamOffer.zaznamoffer_id, ZaznamOffer.offer, ZaznamOffer.uniqueCode, ZaznamOffer.zaznam, ZaznamOffer.exemplar, ZaznamOffer.fields, zaznam.codetype "
-                + "FROM Zaznam "
-                + "RIGHT OUTER JOIN zaznamOffer "
-                + "ON ZaznamOffer.zaznam=zaznam.identifikator "
-                + "JOIN offer ON offer.offer_id=zaznamOffer.offer where offer.closed=?";
-        PreparedStatement ps = conn.prepareStatement(sql);
-        ps.setBoolean(1, true);
-        ResultSet rs = ps.executeQuery();
-        StringBuilder sb = new StringBuilder();
-        sb.append("<add>");
-        while (rs.next()) {
-            sb.append(doIndexOfferXml(rs.getInt("offer"), rs));
         }
         sb.append("</add>");
         SolrIndexerCommiter.postData(sb.toString());
         SolrIndexerCommiter.postData("<commit/>");
+    }
+
+    private static StringBuilder doIndexOfferXml(int id, String docCode, String codeType, ResultSet rs) throws Exception {
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("<doc>");
+        sb.append("<field name=\"code\">")
+                .append(docCode)
+                .append("</field>");
+        sb.append("<field name=\"md5\">")
+                .append(docCode)
+                .append("</field>");
+        sb.append("<field name=\"code_type\">")
+                .append(codeType)
+                .append("</field>");
+        sb.append("<field name=\"nabidka\" update=\"add\">")
+                .append(id)
+                .append("</field>");
+        JSONObject nabidka_ext = new JSONObject();
+        JSONObject nabidka_ext_n = new JSONObject();
+        nabidka_ext_n.put("zaznamOffer", rs.getInt("zaznamoffer_id"));
+        nabidka_ext_n.put("code", docCode);
+        nabidka_ext_n.put("zaznam", rs.getString("zaznam"));
+        nabidka_ext_n.put("ex", rs.getString("exemplar"));
+        nabidka_ext_n.put("fields", new JSONObject(rs.getString("fields")));
+        nabidka_ext.put("" + id, nabidka_ext_n);
+        sb.append("<field name=\"nabidka_ext\" update=\"add\">")
+                .append(nabidka_ext)
+                .append("</field>");
+        sb.append("</doc>");
+        return sb;
     }
 
     private static void indexOffer(Connection conn, int id) throws Exception {
-        String sql = "SELECT ZaznamOffer.zaznamoffer_id, ZaznamOffer.uniqueCode, ZaznamOffer.zaznam, ZaznamOffer.exemplar, ZaznamOffer.fields, zaznam.codetype "
-                + "FROM Zaznam "
-                + "RIGHT OUTER JOIN zaznamOffer "
+        String sql = "SELECT ZaznamOffer.zaznamoffer_id, ZaznamOffer.uniqueCode, "
+                + "ZaznamOffer.zaznam, ZaznamOffer.exemplar, ZaznamOffer.fields "
+                + "FROM zaznamOffer "
                 + "ON ZaznamOffer.zaznam=zaznam.identifikator "
                 + "where ZaznamOffer.offer=?";
         PreparedStatement ps = conn.prepareStatement(sql);
@@ -227,58 +174,20 @@ public class IndexOperations extends HttpServlet {
         StringBuilder sb = new StringBuilder();
         sb.append("<add>");
         while (rs.next()) {
-            sb.append(doIndexOfferXml(id, rs));
+            SolrDocument sdoc = Storage.getDoc(rs.getString("zaznam"));
+            if (sdoc != null) {
+                sb.append(doIndexOfferXml(rs.getInt("offer"),
+                        (String) sdoc.getFieldValue("code"),
+                        (String) sdoc.getFieldValue("code_type"),
+                        rs));
+            }
         }
         sb.append("</add>");
         SolrIndexerCommiter.postData(sb.toString());
         SolrIndexerCommiter.postData("<commit/>");
     }
 
-    private static void removeOffer(Connection conn, int id) throws Exception {
-        String sql = "SELECT ZaznamOffer.uniqueCode, ZaznamOffer.zaznam, ZaznamOffer.exemplar, ZaznamOffer.fields, zaznam.codetype "
-                + "FROM Zaznam "
-                + "RIGHT OUTER JOIN zaznamOffer "
-                + "ON ZaznamOffer.zaznam=zaznam.identifikator "
-                + "where ZaznamOffer.offer=?";
-        PreparedStatement ps = conn.prepareStatement(sql);
-        ps.setInt(1, id);
-
-        ResultSet rs = ps.executeQuery();
-        
-        StringBuilder sb = new StringBuilder();
-        sb.append("<add>");
-        while (rs.next()) {
-            String docCode = rs.getString("uniqueCode");
-            String codeType = rs.getString("codetype");
-            sb.append("<doc>");
-            sb.append("<field name=\"code\">")
-                    .append(docCode)
-                    .append("</field>");
-            sb.append("<field name=\"md5\">")
-                    .append(docCode)
-                    .append("</field>");
-            sb.append("<field name=\"code_type\">")
-                    .append(codeType)
-                    .append("</field>");
-            sb.append("<field name=\"nabidka\" update=\"remove\">")
-                    .append(id)
-                    .append("</field>");
-            JSONObject nabidka_ext = new JSONObject();
-            JSONObject nabidka_ext_n = new JSONObject();
-            nabidka_ext_n.put("zaznam", rs.getString("zaznam"));
-            nabidka_ext_n.put("ex", rs.getString("exemplar"));
-            nabidka_ext_n.put("fields", rs.getString("fields"));
-            nabidka_ext.put(""+id, nabidka_ext_n);
-            sb.append("<field name=\"nabidka_ext\" update=\"remove\">")
-                    .append(nabidka_ext)
-                    .append("</field>");
-            
-            sb.append("</doc>");
-        }
-        sb.append("</add>");
-        SolrIndexerCommiter.postData(sb.toString());
-        SolrIndexerCommiter.postData("<commit/>");
-    }
+    
 
     private static void removeAllWanted() throws Exception {
         SolrQuery query = new SolrQuery("chci:[* TO *]");
@@ -352,7 +261,7 @@ public class IndexOperations extends HttpServlet {
             SolrIndexerCommiter.postData("<commit/>");
         }
     }
-    
+
     private static StringBuilder doIndexDemandXml(String knihovna,
             String docCode,
             String zaznam,
@@ -375,34 +284,14 @@ public class IndexOperations extends HttpServlet {
         j.put("zaznam", zaznam);
         j.put("exemplar", exemplar);
         sb.append("<field name=\"poptavka_ext\" update=\"").append(update).append("\">")
-                    .append(j)
-                    .append("</field>");
-        
+                .append(j)
+                .append("</field>");
+
         sb.append("</doc>");
-            return sb;
+        return sb;
     }
+
     
-    private static void indexAllDemands(Connection conn) throws Exception {
-        
-        String sql = "SELECT zaznamDemand.zaznamDemand_id, "
-                + "zaznamDemand.uniqueCode, zaznamDemand.zaznam, zaznamDemand.exemplar, zaznamDemand.fields, Knihovna.code "
-                + "FROM zaznamDemand, Knihovna "
-                + "where zaznamDemand.knihovna=knihovna.knihovna_id ";
-        PreparedStatement ps = conn.prepareStatement(sql);
-        ResultSet rs = ps.executeQuery();
-        StringBuilder sb = new StringBuilder();
-        sb.append("<add>");
-        while (rs.next()) {
-            sb.append(doIndexDemandXml(rs.getString("code"),
-                    rs.getString("uniqueCode"),
-                    rs.getString("zaznam"),
-                    rs.getString("exemplar"),
-                    "add"));
-        }
-        sb.append("</add>");
-        SolrIndexerCommiter.postData(sb.toString());
-        SolrIndexerCommiter.postData("<commit/>");
-    }
 
     private static void indexDemand(String knihovna,
             String docCode,
@@ -411,11 +300,11 @@ public class IndexOperations extends HttpServlet {
 
         StringBuilder sb = new StringBuilder();
         sb.append("<add>");
-            sb.append(doIndexDemandXml(knihovna,
-            docCode,
-            zaznam,
-            exemplar,
-            "add"));
+        sb.append(doIndexDemandXml(knihovna,
+                docCode,
+                zaznam,
+                exemplar,
+                "add"));
         sb.append("</add>");
         SolrIndexerCommiter.postData(sb.toString());
         SolrIndexerCommiter.postData("<commit/>");
@@ -429,10 +318,10 @@ public class IndexOperations extends HttpServlet {
         StringBuilder sb = new StringBuilder();
         sb.append("<add>");
         sb.append(doIndexDemandXml(knihovna,
-        docCode,
-        zaznam,
-        exemplar,
-        "remove"));
+                docCode,
+                zaznam,
+                exemplar,
+                "remove"));
         sb.append("</add>");
         LOGGER.log(Level.INFO, sb.toString());
         SolrIndexerCommiter.postData(sb.toString());
@@ -482,7 +371,6 @@ public class IndexOperations extends HttpServlet {
                         out.println(json.toString());
                     }
                 },
-
         REMOVEALLWANTED {
                     @Override
                     void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
@@ -497,7 +385,6 @@ public class IndexOperations extends HttpServlet {
                         out.println(json.toString());
                     }
                 },
-
         INDEXALLWANTED {
                     @Override
                     void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
@@ -505,14 +392,15 @@ public class IndexOperations extends HttpServlet {
                         PrintWriter out = resp.getWriter();
                         JSONObject json = new JSONObject();
                         try {
-                            indexAllWanted(DbUtils.getConnection());
+
+                            Indexer indexer = new Indexer();
+                            indexer.indexAllWanted();
                         } catch (Exception ex) {
                             json.put("error", ex.toString());
                         }
                         out.println(json.toString());
                     }
                 },
-
         INDEXALLOFFERS {
                     @Override
                     void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
@@ -520,14 +408,14 @@ public class IndexOperations extends HttpServlet {
                         PrintWriter out = resp.getWriter();
                         JSONObject json = new JSONObject();
                         try {
-                            indexAllOffers(DbUtils.getConnection());
+                            Indexer indexer = new Indexer();
+                            indexer.indexAllOffers();
                         } catch (Exception ex) {
                             json.put("error", ex.toString());
                         }
                         out.println(json.toString());
                     }
                 },
-
         INDEXOFFER {
                     @Override
                     void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
@@ -542,7 +430,6 @@ public class IndexOperations extends HttpServlet {
                         out.println(json.toString());
                     }
                 },
-
         REMOVEOFFER {
                     @Override
                     void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
@@ -550,14 +437,14 @@ public class IndexOperations extends HttpServlet {
                         PrintWriter out = resp.getWriter();
                         JSONObject json = new JSONObject();
                         try {
-                            removeOffer(DbUtils.getConnection(), Integer.parseInt(req.getParameter("id")));
+                            Indexer indexer = new Indexer();
+                            indexer.removeOffer(Integer.parseInt(req.getParameter("id")));
                         } catch (Exception ex) {
                             json.put("error", ex.toString());
                         }
                         out.println(json.toString());
                     }
                 },
-
         REMOVEALLOFFERS {
                     @Override
                     void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
@@ -616,7 +503,6 @@ public class IndexOperations extends HttpServlet {
                         out.println(json.toString());
                     }
                 },
-
         INDEXALLDEMANDS {
                     @Override
                     void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
@@ -628,7 +514,8 @@ public class IndexOperations extends HttpServlet {
                             if (kn == null) {
                                 json.put("error", "rights.notlogged");
                             } else {
-                                indexAllDemands(DbUtils.getConnection());
+                                Indexer indexer = new Indexer();
+                                indexer.indexAllDemands();
                             }
                         } catch (Exception ex) {
                             LOGGER.log(Level.SEVERE, null, ex);
@@ -668,7 +555,7 @@ public class IndexOperations extends HttpServlet {
                             if (kn == null) {
                                 json.put("error", "rights.notlogged");
                             } else {
-                                
+
                                 if (kn.hasRole(DbUtils.Roles.ADMIN)) {
                                     Indexer indexer = new Indexer();
                                     indexer.reindex();
@@ -694,13 +581,13 @@ public class IndexOperations extends HttpServlet {
                             if (kn == null) {
                                 json.put("error", "rights.notlogged");
                             } else {
-                                
+
                                 if (kn.hasRole(DbUtils.Roles.ADMIN)) {
                                     Indexer indexer = new Indexer();
                                     indexer.reindex();
-                                    indexAllOffers(DbUtils.getConnection());
-                                    indexAllDemands(DbUtils.getConnection());
-                                    indexAllWanted(DbUtils.getConnection());
+//                                    indexAllOffers(DbUtils.getConnection());
+//                                    indexAllDemands(DbUtils.getConnection());
+//                                    indexAllWanted(DbUtils.getConnection());
                                 } else {
                                     json.put("error", "rights.insuficient");
                                 }
@@ -723,7 +610,7 @@ public class IndexOperations extends HttpServlet {
                             if (kn == null) {
                                 json.put("error", "rights.notlogged");
                             } else {
-                                
+
                                 if (kn.hasRole(DbUtils.Roles.ADMIN)) {
                                     Indexer indexer = new Indexer();
                                     indexer.reindexDoc(req.getParameter("code"));

@@ -6,6 +6,7 @@ import cz.incad.vdkcommon.Options;
 import cz.incad.vdkcommon.Slouceni;
 import cz.incad.vdkcommon.VDKScheduler;
 import cz.incad.vdkcommon.solr.IndexerQuery;
+import cz.incad.vdkcommon.solr.Storage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -1179,14 +1180,7 @@ public class DbOperations extends HttpServlet {
                                 JSONObject slouceni = Slouceni.fromMap(parts);
                                 String docCode = slouceni.getString("docCode");
                                 
-                                SolrQuery query = new SolrQuery("code:\"" + docCode + "\"");
-                                query.addField("id");
-                                query.setRows(1);
-                                SolrDocumentList docs = IndexerQuery.query(Options.getInstance().getString("solrIdCore", "vdk_id"), query);
-                                Iterator<SolrDocument> iter = docs.iterator();
-                                if (iter.hasNext()) {
-                                    exists = true;
-                                }
+                                exists = Storage.docExistsByCode(docCode);
 
                                 JSONObject fields = new JSONObject(parts);
                                 int newid = insertNabidka(conn, idKnihovna, null, null, docCode, idOffer, fields.toString());

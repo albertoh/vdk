@@ -23,46 +23,70 @@ VDK_ADMIN.prototype = {
                 $("#jobs tbody>tr").remove();
                 this.jobs = data;
                 $.each(this.jobs, _.bind(function (i, val) {
-                    var tr = $('<tr/>', {class: 'link', "data-jobKey": val.jobKey});
+                    var tr = $('<tr/>', {"data-jobKey": val.jobKey});
                     tr.data("jobKey", val.jobKey);
                     tr.attr("id", "job_"+val.jobKey);
                     tr.addClass(val.state);
                     
                     tr.append('<td>' + val.name + '</td>');
                     tr.append('<td>' + val.state + '</td>');
-                    tr.append('<td>' + val.nextFireTime + '</td>');
+                    if(val.hasOwnProperty('nextFireTime')){
+                        tr.append('<td>' + $.format.date(val.nextFireTime, 'dd.M.yy hh:mm') + '</td>');
+                    }else{
+                        tr.append('<td> </td>');
+                    }
                     
                     
                     if(val.hasOwnProperty('status')){
-                        tr.append('<td>' + val.status['last_run'] + '<br/>' + val.status['last_message'] + '</td>');
+                        tr.append('<td>' + $.format.date(val.status['last_run'], 'dd.M.yy hh:mm') + '<br/>' + val.status['last_message'] + '</td>');
                     }else{
                         tr.append('<td></td>');
                     }
                     if(val.state === "waiting"){
-                        var bt = $('<button/>');
-                        bt.text("start now");
-                        bt.click(_.bind(function(){
-                            this.startJob(val.jobKey);
-                        }, this));
-                        var td = $('<td/>').append(bt);
-                        
-                        bt = $('<button/>');
-                        bt.text("reload config");
-                        bt.click(_.bind(function(){
-                            this.reloadJob(val.jobKey);
-                        }, this));
-                        td.append(bt);
+//                        var bt = $('<button/>');
+//                        bt.text("start now");
+//                        bt.click(_.bind(function(){
+//                            this.startJob(val.jobKey);
+//                        }, this));
+//                        
+//                        
+//                        bt = $('<button/>');
+//                        bt.text("reload config");
+//                        bt.click(_.bind(function(){
+//                            this.reloadJob(val.jobKey);
+//                        }, this));
+                        var td = $('<td/>');
+                        var bs = [
+                            {
+                                text: vdk.translate('start now'),
+                                icon: "ui-icon-play",
+                                click: _.bind(function(){
+                                    this.startJob(val.jobKey);
+                                }, this)
+                            }];
+                        addButtons(bs, td);
+                        //td.append(bt);
                         tr.append(td);
                     }
                     
                     if(val.state === "running"){
-                        var bt2 = $('<button/>');
-                        bt2.text("stop");
-                        bt2.click(_.bind(function(){
-                            this.stopJob(val.jobKey);
-                        }, this));
-                        var td = $('<td/>').append(bt2);
-                        tr.append(td);
+//                        var bt2 = $('<button/>');
+//                        bt2.text("stop");
+//                        bt2.click(_.bind(function(){
+//                            this.stopJob(val.jobKey, val.name);
+//                        }, this));
+                        var td2 = $('<td/>');
+                        
+                        var bs2 = [
+                            {
+                                text: vdk.translate('stop'),
+                                icon: "ui-icon-pause",
+                                click: _.bind(function(){
+                                    this.stopJob(val.jobKey, val.name);
+                                }, this)
+                            }];
+                        addButtons(bs2, td2);
+                        tr.append(td2);
                     }
                     
                     if(val.hasOwnProperty('conf')){
@@ -112,12 +136,13 @@ VDK_ADMIN.prototype = {
         var opts = {
                 action: "STARTJOB", key: jobKey
             };
-        
+        var data = {};
         $(jq('job_' + jobKey) + " td.settings>input").each(function(){
-            opts[$(this).attr("name")] = $(this).is(":checked");
+            data[$(this).attr("name")] = $(this).is(":checked");
         });
-        alert(opts);
-        return;
+        opts['data'] = JSON.stringify(data); 
+        //alert(opts);
+        //return;
         $.getJSON("sched", opts, _.bind(function (data) {
             if (data.error) {
                 alert("error ocurred: " + vdk.translate(data.error));
@@ -129,18 +154,21 @@ VDK_ADMIN.prototype = {
 
         }, this));
     },
-    stopJob: function(jobKey){
-        var opts = {
-                action: "STOPJOB", key: jobKey
-            };
-        $.getJSON("sched", opts, _.bind(function (data) {
-            if (data.error) {
-                alert("error ocurred: " + vdk.translate(data.error));
-            } else {
-                alert(vdk.translate(data.message));
-                this.getJobs();
-            }
+    stopJob: function(jobKey, name){
+        new Confirm().open("opravdu chcete zastavit proces <b>"+name+"</b>?", _.bind(function () {
+            var opts = {
+                    action: "STOPJOB", key: jobKey
+                };
+            $.getJSON("sched", opts, _.bind(function (data) {
+                if (data.error) {
+                    alert("error ocurred: " + vdk.translate(data.error));
+                } else {
+                    alert(vdk.translate(data.message));
+                    this.getJobs();
+                }
 
+            }, this));
+        
         }, this));
     },
     getRoles: function(){

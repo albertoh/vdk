@@ -5,7 +5,9 @@ import cz.incad.vdkcommon.VDKScheduler;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -21,6 +23,7 @@ import org.quartz.JobKey;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
+import org.quartz.core.jmx.JobDataMapSupport;
 import org.quartz.impl.matchers.GroupMatcher;
 
 /**
@@ -109,7 +112,18 @@ public class SchedulerServlet extends HttpServlet {
                             JSONObject json = new JSONObject();
                             Scheduler scheduler = VDKScheduler.getInstance().getScheduler();
                             String[] key = req.getParameter("key").split("\\.");
-                            scheduler.triggerJob(new JobKey(key[1],key[0]));
+                            
+                            
+                            
+                            Map<String, Object> map = new HashMap<String, Object>();
+                            
+                            map.put("runtime_data", new JSONObject(req.getParameter("data")));
+                            
+                            JobDataMap data = JobDataMapSupport.newJobDataMap(map);
+        
+        
+                            LOGGER.log(Level.INFO, req.getParameter("data"));
+                            scheduler.triggerJob(new JobKey(key[1],key[0]), data);
                             json.put("message", "Job started");
                             out.println(json.toString());
                         } catch (SchedulerException ex) {

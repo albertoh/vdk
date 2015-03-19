@@ -552,8 +552,11 @@ table.tex td.RZ{
     background-color: #f5f5f5;
 }
 
-#jobs li button{
+#jobs button{
     margin-left: 5px;
+}
+#jobs button span{
+    padding: 1px 0;
 }
 
 #jobs .running{
@@ -562,4 +565,7 @@ table.tex td.RZ{
 
 #jobs .waiting{
     color: orangered;
+}
+#jobs .settings label{
+    margin-left: 5px;
 }
