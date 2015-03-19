@@ -2,6 +2,8 @@
 $xslt.addParam("locale", $i18n.language)
 $xslt.transform($results, $xsl)
 
+<div id="bottomPagination">
+</div>
 <div id="summary" style="display:none;">
     <div id="summaryContent"></div>
 </div>

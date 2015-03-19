@@ -19,7 +19,11 @@ Results.prototype = {
         this.doRange("#rokvydani_range", "#rokvydani_select", "rokvydani", true);
         this.doRange("#pocet_range", "#pocet_select", "pocet_exemplaru", false);
         this.parseDocs();
+        this.clonePagination();
         this.renderOfferTitleDoc();
+    },
+    clonePagination: function(){
+        $("#bottomPagination").append($("#results_header div.pagination").clone());
     },
     renderOfferTitleDoc: function(){
         $(".nabidka_ext").each(function () {
