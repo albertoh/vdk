@@ -130,12 +130,20 @@
             <xsl:for-each select="$content/int" >
                 <xsl:variable name="bundle_name"><xsl:value-of select="$navName" />.<xsl:value-of select="./@name" /></xsl:variable>
                     <li>
+                        <xsl:variable name="fqStr"><xsl:value-of select="$navName" />:"<xsl:value-of select="./@name" />"</xsl:variable>
                         <xsl:if test="position() &gt; $numInitial">
                             <xsl:attribute name="class">more</xsl:attribute>
-                        </xsl:if><a>
+                        </xsl:if><xsl:choose>
+                        <xsl:when test="/response/lst[@name='responseHeader']/lst[@name='params']/arr[@name='fq'][str=$fqStr]">
+                            <span class="selected">:: <xsl:value-of select="rb:getString($i18n,$navName,./@name)" />
+                            </span>
+                        </xsl:when>
+                        <xsl:otherwise><a>
                         <xsl:attribute name="href">javascript:addNav('<xsl:value-of select="$navName" />:"<xsl:value-of select="./@name" />"');</xsl:attribute>
                             :: <xsl:value-of select="rb:getString($i18n,$navName,./@name)" />
-                        </a>
+                        </a></xsl:otherwise>
+                        </xsl:choose>
+                        
                         <span style="float:right;">(<xsl:value-of select="." />)</span>
                     </li>
             </xsl:for-each>
