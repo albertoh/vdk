@@ -276,6 +276,7 @@ Views.prototype = {
     get: function () {
         var url = "db?action=LOADVIEWS";
         $.getJSON(url, function (data) {
+            $("#saved_views").empty();
             $.each(data.views, function (i, item) {
                 $("#saved_views").append('<option value="' + item.query + '">' + item.nazev + '</option>');
             });
@@ -300,9 +301,10 @@ Views.prototype = {
             return;
         }
         var url = "db?action=SAVEVIEW&" + $('#viewForm').serialize() + "&" + $('#searchForm').serialize();
-        $.get(url, function (data) {
+        $.get(url, _.bind(function (data) {
             alert(data);
-        });
+            this.get();
+        }, this));
     }
 };
 
@@ -315,7 +317,13 @@ function Export() {
 
 Export.prototype = {
     open: function () {
-        var url = "csv/export.vm" + window.location.search + "&export=true";
+        var q = window.location.search;
+        if(q === ""){
+            q = "?export=true";
+        }else{
+            q += "&export=true";
+        }
+        var url = "csv/export.vm" + q;
         window.open(url, "export");
     }
 };
