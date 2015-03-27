@@ -82,15 +82,23 @@ VDK.prototype = {
     
     actionOriginal: function (id) {
         var span = $('<button/>', {class: 'original', style: 'float:left;'});
+        span.attr('title', 'nahlédnout originální metadata');
+        span.click(function(){
+            vdk.showOriginal(id);
+        });
         var a = $('<a class="ui-icon ui-icon-extlink" >');
         a.attr('title', 'nahlédnout originální metadata');
-        a.attr('href', 'javascript:vdk.showOriginal("' + id + '")');
+        a.attr('href', 'javascript:void(0);');
         a.text('original');
         span.append(a);
         return span;
     },
     actionCSV: function (csv) {
         var span = $('<button/>', {class: 'original', style: 'float:left;'});
+        span.attr('title', 'csv format');
+        span.click(function(){
+            vdk.showCSV(csv);
+        });
         var a = $('<a class="ui-icon ui-icon-document" >');
         a.attr('title', 'csv format');
         //a.attr('href', 'javascript:vdk.showCSV("'+csv+'")');
@@ -103,9 +111,9 @@ VDK.prototype = {
     actionOffer: function (code, id, ex) {
         var span = $('<button/>', {class: 'offerex', style: 'float:left;'});
         var a = $('<a class="ui-icon ui-icon-flag" >');
-        a.attr('title', 'přidat do nabídky');
+        span.attr('title', 'přidat do nabídky');
         a.attr('href', 'javascript:void(0)');
-        a.click(function(){
+        span.click(function(){
             vdk.offers.addToActive(code, id,ex);
         });
         a.text('offer');
@@ -114,37 +122,49 @@ VDK.prototype = {
     },
     actionAddDemand: function (code, id, ex) {
         var span = $('<button/>', {class: 'demandexadd', style: 'float:left;'});
+        span.click(function(){
+            vdk.demands.add(code, id, ex);
+        });
         var a = $('<a class="ui-icon ui-icon-cart" >');
-        a.attr('title', 'přidat do poptávky');
-        a.attr('href', 'javascript:vdk.demands.add("' + code + '", "' + id + '", "' + ex + '")');
+        span.attr('title', 'přidat do poptávky');
+        a.attr('href', 'javascript:void(0)');
         a.text('demand');
         span.append(a);
         return span;
     },
     actionWant: function (zaznamOffer) {
         var span = $('<button/>', {class: 'wanteddoc', 'data-wanted': zaznamOffer, style: 'float:left;'});
+        span.click(function(){
+            vdk.offers.wantDoc(zaznamOffer, true);
+        });
         var a = $('<a class="ui-icon ui-icon-star" >');
-        a.attr('title', dict['offer.want'] + ' "' + dict['chci.do.fondu'] + '"');
-        a.attr('href', 'javascript:vdk.offers.wantDoc(' + zaznamOffer + ', true)');
+        span.attr('title', dict['offer.want'] + ' "' + dict['chci.do.fondu'] + '"');
+        a.attr('href', 'javascript:void(0)');
         a.text('chci');
         span.append(a);
         return span;
     },
     actionDontWant: function (zaznamOffer) {
         var span = $('<button/>', {class: 'wanteddoc', 'data-wanted': zaznamOffer, style: 'float:left;'});
+        span.click(function(){
+            vdk.offers.wantDoc(zaznamOffer, false);
+        });
         
         var a = $('<a class="ui-icon ui-icon-cancel" >');
-        a.attr('title', dict['offer.want'] + ' "' + dict['nechci.do.fondu'] + '"');
-        a.attr('href', 'javascript:vdk.offers.wantDoc(' + zaznamOffer + ', false)');
+        span.attr('title', dict['offer.want'] + ' "' + dict['nechci.do.fondu'] + '"');
+        a.attr('href', 'javascript:void(0)');
         a.text('chci');
         span.append(a);
         return span;
     },
     actionRemoveDemand: function (code, id, ex) {
         var span = $('<button/>', {class: 'demandexrem', style: 'float:left;'});
+        span.click(function(){
+            vdk.demands.remove(code, id, ex);
+        });
         var a = $('<a class="ui-icon ui-icon-cancel" >');
         a.attr('title', 'odstranit z poptávky');
-        a.attr('href', 'javascript:vdk.demands.remove("' + code + '", "' + id + '", "' + ex + '")');
+        a.attr('href', 'javascript:void(0)');
         a.text('demand');
         span.append(a);
         return span;
