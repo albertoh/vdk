@@ -236,7 +236,11 @@ public class Search {
 
     private int getRows() throws UnsupportedEncodingException {
         if (req.getParameter("export") != null) {
-            return 1000;
+            String rows = req.getParameter("rows_export");
+            if (rows == null || rows.equals("")) {
+                rows = "40";
+            }
+            return Integer.parseInt(rows);
         } else {
             String rows = req.getParameter("hits");
             if (rows == null || rows.equals("")) {

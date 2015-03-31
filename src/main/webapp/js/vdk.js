@@ -336,15 +336,19 @@ function Export() {
 }
 
 Export.prototype = {
+    
     open: function () {
-        var q = window.location.search;
-        if(q === ""){
-            q = "?export=true";
-        }else{
-            q += "&export=true";
+        var rows = prompt("Maxilmální počet dokumentů (příliš velké číslo může zahltit systém)", "40");
+        if (rows !== null) {
+            var q = window.location.search;
+            if(q === ""){
+                q = "?rows_export="+rows+"&export=true";
+            }else{
+                q += "&rows_export="+rows+"&export=true";
+            }
+            var url = "csv/export.vm" + q;
+            window.open(url, "export");
         }
-        var url = "csv/export.vm" + q;
-        window.open(url, "export");
     }
 };
 
