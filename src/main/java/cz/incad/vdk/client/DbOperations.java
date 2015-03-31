@@ -901,8 +901,13 @@ public class DbOperations extends HttpServlet {
                         Connection conn = null;
                         try {
                             conn = DbUtils.getConnection();
-
-                            String sql = "select * from POHLED where isGlobal='true' OR knihovna=" + getIdKnihovna(req);
+                            String sql ;
+                            if(DbUtils.isOracle(conn)){
+                                sql = "select * from POHLED where isGlobal=1 OR knihovna=" + getIdKnihovna(req);
+                            }else{
+                                sql = "select * from POHLED where isGlobal='true' OR knihovna=" + getIdKnihovna(req);
+                            }
+                            
                             PreparedStatement ps = conn.prepareStatement(sql);
                             ResultSet rs = ps.executeQuery();
                             JSONObject json = new JSONObject();
