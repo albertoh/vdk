@@ -25,7 +25,7 @@ public class VelocityViewServlet extends org.apache.velocity.tools.view.Velocity
         } else if(request.getRequestURI().contains("/csv/")) {
             String filename = "vdk_export.csv";
             response.setCharacterEncoding("UTF-8");
-            response.setContentType("Content-type: application/x-csv; name="+filename);
+            response.setContentType("application/x-csv");
             response.setHeader("Content-Disposition", "attachment; filename="+filename);
         }else {
             response.setContentType(getVelocityView().getDefaultContentType());
