@@ -24,7 +24,7 @@
         <xsl:variable name="hasCollapsed" select="$numDocs &gt; 1" />
         <li>
             <xsl:attribute name="id">res_<xsl:value-of select="$code" /></xsl:attribute>
-            <xsl:attribute name="data-offer_ext"></xsl:attribute>
+            <xsl:attribute name="data-offer_ext">[<xsl:for-each select="./arr[@name='nabidka_ext']/str"><xsl:value-of  select="." /></xsl:for-each><xsl:if test="position()!=last()">,</xsl:if>]</xsl:attribute>
             <xsl:attribute name="data-wanted">[<xsl:for-each select="./arr[@name='chci']/str"><xsl:value-of  select="." /></xsl:for-each>]</xsl:attribute>
             <xsl:attribute name="data-nowanted">[<xsl:for-each select="./arr[@name='nechci']/str"><xsl:value-of  select="." /></xsl:for-each>]</xsl:attribute>
             <xsl:attribute name="class">res<xsl:if test="hasCollapsed"> collapsed</xsl:if></xsl:attribute>
