@@ -354,21 +354,27 @@ function jsonElement(json, el, prefix) {
 }
 
 function zdrojIcon(zdroj, isNKF) {
+    var url = "";
+    var title = zdroj;
     if (zdroj.indexOf("MZK") !== -1) {
-        return "img/icons/zdroj/mzk.gif";
+        url =  "img/icons/zdroj/mzk.gif";
     } else if (zdroj.indexOf("VKOL") !== -1) {
-        return "img/icons/zdroj/vkol.gif";
+        url =  "img/icons/zdroj/vkol.gif";
     } else if (zdroj.indexOf("NKF") !== -1) {
-        return "img/icons/zdroj/nkf.gif";
+        url =  "img/icons/zdroj/nkf.gif";
+        title = 'NKF';
     } else if (zdroj.indexOf("UKF") !== -1) {
         if (isNKF) {
-            return "img/icons/zdroj/nkf.gif";
+            url =  "img/icons/zdroj/nkf.gif";
+            title = 'NKF';
         } else {
-            return "img/icons/zdroj/ukf.gif";
+            url =  "img/icons/zdroj/ukf.gif";
+            title = 'UKF';
         }
     } else {
         return "img/icons/zdroj/" + zdroj + ".gif";
     }
+    return '<img width="16" src="' + url + '" title="' + title + '"/>';
 }
 
 function Confirm() {
