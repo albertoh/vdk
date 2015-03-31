@@ -100,7 +100,7 @@ Results.prototype = {
         if(json.hasOwnProperty("file")){
             '&path=' + json.file;
         }
-        row.append('<td><img width="16" src="' + icon + '" title="' + zdroj + '"/>' +
+        row.append('<td>' + icon +
                 '<a style="float:right;" class="ui-icon ui-icon-extlink" target="_view" href="original?id=' + zaznam + filePath + '">view</a></td>');
         row.append("<td>" + jsonElement(json, "signatura") + "</td>");
         row.append("<td class=\"" + jsonElement(json, "status") + "\">" + jsonElement(json, "status", "status") + "</td>");
