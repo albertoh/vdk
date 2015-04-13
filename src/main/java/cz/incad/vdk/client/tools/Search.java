@@ -227,9 +227,13 @@ public class Search {
     }
 
     private int getStart() throws UnsupportedEncodingException {
-        String start = req.getParameter("offset");
+
+        String start = req.getParameter("start_export");
         if (start == null || start.equals("")) {
-            start = "0";
+            start = req.getParameter("offset");
+            if (start == null || start.equals("")) {
+                start = "0";
+            }
         }
         return Integer.parseInt(start);
     }
