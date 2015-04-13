@@ -4,73 +4,66 @@
  * Simple event handler used in application 
  * @constructor 
  */
-function ApplicationEvents() {}
+function ApplicationEvents() {
+}
 
 ApplicationEvents.prototype = {
-
-        handlerEnabled:true,        
-
-        enableHandler:function() {
-                this.handlerEnabled = true;
-        },
-        disableHandler:function() {
-                this.handlerEnabled = false;
-        },        
-
-        /** contains event handlers*/
-        handlers: [],
-        
-        
-
-        /** 
-         * Trigger event 
-         * @method
-         */
-        trigger:function(type, data) {
-                console.log("trigger event:"+type);
-                if (!this.handlerEnabled) {
-                        console.log("handler disabled. Discarding event "+type);
-                        return;
-                }
-                        
-                $.each(this.handlers,function(idx,obj) { 
-                        obj.apply(null, [type,data]);
-                });
-        },
-
-        /** add new handler 
-         *@method
-         */
-        addHandler: function(handler) {
-                this.handlers.push(handler);
-        },
-
-        /** remove handler 
-         * @method
-         */
-        removeHandler:function(handler) {
-                /*
-                var index = this.handlers.indexOf(handler);
-                var nhandlers = [];
-                if (index >=0)  {
-                        for (var i=0;i<index;i++) {
-                                 nhandlers.push(this.handlers[i]);
-                        }
-                        for (var i=index+1;i<this.handlers.length;i++) {
-                                 nhandlers.push(this.handlers[i]);
-                        }
-                }
-                this.handlers = nhandlers;
-                */
+    handlerEnabled: true,
+    enableHandler: function () {
+        this.handlerEnabled = true;
+    },
+    disableHandler: function () {
+        this.handlerEnabled = false;
+    },
+    /** contains event handlers*/
+    handlers: [],
+    /** 
+     * Trigger event 
+     * @method
+     */
+    trigger: function (type, data) {
+        console.log("trigger event:" + type);
+        if (!this.handlerEnabled) {
+            console.log("handler disabled. Discarding event " + type);
+            return;
         }
+
+        $.each(this.handlers, function (idx, obj) {
+            obj.apply(null, [type, data]);
+        });
+    },
+    /** add new handler 
+     *@method
+     */
+    addHandler: function (handler) {
+        this.handlers.push(handler);
+    },
+    /** remove handler 
+     * @method
+     */
+    removeHandler: function (handler) {
+        /*
+         var index = this.handlers.indexOf(handler);
+         var nhandlers = [];
+         if (index >=0)  {
+         for (var i=0;i<index;i++) {
+         nhandlers.push(this.handlers[i]);
+         }
+         for (var i=index+1;i<this.handlers.length;i++) {
+         nhandlers.push(this.handlers[i]);
+         }
+         }
+         this.handlers = nhandlers;
+         */
+    }
 }
 
 function VDK() {
-    
-   this.eventsHandler =  new ApplicationEvents();
-   
+
+    this.eventsHandler = new ApplicationEvents();
+
     this.user = null;
-    
+
     this.isLogged = false;
     this.zdrojUser = {
         'NKF': 'NKF',
@@ -79,11 +72,10 @@ function VDK() {
         'VKOL': 'VKOLOAI'};
 }
 VDK.prototype = {
-    
     actionOriginal: function (id) {
         var span = $('<button/>', {class: 'original', style: 'float:left;'});
         span.attr('title', 'nahlédnout originální metadata');
-        span.click(function(){
+        span.click(function () {
             vdk.showOriginal(id);
         });
         var a = $('<a class="ui-icon ui-icon-extlink" >');
@@ -96,14 +88,16 @@ VDK.prototype = {
     actionCSV: function (csv) {
         var span = $('<button/>', {class: 'original', style: 'float:left;'});
         span.attr('title', 'csv format');
-        span.click(function(){
+        span.click(function () {
             vdk.showCSV(csv);
         });
         var a = $('<a class="ui-icon ui-icon-document" >');
         a.attr('title', 'csv format');
         //a.attr('href', 'javascript:vdk.showCSV("'+csv+'")');
         a.attr('href', 'javascript:void(0);');
-        a.click(function(){vdk.showCSV(csv)});
+        a.click(function () {
+            vdk.showCSV(csv)
+        });
         a.text('csv');
         span.append(a);
         return span;
@@ -113,8 +107,8 @@ VDK.prototype = {
         var a = $('<a class="ui-icon ui-icon-flag" >');
         span.attr('title', 'přidat do nabídky');
         a.attr('href', 'javascript:void(0)');
-        span.click(function(){
-            vdk.offers.addToActive(code, id,ex);
+        span.click(function () {
+            vdk.offers.addToActive(code, id, ex);
         });
         a.text('offer');
         span.append(a);
@@ -122,7 +116,7 @@ VDK.prototype = {
     },
     actionAddDemand: function (code, id, ex) {
         var span = $('<button/>', {class: 'demandexadd', style: 'float:left;'});
-        span.click(function(){
+        span.click(function () {
             vdk.demands.add(code, id, ex);
         });
         var a = $('<a class="ui-icon ui-icon-cart" >');
@@ -134,7 +128,7 @@ VDK.prototype = {
     },
     actionWant: function (zaznamOffer) {
         var span = $('<button/>', {class: 'wanteddoc', 'data-wanted': zaznamOffer, style: 'float:left;'});
-        span.click(function(){
+        span.click(function () {
             vdk.offers.wantDoc(zaznamOffer, true);
         });
         var a = $('<a class="ui-icon ui-icon-star" >');
@@ -146,10 +140,10 @@ VDK.prototype = {
     },
     actionDontWant: function (zaznamOffer) {
         var span = $('<button/>', {class: 'wanteddoc', 'data-wanted': zaznamOffer, style: 'float:left;'});
-        span.click(function(){
+        span.click(function () {
             vdk.offers.wantDoc(zaznamOffer, false);
         });
-        
+
         var a = $('<a class="ui-icon ui-icon-cancel" >');
         span.attr('title', dict['offer.want'] + ' "' + dict['nechci.do.fondu'] + '"');
         a.attr('href', 'javascript:void(0)');
@@ -159,7 +153,7 @@ VDK.prototype = {
     },
     actionRemoveDemand: function (code, id, ex) {
         var span = $('<button/>', {class: 'demandexrem', style: 'float:left;'});
-        span.click(function(){
+        span.click(function () {
             vdk.demands.remove(code, id, ex);
         });
         var a = $('<a class="ui-icon ui-icon-cancel" >');
@@ -169,18 +163,18 @@ VDK.prototype = {
         span.append(a);
         return span;
     },
-    setUser: function(){
-        $.getJSON("user.vm", _.bind(function(data){
+    setUser: function () {
+        $.getJSON("user.vm", _.bind(function (data) {
             this.user = data;
             this.isLogged = true;
         }, this));
-        
+
     },
-    changeLanguage : function(lang){
-        $("#searchForm").append('<input name="language" value="'+lang+'" type="hidden" />');
+    changeLanguage: function (lang) {
+        $("#searchForm").append('<input name="language" value="' + lang + '" type="hidden" />');
         document.getElementById("searchForm").submit();
     },
-    init : function () {
+    init: function () {
         this.demands = new Demand();
         this.results = new Results();
         this.offers = new Offers();
@@ -205,10 +199,10 @@ VDK.prototype = {
         });
 
     },
-    translate : function(key){
-        if(dict.hasOwnProperty(key)){
+    translate: function (key) {
+        if (dict.hasOwnProperty(key)) {
             return dict[key];
-        }else{
+        } else {
             return key;
         }
     },
@@ -229,7 +223,7 @@ VDK.prototype = {
             var id = $(this).find("input.groupid").val();
         });
     },
-    selectView : function () {
+    selectView: function () {
         this.views.select();
     },
     getViews: function () {
@@ -241,7 +235,7 @@ VDK.prototype = {
     openView: function () {
         this.views.open();
     },
-    addToNabidka : function (id) {
+    addToNabidka: function (id) {
         this.nabidka.add(id);
     },
     openNabidka: function () {
@@ -250,8 +244,8 @@ VDK.prototype = {
     openExport: function () {
         this.export.open();
     },
-    showOriginal: function(id){
-        window.open("original?id="+id, "original");
+    showOriginal: function (id) {
+        window.open("original?id=" + id, "original");
     },
     showCSV: function (csv) {
         if (!this.csv) {
@@ -266,7 +260,7 @@ VDK.prototype = {
         this.csv.val(csv);
         this.csvdialog.dialog({modal: true, width: 700});
     },
-    filterOnlyMatches: function() {
+    filterOnlyMatches: function () {
         var i = $("input.fq").length + 1;
         var input = '<input type="hidden" name="onlyMatches" id="onlyMatches" class="fq" value="yes" />';
         $("#searchForm").append(input);
@@ -336,18 +330,20 @@ function Export() {
 }
 
 Export.prototype = {
-    
     open: function () {
         var rows = prompt("Maxilmální počet dokumentů (příliš velké číslo může zahltit systém)", "40");
         if (rows !== null) {
-            var q = window.location.search;
-            if(q === ""){
-                q = "?rows_export="+rows+"&export=true";
-            }else{
-                q += "&rows_export="+rows+"&export=true";
+            var start = prompt("Od kterého záznamu?", "0");
+            if (start !== null) {
+                var q = window.location.search;
+                if (q === "") {
+                    q = "?rows_export=" + rows + "&start_export=" + start + "&export=true";
+                } else {
+                    q += "&rows_export=" + rows + "&start_export=" + start + "&export=true";
+                }
+                var url = "csv/export.vm" + q;
+                window.open(url, "export");
             }
-            var url = "csv/export.vm" + q;
-            window.open(url, "export");
         }
     }
 };
