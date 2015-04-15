@@ -113,14 +113,11 @@ public class SchedulerServlet extends HttpServlet {
                             Scheduler scheduler = VDKScheduler.getInstance().getScheduler();
                             String[] key = req.getParameter("key").split("\\.");
                             
-                            
-                            
                             Map<String, Object> map = new HashMap<String, Object>();
                             
                             map.put("runtime_data", new JSONObject(req.getParameter("data")));
                             
                             JobDataMap data = JobDataMapSupport.newJobDataMap(map);
-        
         
                             LOGGER.log(Level.INFO, req.getParameter("data"));
                             scheduler.triggerJob(new JobKey(key[1],key[0]), data);

@@ -50,7 +50,7 @@ Offers.prototype = {
                     if(resp.response.numFound > 0){
                         var doc = resp.response.docs[0];
                         var li = $("<div/>");
-                        li.append(vdk.actionOffer(doc.code));
+                        li.append(vdk.actionOffer(doc.code, doc.id[0]));
                         li.append('<div><b>' + doc.title[0] + '</b> ' + doc.author[0] + '</div>');
                         li.append('<div>' + doc.mistovydani[0] + doc.datumvydani[0] + ' (' + doc.isbn[0] + ')</div>');
                         $(obj).next().html(li);
@@ -79,7 +79,7 @@ Offers.prototype = {
                     ul.find("li").remove();
                     $.each(resp.response.docs, function(i, doc){
                         var li = $("<li/>");
-                        li.append(vdk.actionOffer(doc.code));
+                        li.append(vdk.actionOffer(doc.code, doc.id[0]));
                         var title = $('<div/>');
                         title.append('<b>' + doc.title[0] + '</b> ');
                         if(doc.hasOwnProperty('author')){

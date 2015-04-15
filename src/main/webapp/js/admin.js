@@ -94,14 +94,22 @@ VDK_ADMIN.prototype = {
                         var td= $("<td/>", {class: "settings"});
                         for(var key in val.conf.settings){
                             var setting = val.conf.settings[key];
-                            if(typeof(val.conf.settings[key]) === 'boolean'){
+                            if(typeof(setting) === 'boolean'){
                                 var chid = val.jobKey+"_"+key;
-                                var check = $("<input/>", {type: "checkbox", id: chid, name: key});
+                                var check = $("<input/>", {type: "checkbox", class:"check", id: chid, name: key});
                                 check.prop('checked', setting);
                                 var label = $('<label/>', {for: chid});
                                 label.text(key);
                                 td.append(label);
                                 td.append(check);
+                            }else if(typeof(setting) === 'string'){
+                                var chid = val.jobKey+"_"+key;
+                                var input = $("<input/>", {type: "text", class:"text", id: chid, name: key});
+                                input.val(setting);
+                                var label = $('<label/>', {for: chid});
+                                label.text(key);
+                                td.append(label);
+                                td.append(input);
                             }
                             cfgs += key + " -> " + val.conf.settings[key] + " ("  +  + ")";
                         }
@@ -137,8 +145,11 @@ VDK_ADMIN.prototype = {
                 action: "STARTJOB", key: jobKey
             };
         var data = {};
-        $(jq('job_' + jobKey) + " td.settings>input").each(function(){
+        $(jq('job_' + jobKey) + " td.settings>input.check").each(function(){
             data[$(this).attr("name")] = $(this).is(":checked");
+        });
+        $(jq('job_' + jobKey) + " td.settings>input.text").each(function(){
+            data[$(this).attr("name")] = $(this).val();
         });
         opts['data'] = JSON.stringify(data); 
         //alert(opts);
