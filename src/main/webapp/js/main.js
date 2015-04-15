@@ -292,10 +292,11 @@ function importOfferDo() {
 
 
 function autocompleteQ() {
+    return;
     $("#q").autocomplete({
         source: function (request, response) {
             $.ajax({
-                url: "suggest.jsp",
+                url: "suggest",
                 dataType: "json",
                 data: {
                     maxRows: 12,
