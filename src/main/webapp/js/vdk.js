@@ -291,8 +291,15 @@ Views.prototype = {
         var url = "db?action=LOADVIEWS";
         $.getJSON(url, function (data) {
             $("#saved_views").empty();
+            $("#saved_views").append('<option value="">'+vdk.translate("select.view")+'</option>');
             $.each(data.views, function (i, item) {
-                $("#saved_views").append('<option value="' + item.query + '">' + item.nazev + '</option>');
+                var option = $('<option />');
+                option.val(item.query);
+                option.text(item.nazev);
+                if(item.query === window.location.search.substring(1)){
+                    option.prop("selected", true);
+                }
+                $("#saved_views").append(option);
             });
         });
     },
