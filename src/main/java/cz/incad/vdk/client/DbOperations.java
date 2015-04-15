@@ -354,7 +354,7 @@ public class DbOperations extends HttpServlet {
             json.put("message", "imported " + lines + " lines to offer: " + idOffer);
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
-            throw new Exception("Not valid cvs file. Separator must be tabulator and line must be ", ex);
+            throw new Exception("Not valid csv file. Separator must be tabulator and line must be ", ex);
         }
     }
 
