@@ -363,7 +363,9 @@ public class IndexOperations extends HttpServlet {
 
                                 if (kn.hasRole(DbUtils.Roles.ADMIN)) {
                                     Indexer indexer = new Indexer();
-                                    indexer.reindexDoc(req.getParameter("code"));
+                
+                
+                                    indexer.reindexDocByIdentifier(req.getParameter("code"));
                                 } else {
                                     json.put("error", "rights.insuficient");
                                 }
