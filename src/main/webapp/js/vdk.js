@@ -183,6 +183,7 @@ VDK.prototype = {
         this.views = new Views();
         this.activeofferid = -1;
         this.getViews();
+        autocompleteQ();
         //this.getOffers();
         $(document).tooltip({
             items: "div.diff, [title]",

@@ -25,6 +25,8 @@ public class Knihovna {
     private String code;
     private String nazev;
      private String heslo;
+     private String sigla;
+     private String adresa;
      private ArrayList<String> roles;
      private int priorita;
      private String email;
@@ -43,19 +45,40 @@ public class Knihovna {
             this.priorita = rs.getInt("priorita");
             this.telefon = rs.getString("telefon");
             this.email = rs.getString("email");
+            this.sigla = rs.getString("sigla");
+            this.adresa = rs.getString("adresa");
+        }
+    }
+    public Knihovna(int id) throws NamingException, SQLException{
+        Connection conn = getConnection();
+        String sql = "select * from KNIHOVNA where knihovna_id=" + id;
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ResultSet rs = ps.executeQuery();
+        if (rs.next()) {
+            this.code = rs.getString("code");
+            this.id = rs.getInt("knihovna_id");
+            this.nazev = rs.getString("nazev");
+            this.roles = getRoles(conn, code);
+            this.priorita = rs.getInt("priorita");
+            this.telefon = rs.getString("telefon");
+            this.email = rs.getString("email");
+            this.sigla = rs.getString("sigla");
+            this.adresa = rs.getString("adresa");
         }
     }
     
     public void saveToDb() throws NamingException, SQLException{
         Connection conn = getConnection();
         String sql = "update KNIHOVNA set "
-                    + "nazev=?, priorita=?, telefon=?, email=?, update_timestamp=? where code='" + this.code + "'";
+                    + "nazev=?, priorita=?, telefon=?, email=?, update_timestamp=?, adresa=?, sigla=? where code='" + this.code + "'";
             PreparedStatement ps = conn.prepareStatement(sql);
             ps.setString(1, this.nazev);
             ps.setInt(2, this.priorita);
             ps.setString(3, this.telefon);
             ps.setString(4, this.email);
             ps.setDate(5, new Date(Calendar.getInstance().getTime().getTime()));
+            ps.setString(6, this.adresa);
+            ps.setString(7, this.sigla);
             ps.executeUpdate();
     }
     
@@ -86,6 +109,8 @@ public class Knihovna {
         j.put("roles", roles);
         j.put("telefon", telefon);
         j.put("email", email);
+        j.put("sigla", getSigla());
+        j.put("adresa", getAdresa());
         return j;
     }
 
@@ -200,6 +225,34 @@ public class Knihovna {
      */
     public void setPriorita(int priorita) {
         this.priorita = priorita;
+    }
+
+    /**
+     * @return the sigla
+     */
+    public String getSigla() {
+        return sigla;
+    }
+
+    /**
+     * @param sigla the sigla to set
+     */
+    public void setSigla(String sigla) {
+        this.sigla = sigla;
+    }
+
+    /**
+     * @return the adresa
+     */
+    public String getAdresa() {
+        return adresa;
+    }
+
+    /**
+     * @param adresa the adresa to set
+     */
+    public void setAdresa(String adresa) {
+        this.adresa = adresa;
     }
     
 }

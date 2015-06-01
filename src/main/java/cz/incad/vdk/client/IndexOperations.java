@@ -1,14 +1,10 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package cz.incad.vdk.client;
 
 import cz.incad.vdkcommon.DbUtils;
 import cz.incad.vdkcommon.SolrIndexerCommiter;
 import cz.incad.vdkcommon.solr.Indexer;
 import cz.incad.vdkcommon.solr.IndexerQuery;
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Iterator;
@@ -106,7 +102,8 @@ public class IndexOperations extends HttpServlet {
                         PrintWriter out = resp.getWriter();
                         JSONObject json = new JSONObject();
                         try {
-                            Indexer indexer = new Indexer();
+                            String f = System.getProperty("user.home") + File.separator + ".vdkcr" + File.separator + "jobs" + File.separator + "indexer.json";
+                            Indexer indexer = new Indexer(f);
                             indexer.indexWanted(Integer.parseInt(req.getParameter("id")));
                             json.put("message", "Reakce pridana.");
                         } catch (Exception ex) {
@@ -122,7 +119,8 @@ public class IndexOperations extends HttpServlet {
                         PrintWriter out = resp.getWriter();
                         JSONObject json = new JSONObject();
                         try {
-                            Indexer indexer = new Indexer();
+                            String f = System.getProperty("user.home") + File.separator + ".vdkcr" + File.separator + "jobs" + File.separator + "indexer.json";
+                            Indexer indexer = new Indexer(f);
                             indexer.removeAllWanted();
                         } catch (Exception ex) {
                             json.put("error", ex.toString());
@@ -138,7 +136,8 @@ public class IndexOperations extends HttpServlet {
                         JSONObject json = new JSONObject();
                         try {
 
-                            Indexer indexer = new Indexer();
+                            String f = System.getProperty("user.home") + File.separator + ".vdkcr" + File.separator + "jobs" + File.separator + "indexer.json";
+                            Indexer indexer = new Indexer(f);
                             indexer.indexAllWanted();
                         } catch (Exception ex) {
                             json.put("error", ex.toString());
@@ -153,9 +152,12 @@ public class IndexOperations extends HttpServlet {
                         PrintWriter out = resp.getWriter();
                         JSONObject json = new JSONObject();
                         try {
-                            Indexer indexer = new Indexer();
+                            String f = System.getProperty("user.home") + File.separator
+                            + ".vdkcr" + File.separator + "jobs" + File.separator + "indexer.json";
+                            Indexer indexer = new Indexer(f);
                             indexer.indexAllOffers();
                         } catch (Exception ex) {
+                            LOGGER.log(Level.SEVERE, null, ex);
                             json.put("error", ex.toString());
                         }
                         out.println(json.toString());
@@ -168,7 +170,8 @@ public class IndexOperations extends HttpServlet {
                         PrintWriter out = resp.getWriter();
                         JSONObject json = new JSONObject();
                         try {
-                            Indexer indexer = new Indexer();
+                            String f = System.getProperty("user.home") + File.separator + ".vdkcr" + File.separator + "jobs" + File.separator + "indexer.json";
+                            Indexer indexer = new Indexer(f);
                             indexer.indexOffer(Integer.parseInt(req.getParameter("id")));
                         } catch (Exception ex) {
                             json.put("error", ex.toString());
@@ -183,7 +186,8 @@ public class IndexOperations extends HttpServlet {
                         PrintWriter out = resp.getWriter();
                         JSONObject json = new JSONObject();
                         try {
-                            Indexer indexer = new Indexer();
+                            String f = System.getProperty("user.home") + File.separator + ".vdkcr" + File.separator + "jobs" + File.separator + "indexer.json";
+                            Indexer indexer = new Indexer(f);
                             indexer.removeOffer(Integer.parseInt(req.getParameter("id")));
                         } catch (Exception ex) {
                             json.put("error", ex.toString());
@@ -198,7 +202,8 @@ public class IndexOperations extends HttpServlet {
                         PrintWriter out = resp.getWriter();
                         JSONObject json = new JSONObject();
                         try {
-                            Indexer indexer = new Indexer();
+                            String f = System.getProperty("user.home") + File.separator + ".vdkcr" + File.separator + "jobs" + File.separator + "indexer.json";
+                            Indexer indexer = new Indexer(f);
                             indexer.removeAllOffers();
                         } catch (Exception ex) {
                             json.put("error", ex.toString());
@@ -217,7 +222,8 @@ public class IndexOperations extends HttpServlet {
                             if (kn == null) {
                                 json.put("error", "rights.notlogged");
                             } else {
-                                Indexer indexer = new Indexer();
+                                String f = System.getProperty("user.home") + File.separator + ".vdkcr" + File.separator + "jobs" + File.separator + "indexer.json";
+                                Indexer indexer = new Indexer(f);
                                 indexer.indexDemand(kn.getCode(),
                                         req.getParameter("docCode"),
                                         req.getParameter("zaznam"),
@@ -240,7 +246,8 @@ public class IndexOperations extends HttpServlet {
                             if (kn == null) {
                                 json.put("error", "rights.notlogged");
                             } else {
-                                Indexer indexer = new Indexer();
+                                String f = System.getProperty("user.home") + File.separator + ".vdkcr" + File.separator + "jobs" + File.separator + "indexer.json";
+                                Indexer indexer = new Indexer(f);
                                 indexer.removeDemand(kn.getCode(),
                                         req.getParameter("docCode"),
                                         req.getParameter("zaznam"),
@@ -263,7 +270,8 @@ public class IndexOperations extends HttpServlet {
                             if (kn == null) {
                                 json.put("error", "rights.notlogged");
                             } else {
-                                Indexer indexer = new Indexer();
+                                String f = System.getProperty("user.home") + File.separator + ".vdkcr" + File.separator + "jobs" + File.separator + "indexer.json";
+                                Indexer indexer = new Indexer(f);
                                 indexer.indexAllDemands();
                             }
                         } catch (Exception ex) {
@@ -284,7 +292,8 @@ public class IndexOperations extends HttpServlet {
                             if (kn == null) {
                                 json.put("error", "rights.notlogged");
                             } else {
-                                Indexer indexer = new Indexer();
+                                String f = System.getProperty("user.home") + File.separator + ".vdkcr" + File.separator + "jobs" + File.separator + "indexer.json";
+                                Indexer indexer = new Indexer(f);
                                 indexer.removeAllDemands();
                             }
                         } catch (Exception ex) {
@@ -307,7 +316,8 @@ public class IndexOperations extends HttpServlet {
                             } else {
 
                                 if (kn.hasRole(DbUtils.Roles.ADMIN)) {
-                                    Indexer indexer = new Indexer();
+                                    String f = System.getProperty("user.home") + File.separator + ".vdkcr" + File.separator + "jobs" + File.separator + "indexer.json";
+                                    Indexer indexer = new Indexer(f);
                                     indexer.reindex();
                                 } else {
                                     json.put("error", "rights.insuficient");
@@ -333,7 +343,8 @@ public class IndexOperations extends HttpServlet {
                             } else {
 
                                 if (kn.hasRole(DbUtils.Roles.ADMIN)) {
-                                    Indexer indexer = new Indexer();
+                                    String f = System.getProperty("user.home") + File.separator + ".vdkcr" + File.separator + "jobs" + File.separator + "indexer.json";
+                                    Indexer indexer = new Indexer(f);
                                     indexer.reindex();
 //                                    indexAllOffers(DbUtils.getConnection());
 //                                    indexAllDemands(DbUtils.getConnection());
@@ -362,9 +373,9 @@ public class IndexOperations extends HttpServlet {
                             } else {
 
                                 if (kn.hasRole(DbUtils.Roles.ADMIN)) {
-                                    Indexer indexer = new Indexer();
-                
-                
+                                    String f = System.getProperty("user.home") + File.separator + ".vdkcr" + File.separator + "jobs" + File.separator + "indexer.json";
+                                    Indexer indexer = new Indexer(f);
+
                                     indexer.reindexDocByIdentifier(req.getParameter("code"));
                                 } else {
                                     json.put("error", "rights.insuficient");

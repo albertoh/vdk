@@ -9,6 +9,7 @@ VDK_ADMIN.prototype = {
         this.getRoles();
         this.getUsers();
         this.getJobs();
+        this.getConf();
         //this.getSources();
     },
     getJobs: function(){
@@ -253,6 +254,40 @@ VDK_ADMIN.prototype = {
 
         }, this));
     },
+    getConf: function(){
+        var opts = {
+                action: "GETCONF"
+            };
+    
+        $.getJSON("db", opts, _.bind(function (data) {
+            if (data.error) {
+                alert("error ocurred: " + vdk.translate(data.error));
+            } else {
+                this.conf = data;
+                $("#tabs-conf .exp").val(data.expirationDays);
+            }
+
+        }, this));
+        
+    },
+    saveConf:function(){
+        new Confirm().open(vdk.translate("conf.comfirm.save") + " <b>" + vdk.translate("conf.comfirm.save") + "</b>?", _.bind(function () {
+            var opts = {
+                action: "SAVECONF", 
+                exp: $("#tabs-conf .exp").val()
+                
+            };
+            $.getJSON("db", opts, _.bind(function (data) {
+                if (data.error) {
+                    alert("error ocurred: " + vdk.translate(data.error));
+                } else {
+                    alert("Conf saved !");
+                }
+
+            }, this));
+
+        }, this));
+    },
     getUsers: function(){
         var opts = {
                 action: "GETUSERS"
@@ -284,6 +319,8 @@ VDK_ADMIN.prototype = {
         this.selectedUser = this.users[code];
         $("#user .nazev").val(this.selectedUser.name);
         $("#user .priorita").val(this.selectedUser.priorita);
+        $("#user .sigla").val(this.selectedUser.sigla);
+        $("#user .adresa").val(this.selectedUser.adresa);
         $("#user .telefon").val(this.selectedUser.telefon);
         $("#user .email").val(this.selectedUser.email);
         $("#user ul.roles").empty();
@@ -317,17 +354,20 @@ VDK_ADMIN.prototype = {
                 name: $("#i_nazev").val(),
                 priorita: $("#i_priorita").val(),
                 email: $("#i_email").val(),
+                sigla: $("#i_sigla").val(),
+                adresa: $("#i_adresa").val(),
                 telefon: $("#i_telefon").val()
                 
             };
-            $.getJSON("db", opts, function (data) {
+            $.getJSON("db", opts, _.bind(function (data) {
                 if (data.error) {
                     alert("error ocurred: " + vdk.translate(data.error));
                 } else {
-                    alert(data.message);
+                    this.users[this.selectedUser.code] = data;
+                    alert("User saved !");
                 }
 
-            });
+            }, this));
 
         }, this));
     },

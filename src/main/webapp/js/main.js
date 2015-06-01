@@ -292,27 +292,20 @@ function importOfferDo() {
 
 
 function autocompleteQ() {
-    return;
+    //return;
     $("#q").autocomplete({
         source: function (request, response) {
             $.ajax({
-                url: "suggest",
+                url: "suggest.vm",
                 dataType: "json",
                 data: {
                     maxRows: 12,
                     q: request.term
                 },
                 success: function (data) {
-
-//            response( $.map( data.response.docs, function( item ) {
-//              return {
-//                label: item.title,
-//                value: item.title
-//              }
-//            }));
                     var count = 0;
-                    response($.each(data.facet_counts.facet_fields.title_suggest, function (item) {
-                        if (count % 2 == 0) {
+                    response($.each(data.terms.title_suggest, function (idx, item) {
+                        if (idx % 2 === 0) {
                             var str = item.toString();
                             return {
                                 label: str.substring(str.indexOf("##") + 2),
@@ -326,8 +319,8 @@ function autocompleteQ() {
         minLength: 2,
         delay: 500,
         select: function (event, ui) {
-            log(event);
-            log(ui.item ?
+            console.log(event);
+            console.log(ui.item ?
                     "Selected: " + ui.item.label :
                     "Nothing selected, input was " + this.value);
         },

@@ -28,6 +28,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.common.params.CommonParams;
 
 import org.apache.velocity.tools.config.DefaultKey;
 import org.apache.velocity.tools.view.ViewToolContext;
@@ -59,6 +60,26 @@ public class Search {
             LOGGER.log(Level.SEVERE, e.getMessage(), e);
         } catch (JSONException e) {
             LOGGER.log(Level.SEVERE, e.getMessage(), e);
+        }
+    }
+    
+    public JSONObject getSuggest(){
+        try {
+            String q = req.getParameter("q");
+            SolrQuery query = new SolrQuery();
+            if (q == null || q.equals("")) {
+                return new JSONObject();
+            }
+            
+            query.setParam(CommonParams.QT, "/terms");
+            query.setTerms(true);
+            query.setTermsPrefix(q.toUpperCase());
+            query.setTermsLowerInclusive(true);
+            query.addTermsField("title_suggest");
+            return new JSONObject(IndexerQuery.terms(query));
+        } catch (IOException ex) {
+            Logger.getLogger(Search.class.getName()).log(Level.SEVERE, null, ex);
+            return new JSONObject();
         }
     }
 
@@ -102,7 +123,7 @@ public class Search {
 
             }
             addFilters(query);
-
+            
             return IndexerQuery.xml(query);
         } catch (IOException ex) {
             LOGGER.log(Level.SEVERE, null, ex);

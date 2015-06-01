@@ -153,7 +153,7 @@ Offers.prototype = {
                         text: "View report",
                         icon: "ui-icon-note",
                         click: function (e) {
-                            window.open("reports/offer.vm?id=" + vdk.offers.activeid, "report");
+                            window.open("reports/protocol.vm?id=" + vdk.offers.activeid, "report");
                         }
                     }
                 ];
