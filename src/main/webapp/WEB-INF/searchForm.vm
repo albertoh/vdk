@@ -6,6 +6,8 @@
         <input name="offset" id="offset" type="hidden" value="$!{params.offset}" />
         <input name="hits" id="hits" type="hidden" value="$!{params.hits}" />
         <input name="q" id="q" type="text" value="$!esc.html(${params.q})" size="40" style="float:left; border-right: none;" />
+        
+        <input type="hidden" name="title_suggest" id="title_suggest" value="$params.title_suggest" />
         <input value="$i18n.form.search" type="submit" onclick="doSearch();" />
 #if(${params.onlyOffers})
     <input type="hidden" name="onlyOffers" id="onlyOffers" class="fq" value="yes" />   

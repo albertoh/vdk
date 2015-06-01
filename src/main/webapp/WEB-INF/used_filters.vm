@@ -9,7 +9,7 @@
 #if(${params.wanted})
 <li>
      <a class="usedFilter" href="javascript:removeWanted();"><img border="0" src="img/x.png" alt="" />${params.wanted}</a>
-</li>
+</li>    
 #end
 
 #if($params.onlyOffers) 
@@ -39,6 +39,13 @@
 #if($params.q && $params.q != "")
 <li>
     <a class="usedFilter" href="javascript:removeQuery();"><img border="0" src="img/x.png" alt="" />${params.q}</a>
+</li>
+#end
+
+#if($params.title_suggest && $params.title_suggest != "")
+#set ($ds = "#substringAfter($params.title_suggest, '##')")
+<li>
+     <a class="usedFilter" href="javascript:removeSuggest();"><img border="0" src="img/x.png" alt="" />$ds</a>
 </li>
 #end
 

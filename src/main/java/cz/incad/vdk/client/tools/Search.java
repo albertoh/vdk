@@ -28,10 +28,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.params.CommonParams;
 
 import org.apache.velocity.tools.config.DefaultKey;
 import org.apache.velocity.tools.view.ViewToolContext;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -63,12 +65,12 @@ public class Search {
         }
     }
     
-    public JSONObject getSuggest(){
+    public JSONArray getSuggest(){
         try {
-            String q = req.getParameter("q");
+            String q = req.getParameter("term");
             SolrQuery query = new SolrQuery();
             if (q == null || q.equals("")) {
-                return new JSONObject();
+                return new JSONArray();
             }
             
             query.setParam(CommonParams.QT, "/terms");
@@ -76,10 +78,17 @@ public class Search {
             query.setTermsPrefix(q.toUpperCase());
             query.setTermsLowerInclusive(true);
             query.addTermsField("title_suggest");
-            return new JSONObject(IndexerQuery.terms(query));
+            JSONArray ja = new JSONObject(IndexerQuery.terms(query)).getJSONObject("terms").getJSONArray("title_suggest");
+            JSONArray ret = new JSONArray();
+            for(int i = 0; i<ja.length(); i=i+2){
+                String val = ja.getString(i);
+                ret.put(new JSONObject().put("value", val).put("label", val.substring(val.indexOf("##")+2)));
+            }
+            
+            return ret;
         } catch (IOException ex) {
             Logger.getLogger(Search.class.getName()).log(Level.SEVERE, null, ex);
-            return new JSONObject();
+            return new JSONArray();
         }
     }
 
@@ -153,9 +162,10 @@ public class Search {
         }
         if (req.getParameterValues("fq") != null) {
             for (String fq : req.getParameterValues("fq")) {
-                query.addFilterQuery(fq);
+                String[] parts = fq.split(":");
+                query.addFilterQuery(parts[0] + ":" + ClientUtils.escapeQueryChars(parts[1]));
                 if (req.getParameterValues("zdroj") != null && fq.contains("pocet_exemplaru")) {
-                    String[] parts = fq.split(":");
+                    
                     for (String zdroj : req.getParameterValues("zdroj")) {
                         if (!zdroj.startsWith("-")) {
                             query.addFilterQuery("pocet_ex_" + zdroj + ":" + parts[1]);
@@ -238,6 +248,11 @@ public class Search {
 
         if (req.getParameter("vydavatel") != null && !req.getParameter("vydavatel").equals("")) {
             query.addFilterQuery("vydavatel:" + req.getParameter("vydavatel"));
+            hasFilters = true;
+        }
+
+        if (req.getParameter("title_suggest") != null && !req.getParameter("title_suggest").equals("")) {
+            query.addFilterQuery("title_suggest:" + req.getParameter("title_suggest"));
             hasFilters = true;
         }
 

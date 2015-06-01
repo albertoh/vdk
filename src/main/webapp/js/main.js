@@ -157,6 +157,13 @@ function removeQuery() {
     document.getElementById("searchForm").submit();
 }
 
+function removeSuggest(){
+    $('#title_suggest').val('');
+    document.getElementById("offset").value = 0;
+    document.getElementById("searchForm").submit();
+    
+}
+
 function addWanted() {
 
     var input = '<input name="wanted" id="wanted" type="hidden" value="true" />';
@@ -294,35 +301,45 @@ function importOfferDo() {
 function autocompleteQ() {
     //return;
     $("#q").autocomplete({
-        source: function (request, response) {
-            $.ajax({
-                url: "suggest.vm",
-                dataType: "json",
-                data: {
-                    maxRows: 12,
-                    q: request.term
-                },
-                success: function (data) {
-                    var count = 0;
-                    response($.each(data.terms.title_suggest, function (idx, item) {
-                        if (idx % 2 === 0) {
-                            var str = item.toString();
-                            return {
-                                label: str.substring(str.indexOf("##") + 2),
-                                value: item
-                            }
-                        }
-                    }));
-                }
-            });
-        },
+        source: "suggest.vm",
+//        source: function (request, response) {
+//            $.ajax({
+//                url: "suggest.vm",
+//                dataType: "json",
+//                data: {
+//                    maxRows: 12,
+//                    q: request.term
+//                },
+//                success: function (data) {
+//                    var count = 0;
+//                    response($.each(data.terms.title_suggest, function (idx, item) {
+//                        if (idx % 2 === 0) {
+//                            var str = item.toString();
+//                            return {
+//                                label: str.substring(str.indexOf("##") + 2),
+//                                value: item
+//                            }
+//                        }
+//                    }));
+//                }
+//            });
+//        },
         minLength: 2,
         delay: 500,
         select: function (event, ui) {
-            console.log(event);
-            console.log(ui.item ?
-                    "Selected: " + ui.item.label :
-                    "Nothing selected, input was " + this.value);
+//            console.log(event);
+//            console.log(ui.item ?
+//                    "Selected: " + ui.item.label :
+//                    "Nothing selected, input was " + this.value);
+            $("#offset").val("0");
+            $("#title_suggest").val('"'+ui.item.value+'"');
+            $("#q").val("");
+            document.getElementById("searchForm").submit();
+            return false;
+        },
+        focus: function (event, ui) {
+            $("#q").val(ui.item.label);
+            return false;
         },
         open: function () {
             $(this).removeClass("ui-corner-all").addClass("ui-corner-top");
@@ -351,18 +368,18 @@ function zdrojIcon(zdroj, isNKF) {
     var url = "";
     var title = zdroj;
     if (zdroj.indexOf("MZK") !== -1) {
-        url =  "img/icons/zdroj/mzk.gif";
+        url = "img/icons/zdroj/mzk.gif";
     } else if (zdroj.indexOf("VKOL") !== -1) {
-        url =  "img/icons/zdroj/vkol.gif";
+        url = "img/icons/zdroj/vkol.gif";
     } else if (zdroj.indexOf("NKF") !== -1) {
-        url =  "img/icons/zdroj/nkf.gif";
+        url = "img/icons/zdroj/nkf.gif";
         title = 'NKF';
     } else if (zdroj.indexOf("UKF") !== -1) {
         if (isNKF) {
-            url =  "img/icons/zdroj/nkf.gif";
+            url = "img/icons/zdroj/nkf.gif";
             title = 'NKF';
         } else {
-            url =  "img/icons/zdroj/ukf.gif";
+            url = "img/icons/zdroj/ukf.gif";
             title = 'UKF';
         }
     } else {
@@ -421,9 +438,9 @@ Form.prototype = {
             title: vdk.translate('common.formDialog'),
             buttons: {
                 "OK": function () {
-                    if (f){
+                    if (f) {
                         var data = [];
-                        for(var i = 0; i< opts.length; i++){
+                        for (var i = 0; i < opts.length; i++) {
                             var opt = {};
                             opt[opts[i].name] = $("#cp_form _" + opts[i].name).val();
                             data.push(opt);
@@ -441,11 +458,11 @@ Form.prototype = {
     create: function (opts) {
         var dialog = $('<div id="dialog-form"><div>');
         var div = $('<div/>');
-        for(var i = 0; i< opts.length; i++){
-            div.append('<div><label for="cp_form_'+opts[i].name+'">'+opts[i].label+'</label><input id="cp_form_'+opts[i].name+'" name="prompt" type="text" /></div>');
+        for (var i = 0; i < opts.length; i++) {
+            div.append('<div><label for="cp_form_' + opts[i].name + '">' + opts[i].label + '</label><input id="cp_form_' + opts[i].name + '" name="prompt" type="text" /></div>');
         }
-        
-        
+
+
         dialog.append(div);
         $('body').append(dialog);
     }
@@ -469,7 +486,7 @@ Prompt.prototype = {
             buttons: {
                 "OK": function () {
                     if (f)
-                        f.apply(null, [{comment:$("#cp_prompt").val()}]);
+                        f.apply(null, [{comment: $("#cp_prompt").val()}]);
                     $(this).dialog("close");
                 },
                 Cancel: function () {
@@ -481,7 +498,7 @@ Prompt.prototype = {
     create: function () {
         var dialog = $('<div id="dialog-prompt"><div>');
         var div = $('<div/>');
-        
+
         div.append('<div><label for="cp_prompt">comment</label><input id="cp_prompt" name="prompt" type="text" /></div>');
         dialog.append(div);
         $('body').append(dialog);
@@ -506,7 +523,7 @@ PriceAndComment.prototype = {
             buttons: {
                 "OK": function () {
                     if (f)
-                        f.apply(null, [{comment:$("#cp_comment").val(), price:$("#cp_price").val()}]);
+                        f.apply(null, [{comment: $("#cp_comment").val(), price: $("#cp_price").val()}]);
                     $(this).dialog("close");
                 },
                 Cancel: function () {
