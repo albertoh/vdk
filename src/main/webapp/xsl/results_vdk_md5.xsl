@@ -6,6 +6,9 @@
   version="1.0">
     <xsl:output method="html"/>
     <xsl:param name="locale" select="'locale'" />
+    <xsl:param name="user" select="'user'"/>
+    <xsl:param name="priorita" select="'priorita'"/>
+    <xsl:param name="expirationDays" select="'expirationDays'"/>
     <xsl:variable name="i18n" select="rb:getBundle('labels', $locale)"/>
     <xsl:template match="/">
         <ul>
@@ -41,7 +44,7 @@
             <table width="100%"><tr>
                 <td valign="top">
                     <div>
-                        <xsl:if test="./arr[@name='nabidka']/str">  
+                        <xsl:if test="./arr[@name='nabidka']/str and $user != ''">  
                             <div class="nabidka">nabízí:      
                             <xsl:for-each select="./arr[@name='nabidka']/str">
                                 <xsl:variable name="pos" select="position()" />
