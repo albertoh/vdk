@@ -61,6 +61,22 @@ public class LoggedController {
             return req.getRemoteUser();
         }
     }
+    
+    public String getPriorita(){
+        if (!this.isLogged()){
+            return "";
+        } else{
+            return knihovna(req).getPriorita() + "";
+        }
+    }
+    
+    public String getCode(){
+        if (!this.isLogged()){
+            return "";
+        } else{
+            return knihovna(req).getCode();
+        }
+    }
 
     public String getUserJSONRepresentation() {
         if (!this.isLogged()) return "{}"; 

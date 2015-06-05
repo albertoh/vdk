@@ -144,10 +144,11 @@ public class DbOperations extends HttpServlet {
 
     public static int closeOffer(Connection conn, int offerid) throws Exception {
 
-        String sql = "update OFFER set closed=? where offer_id=?";
+        String sql = "update OFFER set closed=?, datum=? where offer_id=?";
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setBoolean(1, true);
-        ps.setInt(2, offerid);
+        ps.setDate(2, new java.sql.Date(new Date().getTime()));
+        ps.setInt(3, offerid);
         return ps.executeUpdate();
     }
 
@@ -636,7 +637,7 @@ public class DbOperations extends HttpServlet {
 
             ResultSet rs = ps.executeQuery();
             if (rs.next()) {
-                Date offerDate = rs.getDate("update_timestamp");
+                Date offerDate = rs.getDate("datum");
                 JSONObject j = offerJSON(offerDate,
                         rs.getString("offer_id"),
                         rs.getString("nazev"),
@@ -701,7 +702,7 @@ public class DbOperations extends HttpServlet {
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                Date offerDate = rs.getDate("update_timestamp");
+                Date offerDate = rs.getDate("datum");
                 JSONObject j = offerJSON(offerDate,
                         rs.getString("offer_id"),
                         rs.getString("nazev"),
@@ -733,7 +734,7 @@ public class DbOperations extends HttpServlet {
 
             ResultSet rs = ps.executeQuery();
             while (rs.next()) {
-                Date offerDate = rs.getDate("update_timestamp");
+                Date offerDate = rs.getDate("datum");
                 JSONObject j = offerJSON(offerDate,
                         rs.getString("offer_id"),
                         rs.getString("nazev"),
@@ -751,7 +752,7 @@ public class DbOperations extends HttpServlet {
     //public static int getIdKnihovna_(String code, Connection conn) throws Exception {
     public static int getIdKnihovna(HttpServletRequest req) throws Exception {
         String user = req.getRemoteUser();
-        Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+        Knihovna kn = LoggedController.knihovna(req);
         if (kn != null) {
             return kn.getId();
         }
@@ -809,7 +810,7 @@ public class DbOperations extends HttpServlet {
                         Connection conn;
 
                         try {
-                            Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                            Knihovna kn = LoggedController.knihovna(req);
                             if (kn != null) {
                                 conn = DbUtils.getConnection();
                                 JSONArray ja = getLibraryWanted(conn, kn.getId());
@@ -835,7 +836,7 @@ public class DbOperations extends HttpServlet {
                         Connection conn;
 
                         try {
-                            Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                            Knihovna kn = LoggedController.knihovna(req);
                             if (kn != null) {
                                 conn = DbUtils.getConnection();
                                 String code = req.getParameter("code");
@@ -862,7 +863,7 @@ public class DbOperations extends HttpServlet {
                         Connection conn;
 
                         try {
-                            //Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                            //Knihovna kn = LoggedController.knihovna(req);
                             //if (kn != null) {
                             conn = DbUtils.getConnection();
                             String code = req.getParameter("code");
@@ -911,7 +912,7 @@ public class DbOperations extends HttpServlet {
 
                         Connection conn;
 
-                        Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                        Knihovna kn = LoggedController.knihovna(req);
 
                         try {
                             if (kn != null) {
@@ -942,7 +943,7 @@ public class DbOperations extends HttpServlet {
 
                         Connection conn;
 
-                        Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                        Knihovna kn = LoggedController.knihovna(req);
                         int idKnihovna = 0;
                         if (kn != null) {
                             idKnihovna = kn.getId();
@@ -1076,7 +1077,7 @@ public class DbOperations extends HttpServlet {
                         String name = req.getParameter("name");
                         Connection conn;
 
-                        Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                        Knihovna kn = LoggedController.knihovna(req);
                         int idKnihovna = 0;
                         if (kn != null) {
                             idKnihovna = kn.getId();
@@ -1119,7 +1120,7 @@ public class DbOperations extends HttpServlet {
                         String name = req.getParameter("offerName");
                         Connection conn;
 
-                        Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                        Knihovna kn = LoggedController.knihovna(req);
                         int idKnihovna = 0;
                         try {
                             if (kn != null) {
@@ -1225,7 +1226,7 @@ public class DbOperations extends HttpServlet {
                                 //uploadedStream.mark(uploadedStream.available());
                                 Connection conn;
 
-                                Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                                Knihovna kn = LoggedController.knihovna(req);
                                 int idKnihovna = 0;
                                 try {
                                     if (kn != null) {
@@ -1305,7 +1306,7 @@ public class DbOperations extends HttpServlet {
                                 //uploadedStream.mark(uploadedStream.available());
                                 Connection conn;
 
-                                Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                                Knihovna kn = LoggedController.knihovna(req);
                                 int idKnihovna = 0;
                                 try {
                                     if (kn != null) {
@@ -1339,7 +1340,7 @@ public class DbOperations extends HttpServlet {
 
                         Connection conn;
 
-                        Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                        Knihovna kn = LoggedController.knihovna(req);
 
                         try {
                             if (kn != null) {
@@ -1410,7 +1411,7 @@ public class DbOperations extends HttpServlet {
 
                         Connection conn;
 
-                        Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                        Knihovna kn = LoggedController.knihovna(req);
 
                         try {
                             if (kn != null) {
@@ -1465,7 +1466,7 @@ public class DbOperations extends HttpServlet {
                         Connection conn;
 
                         try {
-                            Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                            Knihovna kn = LoggedController.knihovna(req);
                             if (kn != null) {
                                 conn = DbUtils.getConnection();
                                 Map<String, String> parts = new HashMap<String, String>();
@@ -1500,7 +1501,7 @@ public class DbOperations extends HttpServlet {
                         Connection conn;
 
                         try {
-                            Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                            Knihovna kn = LoggedController.knihovna(req);
                             if (kn != null) {
                                 if (kn.hasRole(DbUtils.Roles.LIB)) {
                                     int ZaznamOffer_id = Integer.parseInt(req.getParameter("ZaznamOffer_id"));
@@ -1529,7 +1530,7 @@ public class DbOperations extends HttpServlet {
                         PrintWriter out = resp.getWriter();
                         Connection conn;
                         try {
-                            Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                            Knihovna kn = LoggedController.knihovna(req);
 
                             if (kn != null) {
                                 conn = DbUtils.getConnection();
@@ -1763,7 +1764,7 @@ public class DbOperations extends HttpServlet {
                         PrintWriter out = resp.getWriter();
                         JSONObject json = new JSONObject();
                         try {
-                            Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                            Knihovna kn = LoggedController.knihovna(req);
                             if (kn == null) {
                                 json.put("error", "rights.notlogged");
                             } else {
@@ -1799,7 +1800,7 @@ public class DbOperations extends HttpServlet {
                         resp.setContentType("application/json");
                         try {
                             PrintWriter out = resp.getWriter();
-                            Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                            Knihovna kn = LoggedController.knihovna(req);
                             if (kn == null) {
                                 out.println("{\"error\": \"rights.notlogged\"}");
                             } else {
@@ -1824,7 +1825,7 @@ public class DbOperations extends HttpServlet {
                         resp.setContentType("application/json");
                         try {
                             PrintWriter out = resp.getWriter();
-                            Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                            Knihovna kn = LoggedController.knihovna(req);
                             if (kn == null) {
                                 out.println("{\"error\": \"rights.notlogged\"}");
                             } else {

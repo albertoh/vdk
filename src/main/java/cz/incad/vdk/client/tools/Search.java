@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Alberto Hernandez
+ * Copyright (C) 2013-2015 Alberto Hernandez
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,6 @@ import cz.incad.vdkcommon.Options;
 import cz.incad.vdkcommon.solr.IndexerQuery;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
@@ -101,8 +100,6 @@ public class Search {
             if (q == null || q.equals("")) {
                 q = "*:*";
                 query.setSort("_version_", SolrQuery.ORDER.desc);
-//            }else{
-//                q = "{!q.op=AND}" + q;
             }
             query.setQuery(q);
             query.set("q.op", "AND");

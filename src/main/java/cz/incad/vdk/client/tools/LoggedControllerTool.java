@@ -16,6 +16,7 @@
  */
 package cz.incad.vdk.client.tools;
 
+import cz.incad.vdk.client.LoggedController;
 import java.sql.SQLException;
 import java.util.Map;
 import javax.naming.NamingException;
@@ -56,7 +57,7 @@ public class LoggedControllerTool {
     public String getUserJSONRepresentation() {
         if (!this.isLogged()) return "{}"; 
         else {
-            return "{}";
+            return LoggedController.knihovna(req).getJson().toString();
         }
     }
     
