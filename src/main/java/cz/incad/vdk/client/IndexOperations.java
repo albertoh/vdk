@@ -138,6 +138,7 @@ public class IndexOperations extends HttpServlet {
 
                             String f = System.getProperty("user.home") + File.separator + ".vdkcr" + File.separator + "jobs" + File.separator + "indexer.json";
                             Indexer indexer = new Indexer(f);
+                            indexer.removeAllWanted();
                             indexer.indexAllWanted();
                         } catch (Exception ex) {
                             json.put("error", ex.toString());

@@ -5,6 +5,7 @@ import cz.incad.vdkcommon.DbUtils;
 import cz.incad.vdkcommon.Options;
 import cz.incad.vdkcommon.Slouceni;
 import cz.incad.vdkcommon.VDKScheduler;
+import cz.incad.vdkcommon.solr.Indexer;
 import cz.incad.vdkcommon.solr.IndexerQuery;
 import cz.incad.vdkcommon.solr.Storage;
 import java.io.ByteArrayInputStream;
@@ -176,17 +177,27 @@ public class DbOperations extends HttpServlet {
 
     }
 
-    public static void reactionToOffer(Connection conn, int zaznam_offer, int pr_knihovna) throws SQLException {
+    public static void reactionToOffer(Connection conn, int zaznam_offer, int pr_knihovna) throws SQLException, Exception {
         String sql;
-        if (DbUtils.isOracle(conn)) {
-            sql = "update ZAZNAMOFFER set pr_knihovna=?, pr_timestamp=sysdate where zaznamoffer_id=?";
-        } else {
-            sql = "update ZAZNAMOFFER set pr_knihovna=?, pr_timestamp=NOW() where zaznamoffer_id=?";
-        }
+        Date d = new Date();
+        sql = "update ZAZNAMOFFER set pr_knihovna=?, pr_timestamp=? where zaznamoffer_id=?";
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setInt(1, pr_knihovna);
-        ps.setInt(2, zaznam_offer);
+        ps.setDate(2, new java.sql.Date(d.getTime()));
+        ps.setInt(3, zaznam_offer);
         ps.executeUpdate();
+        sql = "select uniquecode from ZAZNAMOFFER where zaznamoffer_id=?";
+        ps = conn.prepareStatement(sql);
+        ps.setInt(1, zaznam_offer);
+        ResultSet rs = ps.executeQuery();
+        if(rs.next()){
+            String f = System.getProperty("user.home") + File.separator + ".vdkcr" + File.separator + "jobs" + File.separator + "indexer.json";
+            Indexer indexer = new Indexer(f);
+            String uniqueCode = rs.getString("uniquecode");
+            indexer.removeDocOffers(uniqueCode);
+            indexer.indexDocOffers(uniqueCode);
+        }
+        
     }
 
     public static int insertWantOffer(Connection conn, int zaznam_offer, int knihovna, boolean wanted) throws Exception {
@@ -1785,6 +1796,49 @@ public class DbOperations extends HttpServlet {
                                     json.put("error", "rights.insuficient");
                                 }
                             }
+                        } catch (Exception ex) {
+                            LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
+                            json.put("error", ex.toString());
+                        }
+
+                        out.println(json.toString());
+
+                    }
+                },
+        SCRIPT {
+                    @Override
+                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                        resp.setContentType("application/json");
+                        PrintWriter out = resp.getWriter();
+                        JSONObject json = new JSONObject();
+                        try {
+//                            Knihovna kn = LoggedController.knihovna(req);
+//                            if (kn == null) {
+//                                json.put("error", "rights.notlogged");
+//                            } else {
+//                                if (kn.hasRole(DbUtils.Roles.ADMIN)) {
+
+                                    Connection conn = DbUtils.getConnection();
+                                    String sql = "alter table offer add datum TIMESTAMP";
+                                    PreparedStatement ps = conn.prepareStatement(sql);
+                                    ps.execute();
+                                    sql = "alter table zaznamoffer add pr_knihovna INT";
+                                    ps = conn.prepareStatement(sql);
+                                    ps.execute();
+                                    sql = "alter table zaznamoffer add pr_timestamp TIMESTAMP";
+                                    ps = conn.prepareStatement(sql);
+                                    ps.execute();
+                                    sql = "alter table knihovna add sigla VARCHAR(10)";
+                                    ps = conn.prepareStatement(sql);
+                                    ps.execute();
+                                    sql = "alter table knihovna add adresa VARCHAR(255)";
+                                    ps = conn.prepareStatement(sql);
+                                    ps.execute();
+                                    
+//                                } else {
+//                                    json.put("error", "rights.insuficient");
+//                                }
+//                            }
                         } catch (Exception ex) {
                             LOGGER.log(Level.SEVERE, ex.getMessage(), ex);
                             json.put("error", ex.toString());

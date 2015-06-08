@@ -204,14 +204,14 @@ public class Search {
         }
 
         if (req.getParameter("wanted") != null) {
-            query.addFilterQuery("chci:" + LoggedController.knihovna(req).getCode());
+            query.addFilterQuery("chci:" + LoggedController.knihovna(req).getId());
             hasFilters = true;
         }
 
-        if (req.getParameter("nowanted") != null) {
-            query.addFilterQuery("nechci:" + LoggedController.knihovna(req).getCode());
-            hasFilters = true;
-        }
+//        if (req.getParameter("nowanted") != null) {
+//            query.addFilterQuery("nechci:" + LoggedController.knihovna(req).getId());
+//            hasFilters = true;
+//        }
 
         if (req.getParameter("title") != null && !req.getParameter("title").equals("")) {
             query.addFilterQuery("title:" + req.getParameter("title"));

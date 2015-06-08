@@ -78,6 +78,7 @@
             <xsl:attribute name="href">javascript:filterDemands();</xsl:attribute>
                 :: <xsl:value-of select="rb:getString($i18n,'poptavka.all','all')" />
             </a></li>
+            <!--
             <xsl:for-each select="$content/int" >
                 <xsl:variable name="bundle_name"><xsl:value-of select="$navName" />.<xsl:value-of select="./@name" /></xsl:variable>
                     <li class="offer">
@@ -94,6 +95,7 @@
             <xsl:if test="count($content/int) &gt; $numInitial"><li><a>
                 <xsl:attribute name="href">javascript:toggleNav('<xsl:value-of select="$navName" />');</xsl:attribute>...</a></li>
             </xsl:if>
+            -->
         </ul>
     </xsl:template>
     <xsl:template name="nabidka">
@@ -104,6 +106,7 @@
             <xsl:attribute name="href">javascript:filterOffers();</xsl:attribute>
                 :: <xsl:value-of select="rb:getString($i18n,'nabidka.all','all')" />
             </a></li>
+            <!--
             <xsl:for-each select="$content/int" >
                 <xsl:variable name="bundle_name"><xsl:value-of select="$navName" />.<xsl:value-of select="./@name" /></xsl:variable>
                     <li class="offer">
@@ -120,6 +123,7 @@
             <xsl:if test="count($content/int) &gt; $numInitial"><li><a>
                 <xsl:attribute name="href">javascript:toggleNav('<xsl:value-of select="$navName" />');</xsl:attribute>...</a></li>
             </xsl:if>
+            -->
         </ul>
     </xsl:template>
     <xsl:template name="facet">

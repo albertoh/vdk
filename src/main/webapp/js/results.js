@@ -28,12 +28,15 @@ Results.prototype = {
     renderOfferTitleDoc: function(){
         $(".nabidka_ext").each(function () {
             var json = $(this).data('nabidka_ext');
+            var elem = $(this);
             $.each(json, _.bind(function (key, val) {
-                if (vdk.isLogged && val.knihovna === vdk.user.code) {
-                    this.renderUserOffer(val);
+                if (vdk.isLogged && val.pr_knihovna === vdk.user.id) {
+                    //this.renderUserOffer(val);
+                }else{
+                    //elem.hide();
                 }
                 if(val.fields['245a']){
-                    $(this).text(val.fields['245a']);
+                    elem.text(val.fields['245a']);
                 }
             }, this));
             

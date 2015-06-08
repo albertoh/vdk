@@ -63,6 +63,7 @@ function VDK() {
     this.eventsHandler = new ApplicationEvents();
 
     this.user = null;
+    this.expirationDays = 7;
 
     this.isLogged = false;
     this.zdrojUser = {
@@ -175,6 +176,7 @@ VDK.prototype = {
         document.getElementById("searchForm").submit();
     },
     init: function () {
+        this.setUser();
         this.demands = new Demand();
         this.results = new Results();
         this.offers = new Offers();

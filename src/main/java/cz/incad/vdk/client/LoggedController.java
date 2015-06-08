@@ -17,77 +17,96 @@
 package cz.incad.vdk.client;
 
 import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.naming.NamingException;
 
 import javax.servlet.http.HttpServletRequest;
 
-
-
 public class LoggedController {
 
-    protected HttpServletRequest req;
+    static final Logger LOGGER = Logger.getLogger(LoggedController.class.getName());
+
+    //protected HttpServletRequest req;
     public static String LOG_CONTROL_KEY = "logControl";
+    
+    boolean logged;
+    String loggedName;
+    Knihovna knihovna;
 
     public LoggedController(HttpServletRequest req) {
-        this.req = req;
+        this.logged = req.getSession() != null
+                && req.getRemoteUser() != null
+                && !req.getRemoteUser().equals("");
+        this.loggedName = req.getRemoteUser();
     }
-    
-    
+
     public static boolean isLogged(HttpServletRequest req) {
-        LoggedController logControl =  (LoggedController) req.getSession().getAttribute(LoggedController.LOG_CONTROL_KEY);
-        
+        LoggedController logControl = (LoggedController) req.getSession().getAttribute(LoggedController.LOG_CONTROL_KEY);
+
         return logControl.isLogged();
     }
-    
-    
+
     public static Knihovna knihovna(HttpServletRequest req) {
-        LoggedController logControl =  (LoggedController) req.getSession().getAttribute(LoggedController.LOG_CONTROL_KEY);
-        if(logControl.isLogged()){
-            return (Knihovna) req.getSession().getAttribute("knihovna");
-        }else{
-            return null;
+        LoggedController logControl = (LoggedController) req.getSession().getAttribute(LoggedController.LOG_CONTROL_KEY);
+        if (logControl == null) {
+            logControl = new LoggedController(req);
+            req.getSession().setAttribute(LoggedController.LOG_CONTROL_KEY, logControl);
         }
+        return logControl.getKnihovna();
     }
-    
+
     public boolean isLogged() {
-        return req.getSession() != null
-                && req.getRemoteUser() != null 
-                && !req.getRemoteUser().equals("");
+        return this.logged;
     }
-    
+
     public String getLoggedName() {
-        if (!this.isLogged()) return "Login"; 
-        else { 
-            return req.getRemoteUser();
+        if (!this.isLogged()) {
+            return "Login";
+        } else {
+            return this.loggedName;
         }
     }
-    
-    public String getPriorita(){
-        if (!this.isLogged()){
+
+    public String getPriorita() {
+        if (!this.isLogged()) {
             return "";
-        } else{
-            return knihovna(req).getPriorita() + "";
+        } else {
+            return this.getKnihovna().getPriorita() + "";
         }
     }
-    
-    public String getCode(){
-        if (!this.isLogged()){
+
+    public String getCode() {
+        if (!this.isLogged()) {
             return "";
-        } else{
-            return knihovna(req).getCode();
+        } else {
+            return this.getKnihovna().getCode();
         }
     }
 
     public String getUserJSONRepresentation() {
-        if (!this.isLogged()) return "{}"; 
-        else {
+        if (!this.isLogged()) {
+            return "{}";
+        } else {
             return "{}";
         }
     }
-    
-    public void setKnihovna() throws NamingException, SQLException{
-        cz.incad.vdk.client.Knihovna kn = new cz.incad.vdk.client.Knihovna(req.getRemoteUser());
-        req.getSession().setAttribute("knihovna", kn);
+
+    public Knihovna getKnihovna() {
+        try {
+            if (!this.isLogged()) {
+                return null;
+            } else if (this.knihovna == null) {
+                cz.incad.vdk.client.Knihovna kn = new cz.incad.vdk.client.Knihovna(this.loggedName);
+                this.knihovna = kn;
+                return kn;
+            } else {
+                return this.knihovna;
+            }
+        } catch (NamingException | SQLException ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            return null;
+        }
     }
-    
+
 }

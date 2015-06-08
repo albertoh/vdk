@@ -6,9 +6,13 @@
         <a style="float:right;margin-top:6px;margin-right:4px;" href="."><img border="0" src="img/x.png" alt="" /></a>
     </h4>
     <ul>        
-#if(${params.wanted})
+#if(${params.exists('wanted')} && ${params.wanted} != '')
+    #set($disp = $i18n.filter.nechci.desc)
+    #if($params.wanted=='true')
+        #set($disp = $i18n.filter.chci.desc)
+    #end
 <li>
-     <a class="usedFilter" href="javascript:removeWanted();"><img border="0" src="img/x.png" alt="" />${params.wanted}</a>
+     <a class="usedFilter" href="javascript:removeWanted();"><img border="0" src="img/x.png" alt="" />$disp</a>
 </li>    
 #end
 

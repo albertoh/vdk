@@ -18,6 +18,7 @@
         <tool key="report" class="cz.incad.vdk.client.tools.ReportTool" />
         <tool key="db" class="cz.incad.vdk.client.tools.DbTool" />
         <tool key="sched" class="cz.incad.vdk.client.tools.SchedulerTool" />
+        <tool key="opt" class="cz.incad.vdk.client.tools.OptionsTool" />
 <!--
         <tool class="cz.incad.kramerius.client.tools.CSSTool"
               bundles="res.css"

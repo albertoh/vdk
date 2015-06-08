@@ -266,7 +266,13 @@ Offers.prototype = {
                     var expired = val.expired ? " expired" : "";
                     var label = $('<label class="' + expired + '">');
                     var text = val.knihovna + ' in offer ' + val.nazev;
-                    var zaznamOffer = $(this).data("offer_ext")[offerId].zaznamOffer;
+                    var offerJson = $(this).data("offer_ext")[offerId];
+                    var zaznamOffer = offerJson.zaznamOffer;
+                    var pr_knihovna = -1;
+                    if(offerJson.hasOwnProperty('pr_knihovna')){
+                        pr_knihovna = parseInt(offerJson.pr_knihovna);
+                    }
+                    
 
                     if ($(this).data("zaznam")) {
                         var zaznam = $(this).data("zaznam");
@@ -281,7 +287,24 @@ Offers.prototype = {
                     label.text(text);
                     $(this).append(label);
                     
-                    
+                    if(vdk.isLogged && offerJson.hasOwnProperty('pr_knihovna') && vdk.user.id !== pr_knihovna){
+                        $(this).hide();
+                    }else if(vdk.isLogged && !offerJson.hasOwnProperty('pr_knihovna')){
+                        var of_datum = new Date(offerJson.datum);
+                        var from_days = (vdk.user.priorita-1) * vdk.expirationDays;
+                        var to_days = vdk.user.priorita * vdk.expirationDays;
+                        var user_datum = new Date();
+                        var from_datum = new Date(of_datum);
+                        var to_datum = new Date(of_datum);
+                        from_datum.setDate(of_datum.getDate() + from_days);
+                        to_datum.setDate(of_datum.getDate() + to_days);
+                        
+                        if(from_datum>user_datum || to_datum<user_datum){
+                            $(this).hide();
+                            //console.log(of_datum, from_datum, to_datum, user_datum);
+                            //$(this).append(user_datum);
+                        }
+                    }
                     if(vdk.isLogged && vdk.user.code !== val.knihovna){
                         var wanted = vdk.offers.isWanted(zaznamOffer, vdk.user.code);
                         if(wanted === null){
@@ -520,17 +543,7 @@ Offers.prototype = {
             if (data.error) {
                 alert("error ocurred: " + vdk.translate(data.error));
             } else {
-                //indexujeme
-                    $.getJSON("index", {action: "INDEXWANTED", id: data.id}, _.bind(function (resp) {
-                        if (resp.error) {
-                            alert("error ocurred: " + vdk.translate(resp.error));
-                        } else {
-                            $(".wanteddoc[data-wanted~='" + zaznam_offer + "']").remove();
-                            alert("Reakce uspesne zpracovana");
-                        }
-                    }, this));
-                
-                
+                alert("Reakce uspesne zpracovana");
             }
 
         });

@@ -1,4 +1,5 @@
-$session.invalidate();
+
+##$session.invalidate();
 #set($reqAddr = "index.vm")
 #if($params.redirectURL)
     #set($reqAddr = $params.redirectURL)

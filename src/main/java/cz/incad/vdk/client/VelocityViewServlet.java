@@ -6,8 +6,13 @@
 package cz.incad.vdk.client;
 
 import cz.incad.vdkcommon.Options;
+import java.sql.SQLException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.naming.NamingException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
 /**
  *
@@ -17,9 +22,21 @@ public class VelocityViewServlet extends org.apache.velocity.tools.view.Velocity
     @Override
     protected void setContentType(HttpServletRequest request,
             HttpServletResponse response) {
+        if (request.getRequestURI().endsWith("logout.vm")) {
+            HttpSession session = request.getSession(false);
+            if(session!=null){
+                session.invalidate();
+            }
+        }
+        //System.out.println("SESSION: " + request.getSession().getId());
         Options.resetInstance();
         LoggedController logControl =  new LoggedController(request);
         request.getSession().setAttribute(LoggedController.LOG_CONTROL_KEY, logControl);
+//        try {
+//            logControl.setKnihovna();
+//        } catch (NamingException | SQLException ex) {
+//            Logger.getLogger(VelocityViewServlet.class.getName()).log(Level.SEVERE, null, ex);
+//        }
         if (request.getRequestURI().endsWith(".css")) {
             response.setContentType("text/css");
         } else if(request.getRequestURI().contains("/csv/")) {

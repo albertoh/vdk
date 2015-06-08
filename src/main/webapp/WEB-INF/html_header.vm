@@ -2,12 +2,8 @@
     <title>$i18n.application.title</title>
     <link rel="icon" href="img/favicon.ico" />
     <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon" />
-    <!--
-    <script type="text/javascript" src="js/jquery-1.9.1.min.js"></script>
-    <script type="text/javascript" src="js/jquery-ui-1.10.3.custom.min.js"></script>
-    -->
-    <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.js"></script>
-    <script type="text/javascript" src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+    <script type="text/javascript" src="js/jquery-1.10.2.js"></script>
+    <script type="text/javascript" src="js/jquery-ui-1.10.4.custom.min.js"></script>
     <script src="js/underscore-min.js" type="text/javascript" ></script>
     <script src="js/jquery-dateFormat.min.js" type="text/javascript" ></script>
     <script type="text/javascript" src="js/jquery.form.js"></script>
@@ -16,10 +12,7 @@
     <script type="text/javascript" src="js/offers.js"></script>
     <script type="text/javascript" src="js/demand.js"></script>
     <script type="text/javascript" src="js/results.js"></script>
-    <!--
-    <link type="text/css" href="css/smoothness/jquery-ui-1.10.3.custom.css" rel="stylesheet" />
-    -->
-    <link type="text/css" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css" rel="stylesheet" />
+    <link type="text/css" href="css/smoothness/jquery-ui-1.10.4.custom.min.css" rel="stylesheet" />
     <link type="text/css" href="css/icons.css" rel="stylesheet" />
     <link type="text/css" href="css/main.css" rel="stylesheet" />
     
@@ -39,6 +32,7 @@
             #if($logControl.logged)
             vdk.setUser('$logControl.loggedName');
             #end
+            vdk.expirationDays = $opt.getString('expirationDays');
             vdk.init();
             #if($logControl.logged)
             vdk.userOpts();

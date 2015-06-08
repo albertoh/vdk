@@ -13,8 +13,11 @@
                 </h3>
                 <div>
                     <ul id="wanted_filter">
+                        <li><a href="javascript:filterOffers();" title="$esc.html($i18n.filter.nabidka)">:: $i18n.filter.nabidka</a></li>
                         <li><a href="javascript:addWanted();" title="$esc.html($i18n.filter.chci.desc)">:: $i18n.load.chci</a></li>
+                        <!--
                         <li><a href="javascript:addNoWanted();" title="$esc.html($i18n.filter.nechci.desc)">:: $i18n.load.nechci</a></li>
+                        -->
                         <li><a href="javascript:vdk.filterOnlyMatches();" title="$esc.html($i18n.filter.matches.desc)">:: $i18n.filter.matches</a></li>
                     </ul>
                 </div>
