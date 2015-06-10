@@ -625,7 +625,7 @@ public class DbOperations extends HttpServlet {
         Calendar now = Calendar.getInstance();
         Calendar o = Calendar.getInstance();
         o.setTime(offerDate);
-        o.add(Calendar.DATE, Options.getInstance().getInt("expirationDays", 35));
+        o.add(Calendar.DATE, Options.getInstance().getInt("expirationDays", 7) * 3);
         JSONObject j = new JSONObject();
         j.put("id", id);
         j.put("nazev", nazev);
@@ -1820,20 +1820,20 @@ public class DbOperations extends HttpServlet {
 
                                     Connection conn = DbUtils.getConnection();
                                     String sql = "alter table offer add datum TIMESTAMP";
-                                    PreparedStatement ps = conn.prepareStatement(sql);
-                                    ps.execute();
-                                    sql = "alter table zaznamoffer add pr_knihovna INT";
-                                    ps = conn.prepareStatement(sql);
-                                    ps.execute();
                                     sql = "alter table zaznamoffer add pr_timestamp TIMESTAMP";
-                                    ps = conn.prepareStatement(sql);
+                                    PreparedStatement ps = conn.prepareStatement(sql);
+//                                    ps.execute();
+//                                    sql = "alter table zaznamoffer add pr_knihovna INT";
+//                                    ps = conn.prepareStatement(sql);
+//                                    ps.execute();
+//                                    ps = conn.prepareStatement(sql);
                                     ps.execute();
-                                    sql = "alter table knihovna add sigla VARCHAR(10)";
-                                    ps = conn.prepareStatement(sql);
-                                    ps.execute();
-                                    sql = "alter table knihovna add adresa VARCHAR(255)";
-                                    ps = conn.prepareStatement(sql);
-                                    ps.execute();
+//                                    sql = "alter table knihovna add sigla VARCHAR(10)";
+//                                    ps = conn.prepareStatement(sql);
+//                                    ps.execute();
+//                                    sql = "alter table knihovna add adresa VARCHAR(255)";
+//                                    ps = conn.prepareStatement(sql);
+//                                    ps.execute();
                                     
 //                                } else {
 //                                    json.put("error", "rights.insuficient");

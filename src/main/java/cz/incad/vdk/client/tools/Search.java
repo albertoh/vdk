@@ -16,11 +16,13 @@
  */
 package cz.incad.vdk.client.tools;
 
+import cz.incad.vdk.client.Knihovna;
 import cz.incad.vdk.client.LoggedController;
 import cz.incad.vdkcommon.Options;
 import cz.incad.vdkcommon.solr.IndexerQuery;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.logging.Level;
@@ -137,7 +139,7 @@ public class Search {
         }
     }
 
-    private void addFilters(SolrQuery query) {
+    private void addFilters(SolrQuery query) throws IOException {
         //Dame pryc periodika
         query.addFilterQuery("-leader_format:s");
         if (req.getParameterValues("zdroj") != null) {
@@ -149,6 +151,11 @@ public class Search {
                 }
             }
             hasFilters = true;
+        }
+        
+        //Neprihlasene uzivatele vidi jen zaznamy ze zdroju
+        if(!LoggedController.isLogged(req)){
+            query.addFilterQuery("id:[* TO *]");
         }
 
         if (req.getParameterValues("exs") != null) {
@@ -180,6 +187,15 @@ public class Search {
         }
 
         if (req.getParameter("onlyOffers") != null) {
+            if(LoggedController.isLogged(req)){
+                Date d = new Date();
+                Knihovna kn = LoggedController.knihovna(req);
+                int exp = Options.getInstance().getInt("expirationDays", 7);
+                int from_days = kn.getPriorita() * exp;
+                int to_days = (kn.getPriorita()-1) * exp;
+                query.addFilterQuery("nabidka_datum:[NOW-"+from_days+"DAYS TO NOW-"+to_days+"DAYS]");
+                
+            }
             query.addFilterQuery("nabidka:[* TO *]");
             hasFilters = true;
         }

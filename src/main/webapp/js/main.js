@@ -549,6 +549,9 @@ function addButtons(iconButtons, obj) {
     $.each(iconButtons, function (i, v) {
 
         var $button = $("<button/>").text(this.text);
+        if(this.hasOwnProperty("class")){
+            $button.addClass(this.class);
+        }
         $button.button({
             icons: {primary: this.icon},
             text: false

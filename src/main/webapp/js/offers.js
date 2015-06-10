@@ -129,6 +129,7 @@ Offers.prototype = {
                 this.parseUser();
                 var bs = [
                     {
+                        class: "onopened",
                         text: vdk.translate('offers.searchToOfferForm'),
                         icon: "ui-icon-search",
                         click: function (e) {
@@ -136,6 +137,7 @@ Offers.prototype = {
                         }
                     },
                     {
+                        class: "onopened",
                         text: vdk.translate('offers.addToOfferForm'),
                         icon: "ui-icon-contact",
                         click: function (e) {
@@ -143,6 +145,7 @@ Offers.prototype = {
                         }
                     },
                     {
+                        class: "onopened",
                         text: vdk.translate('offers.importToOfferForm'),
                         icon: "ui-icon-folder-open",
                         click: function (e) {
@@ -154,6 +157,13 @@ Offers.prototype = {
                         icon: "ui-icon-note",
                         click: function (e) {
                             window.open("reports/protocol.vm?id=" + vdk.offers.activeid, "report");
+                        }
+                    },
+                    {
+                        text: "Refresh",
+                        icon: "ui-icon-refresh",
+                        click: function (e) {
+                            vdk.offers.getSelected();
                         }
                     }
                 ];
@@ -170,7 +180,7 @@ Offers.prototype = {
                     text: "Refresh",
                     icon: "ui-icon-refresh",
                     click: function (e) {
-                        vdk.offers.getSelected();
+                        vdk.offers.retrieve();
                     }
                 },
                 {
@@ -265,8 +275,8 @@ Offers.prototype = {
                     var val = json[offerId];
                     var expired = val.expired ? " expired" : "";
                     var label = $('<label class="' + expired + '">');
-                    var text = val.knihovna + ' in offer ' + val.nazev;
                     var offerJson = $(this).data("offer_ext")[offerId];
+                    var text = val.knihovna + ' in offer ' + val.nazev + ' ('+offerJson.datum+')';
                     var zaznamOffer = offerJson.zaznamOffer;
                     var pr_knihovna = -1;
                     if(offerJson.hasOwnProperty('pr_knihovna')){
@@ -282,28 +292,30 @@ Offers.prototype = {
                         
                     }
                     // pridame cenu jestli ma
-                    if($(this).data("offer_ext")[offerId].fields.hasOwnProperty('cena'))
+                    if($(this).data("offer_ext")[offerId].fields.hasOwnProperty('cena')){
                         text += ' (' + $(this).data("offer_ext")[offerId].fields.cena + ')';
+                    }
                     label.text(text);
                     $(this).append(label);
                     
                     if(vdk.isLogged && offerJson.hasOwnProperty('pr_knihovna') && vdk.user.id !== pr_knihovna){
                         $(this).hide();
-                    }else if(vdk.isLogged && !offerJson.hasOwnProperty('pr_knihovna')){
-                        var of_datum = new Date(offerJson.datum);
-                        var from_days = (vdk.user.priorita-1) * vdk.expirationDays;
-                        var to_days = vdk.user.priorita * vdk.expirationDays;
-                        var user_datum = new Date();
-                        var from_datum = new Date(of_datum);
-                        var to_datum = new Date(of_datum);
-                        from_datum.setDate(of_datum.getDate() + from_days);
-                        to_datum.setDate(of_datum.getDate() + to_days);
-                        
-                        if(from_datum>user_datum || to_datum<user_datum){
-                            $(this).hide();
-                            //console.log(of_datum, from_datum, to_datum, user_datum);
-                            //$(this).append(user_datum);
-                        }
+                        $(this).removeClass("visible");
+//                    }else if(vdk.isLogged && !offerJson.hasOwnProperty('pr_knihovna')){
+//                        var of_datum = new Date(offerJson.datum);
+//                        var from_days = (vdk.user.priorita-1) * vdk.expirationDays;
+//                        var to_days = vdk.user.priorita * vdk.expirationDays;
+//                        var user_datum = new Date();
+//                        var from_datum = new Date(of_datum);
+//                        var to_datum = new Date(of_datum);
+//                        from_datum.setDate(of_datum.getDate() + from_days);
+//                        to_datum.setDate(of_datum.getDate() + to_days);
+//                        
+//                        if(from_datum>user_datum || to_datum<user_datum){
+//                            $(this).hide();
+//                            //console.log(of_datum, from_datum, to_datum, user_datum);
+//                            //$(this).append(user_datum);
+//                        }
                     }
                     if(vdk.isLogged && vdk.user.code !== val.knihovna){
                         var wanted = vdk.offers.isWanted(zaznamOffer, vdk.user.code);
@@ -341,6 +353,9 @@ Offers.prototype = {
                         });
 
                     }
+                }
+                if($(this).parent().find("div.visible").length > 0){
+                    $(this).parent().show();
                 }
             });
 
@@ -435,6 +450,7 @@ Offers.prototype = {
     },
     getSelected: function () {
         $('#useroffer>ul>li').remove();
+        this.dialog.addClass("working");
         $.getJSON("db?action=GETOFFER&id=" + this.selectedid, _.bind(function (json) {
             this.active = json;
             this.selected = json;
@@ -443,10 +459,12 @@ Offers.prototype = {
                 this.renderDoc(val, closed);
 
             }, this));
+            this.dialog.removeClass("working");
         }, this));
 
     },
     setActive: function (id) {
+        this.dialog.addClass("working");
         this.selectedid = id;
         if(!this.json[id].closed){
             this.activeid = id;
@@ -459,10 +477,12 @@ Offers.prototype = {
             });
             $("#importOfferForm input[name~='id']").val(this.activeid);
             $("#addToOfferForm input[name~='id']").val(this.activeid);
-            $("#useroffer button").attr("disabled", false);
+            $("#useroffer button.onopened").button("option", "disabled", false);
+            $("#useroffer button.onopened").attr("disabled", false);
             
         }else{
-            $("#useroffer button").attr("disabled", true);
+            $("#useroffer button.onopened").button("option", "disabled", true);
+            $("#useroffer button.onopened").attr("disabled", true);
         }
         $("#useroffers li.offer").removeClass("selected");
         $("#useroffers li.offer").each(function () {

@@ -44,11 +44,12 @@
             <table width="100%"><tr>
                 <td valign="top">
                     <div>
-                        <xsl:if test="./arr[@name='nabidka']/str and $knihovna != ''">  
-                            <div class="nabidka">nabízí:      
+                        <xsl:if test="$knihovna != ''">
+                        <xsl:if test="./arr[@name='nabidka']/str">  
+                            <div class="nabidka" style="display:none;">nabízí:      
                             <xsl:for-each select="./arr[@name='nabidka']/str">
                                 <xsl:variable name="pos" select="position()" />
-                                <div>
+                                <div class="visible">
                                     <xsl:attribute name="data-offer">
                                         <xsl:value-of  select="." />
                                     </xsl:attribute>
@@ -67,6 +68,7 @@
                             </div>
                         </xsl:if>
                         <div class="docactions"></div>
+                        </xsl:if>
                         <!--
                         
                         //Vypnuto kvuli pridani NKF do zdroje

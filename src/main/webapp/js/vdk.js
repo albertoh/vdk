@@ -200,6 +200,10 @@ VDK.prototype = {
                 }
             }
         });
+        $(document).click(function(){
+            $(".ui-tooltip-content").parents('div').remove();
+        });
+        
 
     },
     translate: function (key) {

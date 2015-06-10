@@ -43,6 +43,10 @@ a.image:hover {
 }
 
 
+.working{
+    cursor:wait;
+}
+
 .link {
     cursor:pointer;
 }

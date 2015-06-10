@@ -32,14 +32,14 @@ VDK_ADMIN.prototype = {
                     tr.append('<td>' + val.name + '</td>');
                     tr.append('<td>' + val.state + '</td>');
                     if(val.hasOwnProperty('nextFireTime')){
-                        tr.append('<td>' + $.format.date(val.nextFireTime, 'dd.M.yy hh:mm') + '</td>');
+                        tr.append('<td>' + $.format.date(val.nextFireTime, 'dd.M.yy H:mm') + '</td>');
                     }else{
                         tr.append('<td> </td>');
                     }
                     
                     
                     if(val.hasOwnProperty('status')){
-                        tr.append('<td>' + $.format.date(val.status['last_run'], 'dd.M.yy hh:mm') + '<br/>' + val.status['last_message'] + '</td>');
+                        tr.append('<td>' + $.format.date(val.status['last_run'], 'dd.M.yy H:mm') + '<br/>' + val.status['last_message'] + '</td>');
                     }else{
                         tr.append('<td></td>');
                     }
