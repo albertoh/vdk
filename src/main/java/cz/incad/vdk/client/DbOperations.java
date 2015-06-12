@@ -112,10 +112,10 @@ public class DbOperations extends HttpServlet {
         ps.setInt(3, idKnihovna);
         ResultSet rs = ps.executeQuery();
         if (rs.next()) {
-            return rs.getInt(1);
-        } else {
-            return 0;
-        }
+            retVal = rs.getInt(1);
+        } 
+        rs.close();
+        return retVal;
 
     }
 
@@ -127,10 +127,10 @@ public class DbOperations extends HttpServlet {
         ps.setInt(2, idKnihovna);
         ResultSet rs = ps.executeQuery();
         if (rs.next()) {
-            return rs.getInt(1);
-        } else {
-            return 0;
-        }
+            retVal = rs.getInt(1);
+        } 
+        rs.close();
+        return retVal;
 
     }
 
@@ -160,6 +160,7 @@ public class DbOperations extends HttpServlet {
         if (rs.next()) {
             retVal = rs.getInt(1);
         }
+        rs.close();
 
         String sql = "insert into OFFER (nazev, knihovna, update_timestamp, offer_id, closed) values (?,?, sysdate, ?, 0)";
         LOGGER.log(Level.INFO, "executing " + sql + "\nparams: {0}, {1}, {2}", new Object[]{name, idKnihovna, retVal});
@@ -197,7 +198,7 @@ public class DbOperations extends HttpServlet {
             indexer.removeDocOffers(uniqueCode);
             indexer.indexDocOffers(uniqueCode);
         }
-        
+        rs.close();
     }
 
     public static int insertWantOffer(Connection conn, int zaznam_offer, int knihovna, boolean wanted) throws Exception {
@@ -209,6 +210,7 @@ public class DbOperations extends HttpServlet {
             if (rs.next()) {
                 newid = rs.getInt(1);
             }
+            rs.close();
 
             String sql = "insert into WANTED (ZaznamOffer, knihovna, wants, wanted_id, update_timestamp) values (?,?,?,?,sysdate)";
             PreparedStatement ps = conn.prepareStatement(sql);
@@ -252,6 +254,7 @@ public class DbOperations extends HttpServlet {
             if (rs.next()) {
                 idW = rs.getInt(1);
             }
+            rs.close();
 
             String sql = "insert into ZaznamOffer "
                     + "(uniqueCode, zaznam, exemplar, knihovna, ZaznamOffer_id, offer, fields,update_timestamp) "
@@ -361,6 +364,7 @@ public class DbOperations extends HttpServlet {
         if (rs.next()) {
             retVal = rs.getInt(1);
         }
+        rs.close();
 
         String sql = "insert into DEMAND (nazev, knihovna, demand_id, update_timestamp, closed) values (?,?, ?, sysdate, 0)";
         PreparedStatement ps = conn.prepareStatement(sql);
@@ -566,6 +570,7 @@ public class DbOperations extends HttpServlet {
                 j.put("wanted", getWantedById(conn, zoId));
                 json.put(Integer.toString(zoId), j);
             }
+            rs.close();
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
             json.put("error", ex);
@@ -610,6 +615,7 @@ public class DbOperations extends HttpServlet {
             while (rs.next()) {
                 json.put(rs.getString("zaznamdemand_id"), jsonZaznamDemand(rs));
             }
+            rs.close();
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
             json.put("error", ex);
@@ -659,6 +665,7 @@ public class DbOperations extends HttpServlet {
                 Knihovna kn = new Knihovna(rs.getString("code"));
                 json.put("knihovna", kn.getJson());
             }
+            rs.close();
 
             JSONObject kns = new JSONObject();
             json.put("prejimajici", kns);
@@ -691,6 +698,7 @@ public class DbOperations extends HttpServlet {
 
                 kns.getJSONObject("pr_" + pr_knihovna).getJSONArray("rows").put(j);
             }
+            rs.close();
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
             json.put("error", ex);
@@ -722,6 +730,7 @@ public class DbOperations extends HttpServlet {
 
                 json.put(rs.getString("offer_id"), j);
             }
+            rs.close();
         } catch (NamingException ex) {
             json.put("error", ex);
         } catch (SQLException ex) {
@@ -754,6 +763,7 @@ public class DbOperations extends HttpServlet {
 
                 json.put(rs.getString("offer_id"), j);
             }
+            rs.close();
         } catch (Exception ex) {
             json.put("error", ex);
         }
@@ -783,6 +793,7 @@ public class DbOperations extends HttpServlet {
             while (rs.next()) {
                 ret.add(rs.getString(1));
             }
+            rs.close();
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
         }
@@ -802,6 +813,7 @@ public class DbOperations extends HttpServlet {
             while (rs.next()) {
                 ret.add(new Knihovna(rs.getString("code")));
             }
+            rs.close();
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
         }
@@ -971,6 +983,7 @@ public class DbOperations extends HttpServlet {
                                 if (rs.next()) {
                                     idPohled = rs.getInt(1);
                                 }
+                                rs.close();
 
                                 String sql = "insert into POHLED "
                                 + "(nazev, query, knihovna, isGlobal, pohled_id, update_timestamp) "
@@ -1033,6 +1046,7 @@ public class DbOperations extends HttpServlet {
                                 o.put("knihovna", rs.getInt("knihovna"));
                                 jarray.put(o);
                             }
+                            rs.close();
                             out.println(json.toString());
 
                         } catch (Exception ex) {
@@ -1577,6 +1591,7 @@ public class DbOperations extends HttpServlet {
                                 byte[] bytes = rs.getBytes("bdata");
                                 resp.getOutputStream().write(bytes);
                             }
+                            rs.close();
 
                         } catch (Exception ex) {
                             PrintWriter out = resp.getWriter();
@@ -1703,6 +1718,7 @@ public class DbOperations extends HttpServlet {
                                 json.put("cron", rs.getString("cron"));
                                 ret.put(rs.getString("nazev"), json);
                             }
+                            rs.close();
                             out.println(ret.toString());
 
                         } catch (Exception ex) {
