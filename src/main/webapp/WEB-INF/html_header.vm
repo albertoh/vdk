@@ -30,7 +30,7 @@
         $(document).ready(function(){
             autocompleteQ();
             #if($logControl.logged)
-            vdk.setUser('$logControl.loggedName');
+            vdk.setUser(#parse("user.vm"));
             #end
             vdk.expirationDays = $opt.getString('expirationDays');
             vdk.init();

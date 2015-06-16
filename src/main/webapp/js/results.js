@@ -126,7 +126,7 @@ Results.prototype = {
         return row;
     },
     addAkce: function (row, checks, zaznam, zdroj, code, exemplar) {
-        if (vdk.isLogged && vdk.zdrojUser[vdk.user.code] === zdroj) {
+        if (vdk.exemplarBelongs(zdroj)) {
             checks.append(vdk.actionOffer(code, zaznam, exemplar));
         }
         if(vdk.demands.isUserDemand(code, zaznam, exemplar)){

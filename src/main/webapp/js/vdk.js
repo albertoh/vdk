@@ -73,6 +73,18 @@ function VDK() {
         'VKOL': 'VKOLOAI'};
 }
 VDK.prototype = {
+    exemplarBelongs: function(exZdroj){
+        if(this.isLogged){
+            if(this.user.code=== 'NKP'){
+                return exZdroj==='NKF' || exZdroj==='UKF';
+            }else{
+                return  this.user.code === exZdroj;
+            }
+            
+        }else{
+            return false;
+        }
+    },
     actionOriginal: function (id) {
         var span = $('<button/>', {class: 'original', style: 'float:left;'});
         span.attr('title', 'nahlédnout originální metadata');
@@ -164,11 +176,16 @@ VDK.prototype = {
         span.append(a);
         return span;
     },
-    setUser: function () {
+    getUser: function () {
         $.getJSON("user.vm", _.bind(function (data) {
             this.user = data;
             this.isLogged = true;
         }, this));
+
+    },
+    setUser: function (data) {
+            this.user = data;
+            this.isLogged = true;
 
     },
     changeLanguage: function (lang) {
@@ -176,7 +193,7 @@ VDK.prototype = {
         document.getElementById("searchForm").submit();
     },
     init: function () {
-        this.setUser();
+        //this.setUser();
         this.demands = new Demand();
         this.results = new Results();
         this.offers = new Offers();

@@ -6,13 +6,9 @@
 package cz.incad.vdk.client;
 
 import static cz.incad.vdk.client.DbOperations.LOGGER;
-import cz.incad.vdkcommon.DbUtils;
 import cz.incad.vdkcommon.VDKScheduler;
 import java.io.File;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -20,8 +16,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import org.apache.commons.io.FileUtils;
-import org.json.JSONObject;
 import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 
@@ -84,21 +78,6 @@ public class InitServlet extends HttpServlet {
                         VDKScheduler.addJob(child);
                     }
                 }
-
-//                String sql = "select * from Zdroj";
-//                PreparedStatement ps = conn.prepareStatement(sql);
-//
-//                ResultSet rs = ps.executeQuery();
-//                while (rs.next()) {
-//                    
-//                    String cronVal = rs.getString("cron");
-//                    if (cronVal != null) {
-//                        VDKScheduler.addJob(rs.getString("nazev"), 
-//                                cronVal, 
-//                                rs.getString("parametry"));
-//                    }
-//                }
-//                VDKScheduler.addIndexerJob();
                 
             } catch (Exception ex) {
                 LOGGER.log(Level.SEVERE, null, ex);

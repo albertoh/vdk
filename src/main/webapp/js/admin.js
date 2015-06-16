@@ -265,6 +265,7 @@ VDK_ADMIN.prototype = {
             } else {
                 this.conf = data;
                 $("#tabs-conf .exp").val(data.expirationDays);
+                $("#tabs-conf .email").val(data["admin.email"]);
             }
 
         }, this));
@@ -274,7 +275,8 @@ VDK_ADMIN.prototype = {
         new Confirm().open(vdk.translate("conf.comfirm.save") + " <b>" + vdk.translate("conf.comfirm.save") + "</b>?", _.bind(function () {
             var opts = {
                 action: "SAVECONF", 
-                exp: $("#tabs-conf .exp").val()
+                exp: $("#tabs-conf .exp").val(), 
+                email: $("#tabs-conf .email").val()
                 
             };
             $.getJSON("db", opts, _.bind(function (data) {

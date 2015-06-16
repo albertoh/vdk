@@ -36,6 +36,9 @@
         <div>
         <label for="conf_exp">$i18n.conf.expiration: </label><input id="conf_exp" class="exp"></input>
         </div>
+        <div>
+        <label for="conf_email">$i18n.conf.email: </label><input id="conf_email" class="email"></input>
+        </div>
     </div>
 </div>
 </div>

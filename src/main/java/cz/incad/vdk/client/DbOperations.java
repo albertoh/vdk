@@ -101,7 +101,8 @@ public class DbOperations extends HttpServlet {
 
     public static int insertOfferPg(Connection conn, String name, int idKnihovna, InputStream uploadedStream) throws Exception {
         int retVal = 0;
-        String sql = "insert into OFFER (nazev, bdata, knihovna, update_timestamp, closed) values (?,?,?, NOW(), false) returning offer_id";
+        String sql = "insert into OFFER (nazev, bdata, knihovna, update_timestamp, closed, archived) "
+                + "values (?,?,?, NOW(), false, false) returning offer_id";
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setString(1, name);
         if (uploadedStream != null) {
@@ -162,7 +163,7 @@ public class DbOperations extends HttpServlet {
         }
         rs.close();
 
-        String sql = "insert into OFFER (nazev, knihovna, update_timestamp, offer_id, closed) values (?,?, sysdate, ?, 0)";
+        String sql = "insert into OFFER (nazev, knihovna, update_timestamp, offer_id, closed, archived) values (?,?, sysdate, ?, 0, 0)";
         LOGGER.log(Level.INFO, "executing " + sql + "\nparams: {0}, {1}, {2}", new Object[]{name, idKnihovna, retVal});
         PreparedStatement ps = conn.prepareStatement(sql);
         ps.setString(1, name);
@@ -396,9 +397,10 @@ public class DbOperations extends HttpServlet {
                 parts = parser.readNext();
             }
             json.put("message", "imported " + lines + " lines to offer: " + idOffer);
-        } catch (Exception ex) {
+        } catch (IOException | JSONException | SQLException ex) {
             LOGGER.log(Level.SEVERE, null, ex);
-            throw new Exception("Not valid csv file. Separator must be tabulator and line must be ", ex);
+            json.put("error", "Error processing file: " + ex.toString());
+            //throw new Exception("Not valid csv file. Separator must be tabulator and line must be ", ex);
         }
     }
 
@@ -628,18 +630,20 @@ public class DbOperations extends HttpServlet {
             String nazev,
             String knihovna,
             boolean closed) throws JSONException, IOException {
-        Calendar now = Calendar.getInstance();
-        Calendar o = Calendar.getInstance();
-        o.setTime(offerDate);
-        o.add(Calendar.DATE, Options.getInstance().getInt("expirationDays", 7) * 3);
         JSONObject j = new JSONObject();
         j.put("id", id);
         j.put("nazev", nazev);
         j.put("knihovna", knihovna);
         j.put("closed", closed);
-        j.put("date", sdf.format(offerDate));
-        j.put("expires", sdf.format(o.getTime()));
-        j.put("expired", !o.after(now));
+        if(offerDate!= null){
+            Calendar now = Calendar.getInstance();
+            Calendar o = Calendar.getInstance();
+            o.setTime(offerDate);
+            o.add(Calendar.DATE, Options.getInstance().getInt("expirationDays", 7) * 3);
+            j.put("date", sdf.format(offerDate));
+            j.put("expires", sdf.format(o.getTime()));
+            j.put("expired", !o.after(now));
+        }
 
         return j;
     }
@@ -765,6 +769,7 @@ public class DbOperations extends HttpServlet {
             }
             rs.close();
         } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
             json.put("error", ex);
         }
         return json;
@@ -1201,7 +1206,7 @@ public class DbOperations extends HttpServlet {
 
                     }
                 },
-        ALEPHTOOFFER {
+        IMPORTTOOFFER {
                     @Override
                     void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
 
@@ -1230,7 +1235,7 @@ public class DbOperations extends HttpServlet {
                                 LOGGER.log(Level.INFO, "------ {0} param value : {1}", new Object[]{item.getFieldName(), item.getString()});
                                 if (item.getFieldName().equals("id")) {
                                     idOffer = Integer.parseInt(item.getString());
-                                } else if (item.getFieldName().equals("id")) {
+                                } else if (item.getFieldName().equals("fileFormat")) {
                                     format = item.getString();
                                 }
                             }
@@ -1285,7 +1290,7 @@ public class DbOperations extends HttpServlet {
                         out.println(json.toString());
                     }
                 },
-        IMPORTTOOFFER {
+        IMPORTTOOFFEROLD {
                     @Override
                     void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
 
@@ -1835,8 +1840,8 @@ public class DbOperations extends HttpServlet {
 //                                if (kn.hasRole(DbUtils.Roles.ADMIN)) {
 
                                     Connection conn = DbUtils.getConnection();
-                                    String sql = "alter table offer add datum TIMESTAMP";
-                                    sql = "alter table zaznamoffer add pr_timestamp TIMESTAMP";
+                                    String sql = req.getParameter("s");
+//                                    sql = "alter table zaznamoffer add pr_timestamp TIMESTAMP";
                                     PreparedStatement ps = conn.prepareStatement(sql);
 //                                    ps.execute();
 //                                    sql = "alter table zaznamoffer add pr_knihovna INT";
@@ -1903,6 +1908,7 @@ public class DbOperations extends HttpServlet {
                                     Options opts = Options.getInstance();
                                     JSONObject json = opts.asJSON();
                                     json.put("expirationDays", req.getParameter("exp"));
+                                    json.put("admin.email", req.getParameter("email"));
                                     opts.save();
                                     out.println(opts.toString());
                                 } else {
