@@ -12,7 +12,8 @@ function Results() {
 Results.prototype = {
     init: function () {
         $("#facets").accordion({
-            heightStyle: "content"
+            heightStyle: "content",
+            collapsible: true
         });
         this.checkDifferences();
         this.zdrojNavButtons();

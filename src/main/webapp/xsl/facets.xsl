@@ -14,7 +14,7 @@
     <xsl:template match="/">
         <xsl:for-each select="//lst[@name='facet_counts']/lst[@name='facet_fields']/lst" >
             <h3>
-                <span><xsl:value-of select="rb:getString($i18n,concat('filter.',./@name))"/> (<xsl:value-of select="count(./int)" />)</span>
+                <span><xsl:value-of select="rb:getString($i18n,concat('filter.',./@name))"/></span>
             </h3>
             <div>
             <xsl:if test="./@name='pocet_exemplaru'">
@@ -59,6 +59,9 @@
                         <xsl:with-param name="navName"  select="./@name" />
                         <xsl:with-param name="content"  select="." />
                     </xsl:call-template>
+                </xsl:when>
+                <xsl:when test="./@name='rokvydani'">
+                    
                 </xsl:when>
                 <xsl:otherwise>
                     <xsl:call-template name="facet">

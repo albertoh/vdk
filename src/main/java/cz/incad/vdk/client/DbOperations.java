@@ -114,7 +114,7 @@ public class DbOperations extends HttpServlet {
         ResultSet rs = ps.executeQuery();
         if (rs.next()) {
             retVal = rs.getInt(1);
-        } 
+        }
         rs.close();
         return retVal;
 
@@ -129,7 +129,7 @@ public class DbOperations extends HttpServlet {
         ResultSet rs = ps.executeQuery();
         if (rs.next()) {
             retVal = rs.getInt(1);
-        } 
+        }
         rs.close();
         return retVal;
 
@@ -184,15 +184,20 @@ public class DbOperations extends HttpServlet {
         Date d = new Date();
         sql = "update ZAZNAMOFFER set pr_knihovna=?, pr_timestamp=? where zaznamoffer_id=?";
         PreparedStatement ps = conn.prepareStatement(sql);
-        ps.setInt(1, pr_knihovna);
-        ps.setDate(2, new java.sql.Date(d.getTime()));
+        if(pr_knihovna == -1){
+            ps.setNull(1, java.sql.Types.INTEGER);
+            ps.setNull(2, java.sql.Types.DATE);
+        }else{
+            ps.setInt(1, pr_knihovna);
+            ps.setDate(2, new java.sql.Date(d.getTime()));
+        }
         ps.setInt(3, zaznam_offer);
         ps.executeUpdate();
         sql = "select uniquecode from ZAZNAMOFFER where zaznamoffer_id=?";
         ps = conn.prepareStatement(sql);
         ps.setInt(1, zaznam_offer);
         ResultSet rs = ps.executeQuery();
-        if(rs.next()){
+        if (rs.next()) {
             String f = System.getProperty("user.home") + File.separator + ".vdkcr" + File.separator + "jobs" + File.separator + "indexer.json";
             Indexer indexer = new Indexer(f);
             String uniqueCode = rs.getString("uniquecode");
@@ -200,6 +205,25 @@ public class DbOperations extends HttpServlet {
             indexer.indexDocOffers(uniqueCode);
         }
         rs.close();
+    }
+
+    public static void changeWantOffer(Connection conn, int zaznam_offer, int knihovna, boolean wanted) throws Exception {
+
+        String sql = "update WANTED set wants=?, update_timestamp=? "
+                + "where knihovna=? and ZaznamOffer=?";
+        PreparedStatement ps = conn.prepareStatement(sql);
+        ps.setBoolean(1, wanted);
+        ps.setDate(2, new java.sql.Date(new Date().getTime()));
+        ps.setInt(3, knihovna);
+        ps.setInt(4, zaznam_offer);
+        ps.executeUpdate();
+
+        if (wanted) {
+            reactionToOffer(conn, zaznam_offer, knihovna);
+        }else{
+            reactionToOffer(conn, zaznam_offer, -1);
+        }
+
     }
 
     public static int insertWantOffer(Connection conn, int zaznam_offer, int knihovna, boolean wanted) throws Exception {
@@ -635,7 +659,7 @@ public class DbOperations extends HttpServlet {
         j.put("nazev", nazev);
         j.put("knihovna", knihovna);
         j.put("closed", closed);
-        if(offerDate!= null){
+        if (offerDate != null) {
             Calendar now = Calendar.getInstance();
             Calendar o = Calendar.getInstance();
             o.setTime(offerDate);
@@ -925,6 +949,42 @@ public class DbOperations extends HttpServlet {
                             JSONObject json = new JSONObject();
                             json.put("error", ex.toString());
                         }
+                    }
+                },
+        REACTIONTOOFFER {
+                    @Override
+                    void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+
+                        resp.setContentType("application/json");
+                        JSONObject json = new JSONObject();
+                        PrintWriter out = resp.getWriter();
+
+                        int zaznam_offer = Integer.parseInt(req.getParameter("zaznam_offer"));
+                        boolean wanted = Boolean.parseBoolean(req.getParameter("wanted"));
+                        boolean isNew = Boolean.parseBoolean(req.getParameter("isnew"));
+
+                        Connection conn;
+
+                        Knihovna kn = LoggedController.knihovna(req);
+
+                        try {
+                            if (kn != null) {
+                                conn = DbUtils.getConnection();
+                                if (isNew) {
+                                    int newid = insertWantOffer(conn, zaznam_offer, kn.getId(), wanted);
+                                    json.put("id", newid);
+                                } else {
+                                    changeWantOffer(conn, zaznam_offer, kn.getId(), wanted);
+                                }
+                                json.put("message", "Reakce pridana");
+                            } else {
+                                json.put("error", "nejste prihlasen");
+                            }
+                        } catch (Exception ex) {
+                            LOGGER.log(Level.SEVERE, "want offer failed", ex);
+                            json.put("error", ex.toString());
+                        }
+                        out.println(json.toString());
                     }
                 },
         WANTOFFER {
@@ -1839,23 +1899,23 @@ public class DbOperations extends HttpServlet {
 //                            } else {
 //                                if (kn.hasRole(DbUtils.Roles.ADMIN)) {
 
-                                    Connection conn = DbUtils.getConnection();
-                                    String sql = req.getParameter("s");
+                            Connection conn = DbUtils.getConnection();
+                            String sql = req.getParameter("s");
 //                                    sql = "alter table zaznamoffer add pr_timestamp TIMESTAMP";
-                                    PreparedStatement ps = conn.prepareStatement(sql);
+                            PreparedStatement ps = conn.prepareStatement(sql);
 //                                    ps.execute();
 //                                    sql = "alter table zaznamoffer add pr_knihovna INT";
 //                                    ps = conn.prepareStatement(sql);
 //                                    ps.execute();
 //                                    ps = conn.prepareStatement(sql);
-                                    ps.execute();
+                            ps.execute();
 //                                    sql = "alter table knihovna add sigla VARCHAR(10)";
 //                                    ps = conn.prepareStatement(sql);
 //                                    ps.execute();
 //                                    sql = "alter table knihovna add adresa VARCHAR(255)";
 //                                    ps = conn.prepareStatement(sql);
 //                                    ps.execute();
-                                    
+
 //                                } else {
 //                                    json.put("error", "rights.insuficient");
 //                                }
@@ -1894,7 +1954,7 @@ public class DbOperations extends HttpServlet {
 
                     }
                 },
-        SAVECONF{
+        SAVECONF {
                     @Override
                     void doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                         resp.setContentType("application/json");

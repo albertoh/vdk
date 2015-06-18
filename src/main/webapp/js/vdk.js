@@ -139,11 +139,14 @@ VDK.prototype = {
         span.append(a);
         return span;
     },
-    actionWant: function (zaznamOffer) {
+    actionWant: function (zaznamOffer, isnew, enabled) {
         var span = $('<button/>', {class: 'wanteddoc', 'data-wanted': zaznamOffer, style: 'float:left;'});
         span.click(function () {
-            vdk.offers.wantDoc(zaznamOffer, true);
+            vdk.offers.wantDoc(zaznamOffer, true, isnew);
         });
+        if(!enabled){
+            span.attr("disabled", "disabled");
+        }
         var a = $('<a class="ui-icon ui-icon-star" >');
         span.attr('title', dict['offer.want'] + ' "' + dict['chci.do.fondu'] + '"');
         a.attr('href', 'javascript:void(0)');
@@ -151,14 +154,17 @@ VDK.prototype = {
         span.append(a);
         return span;
     },
-    actionDontWant: function (zaznamOffer) {
-        var span = $('<button/>', {class: 'wanteddoc', 'data-wanted': zaznamOffer, style: 'float:left;'});
+    actionDontWant: function (zaznamOffer, isnew, enabled) {
+        var span = $('<button/>', {class: 'nowanteddoc', 'data-wanted': zaznamOffer, style: 'float:left;'});
         span.click(function () {
-            vdk.offers.wantDoc(zaznamOffer, false);
+            vdk.offers.wantDoc(zaznamOffer, false, isnew);
         });
 
         var a = $('<a class="ui-icon ui-icon-cancel" >');
         span.attr('title', dict['offer.want'] + ' "' + dict['nechci.do.fondu'] + '"');
+        if(!enabled){
+            span.attr("disabled", "disabled");
+        }
         a.attr('href', 'javascript:void(0)');
         a.text('chci');
         span.append(a);
