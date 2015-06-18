@@ -22,6 +22,9 @@
         #else
         <a href="javascript:vdk.changeLanguage('cs')">cs</a>
         #end
+        #if($logControl.hasRole('ADMIN'))
+        &nbsp;<a href="admin.vm" title="administrace">admin</a>
+        #end
         </div>
     
 </div>

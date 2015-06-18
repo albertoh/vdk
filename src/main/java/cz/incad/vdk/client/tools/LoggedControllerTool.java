@@ -17,6 +17,7 @@
 package cz.incad.vdk.client.tools;
 
 import cz.incad.vdk.client.LoggedController;
+import cz.incad.vdkcommon.DbUtils;
 import java.sql.SQLException;
 import java.util.Map;
 import javax.naming.NamingException;
@@ -59,6 +60,13 @@ public class LoggedControllerTool {
         else {
             return LoggedController.knihovna(req).getJson().toString();
         }
+    }
+    
+    
+    
+    public boolean isAdmin(){
+        return this.isLogged() &&
+                LoggedController.knihovna(req).hasRole(DbUtils.Roles.ADMIN);
     }
     
     public void setKnihovna() throws NamingException, SQLException{

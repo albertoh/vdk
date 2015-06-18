@@ -39,6 +39,10 @@
         <div>
         <label for="conf_email">$i18n.conf.email: </label><input id="conf_email" class="email"></input>
         </div>
+        <div>
+        <label for="conf_emailBody">$i18n.conf.emailBody: </label>
+        <textarea id="conf_emailBody" class="emailBody"></textarea>
+        </div>
     </div>
 </div>
 </div>

@@ -16,6 +16,7 @@
  */
 package cz.incad.vdk.client;
 
+import cz.incad.vdkcommon.DbUtils;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -58,6 +59,16 @@ public class LoggedController {
 
     public boolean isLogged() {
         return this.logged;
+    }
+    
+    public boolean hasRole(String role){
+        return this.logged &&
+                this.getKnihovna().hasRole(DbUtils.Roles.valueOf(role));
+    }
+    
+    public boolean isAdmin(){
+        return this.logged &&
+                this.getKnihovna().hasRole(DbUtils.Roles.ADMIN);
     }
 
     public String getLoggedName() {

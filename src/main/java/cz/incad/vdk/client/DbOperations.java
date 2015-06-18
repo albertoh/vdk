@@ -1909,6 +1909,7 @@ public class DbOperations extends HttpServlet {
                                     JSONObject json = opts.asJSON();
                                     json.put("expirationDays", req.getParameter("exp"));
                                     json.put("admin.email", req.getParameter("email"));
+                                    json.put("admin.email.offer.body", req.getParameter("emailBody"));
                                     opts.save();
                                     out.println(opts.toString());
                                 } else {

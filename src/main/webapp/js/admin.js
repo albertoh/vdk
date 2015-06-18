@@ -266,6 +266,7 @@ VDK_ADMIN.prototype = {
                 this.conf = data;
                 $("#tabs-conf .exp").val(data.expirationDays);
                 $("#tabs-conf .email").val(data["admin.email"]);
+                $("#tabs-conf .emailBody").text(data["admin.email.offer.body"]);
             }
 
         }, this));
