@@ -278,7 +278,22 @@ Offers.prototype = {
                     var expired = val.expired ? " expired" : "";
                     var label = $('<label class="' + expired + '">');
                     var offerJson = $(this).data("offer_ext")[offerId];
-                    var text = val.knihovna + ' in offer ' + val.nazev + ' ('+offerJson.datum+')';
+                    
+                    
+                    var of_datum = new Date(offerJson.datum);
+                    var from_days = (vdk.user.priorita-1) * vdk.expirationDays;
+                    var to_days = vdk.user.priorita * vdk.expirationDays;
+                    
+                    var from_datum = new Date(of_datum);
+                    var to_datum = new Date(of_datum);
+                    from_datum.setDate(of_datum.getDate() + from_days);
+                    to_datum.setDate(of_datum.getDate() + to_days);
+                        
+                        
+
+
+                    var text = val.knihovna + ' in offer ' + val.nazev +
+                            ' (' + $.format.date(of_datum, 'dd.M.yy') + ' do ' + $.format.date(to_datum, 'dd.M.yy')+')';
                     var zaznamOffer = offerJson.zaznamOffer;
                     $(this).data("zaznamOffer", zaznamOffer);
                     $(this).attr("data-zaznamOffer", zaznamOffer);
@@ -306,20 +321,7 @@ Offers.prototype = {
                         $(this).hide();
                         $(this).removeClass("visible");
 //                    }else if(vdk.isLogged && !offerJson.hasOwnProperty('pr_knihovna')){
-//                        var of_datum = new Date(offerJson.datum);
-//                        var from_days = (vdk.user.priorita-1) * vdk.expirationDays;
-//                        var to_days = vdk.user.priorita * vdk.expirationDays;
-//                        var user_datum = new Date();
-//                        var from_datum = new Date(of_datum);
-//                        var to_datum = new Date(of_datum);
-//                        from_datum.setDate(of_datum.getDate() + from_days);
-//                        to_datum.setDate(of_datum.getDate() + to_days);
-//                        
-//                        if(from_datum>user_datum || to_datum<user_datum){
-//                            $(this).hide();
-//                            //console.log(of_datum, from_datum, to_datum, user_datum);
-//                            //$(this).append(user_datum);
-//                        }
+
                     }
                     if(vdk.isLogged && vdk.user.code !== val.knihovna){
                         var wanted = vdk.offers.isWanted(zaznamOffer, vdk.user.code);
