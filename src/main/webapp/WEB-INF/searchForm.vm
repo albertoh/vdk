@@ -11,9 +11,14 @@
         <input value="$i18n.form.search" type="submit" onclick="doSearch();" />
 #if(${params.onlyOffers})
     <input type="hidden" name="onlyOffers" id="onlyOffers" class="fq" value="yes" />   
-#end  #if(${params.onlyDemands})
-    <input type="hidden" name="onlyOffers" id="onlyOffers" class="fq" value="yes" />   
 #end  
+#if(${params.onlyDemands})
+    <input type="hidden" name="onlyDemands" id="onlyDemands" class="fq" value="yes" />   
+#end  
+#if(${params.onlyMatches})
+    <input type="hidden" name="onlyMatches" id="onlyMatches" class="fq" value="yes" />   
+#end  
+
 #foreach($offer in $params.offer)   
     <input type="hidden" name="offer" id="offer_${offer}" value="${offer}" />
 #end

@@ -72,7 +72,10 @@
             </xsl:choose>
             </div>
         </xsl:for-each>
+        <xsl:call-template name="rokvydani"></xsl:call-template>
     </xsl:template>
+    
+    
     <xsl:template name="poptavka">
         <xsl:param name="navName" />
         <xsl:param name="content" />
@@ -210,5 +213,27 @@
             </xsl:if>
         </ul>
         
+    </xsl:template>
+    <xsl:template name="rokvydani">
+        <h3>
+            <span><xsl:value-of select="rb:getString($i18n,'filter.rokvydani')"/></span>
+        </h3>
+        <xsl:variable name="od" select="round(/response/lst[@name='stats']/lst[@name='stats_fields']/lst[@name='rokvydani']/double[@name='min'])"/>
+        <xsl:variable name="do" select="round(/response/lst[@name='stats']/lst[@name='stats_fields']/lst[@name='rokvydani']/double[@name='max'])"/>
+        <div>
+            <div id="rokvydani_select" style="text-align:center;margin-bottom:16px;">
+                <span class="label">
+                    od <xsl:value-of select="$od" /> - 
+                    do <xsl:value-of select="$do" />
+                </span>
+                <span class="go" style="float:right;">go</span>
+            </div>
+            <div id="rokvydani_range" style="margin:0px 10px;">
+                <xsl:attribute name="data-min"><xsl:value-of select="$od" /></xsl:attribute>
+                <xsl:attribute name="data-max"><xsl:value-of select="$do" /></xsl:attribute>
+            </div>
+            <div style="height:3px;border:none;border-top:solid 1px;margin-top:7px;">
+            </div>
+        </div>
     </xsl:template>
 </xsl:stylesheet>

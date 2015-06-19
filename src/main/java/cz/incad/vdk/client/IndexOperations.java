@@ -220,7 +220,7 @@ public class IndexOperations extends HttpServlet {
                         PrintWriter out = resp.getWriter();
                         JSONObject json = new JSONObject();
                         try {
-                            Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                            Knihovna kn = LoggedController.knihovna(req);
                             if (kn == null) {
                                 json.put("error", "rights.notlogged");
                             } else {
@@ -244,7 +244,7 @@ public class IndexOperations extends HttpServlet {
                         PrintWriter out = resp.getWriter();
                         JSONObject json = new JSONObject();
                         try {
-                            Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                            Knihovna kn = LoggedController.knihovna(req);
                             if (kn == null) {
                                 json.put("error", "rights.notlogged");
                             } else {
@@ -268,7 +268,7 @@ public class IndexOperations extends HttpServlet {
                         PrintWriter out = resp.getWriter();
                         JSONObject json = new JSONObject();
                         try {
-                            Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                            Knihovna kn = LoggedController.knihovna(req);
                             if (kn == null) {
                                 json.put("error", "rights.notlogged");
                             } else {
@@ -290,7 +290,7 @@ public class IndexOperations extends HttpServlet {
                         PrintWriter out = resp.getWriter();
                         JSONObject json = new JSONObject();
                         try {
-                            Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                            Knihovna kn = LoggedController.knihovna(req);
                             if (kn == null) {
                                 json.put("error", "rights.notlogged");
                             } else {
@@ -312,7 +312,7 @@ public class IndexOperations extends HttpServlet {
                         PrintWriter out = resp.getWriter();
                         JSONObject json = new JSONObject();
                         try {
-                            Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                            Knihovna kn = LoggedController.knihovna(req);
                             if (kn == null) {
                                 json.put("error", "rights.notlogged");
                             } else {
@@ -339,7 +339,7 @@ public class IndexOperations extends HttpServlet {
                         PrintWriter out = resp.getWriter();
                         JSONObject json = new JSONObject();
                         try {
-                            Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                            Knihovna kn = LoggedController.knihovna(req);
                             if (kn == null) {
                                 json.put("error", "rights.notlogged");
                             } else {
@@ -369,7 +369,7 @@ public class IndexOperations extends HttpServlet {
                         PrintWriter out = resp.getWriter();
                         JSONObject json = new JSONObject();
                         try {
-                            Knihovna kn = (Knihovna) req.getSession().getAttribute("knihovna");
+                            Knihovna kn = LoggedController.knihovna(req);
                             if (kn == null) {
                                 json.put("error", "rights.notlogged");
                             } else {

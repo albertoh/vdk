@@ -200,6 +200,13 @@ function removeOnlyDemands() {
 
 }
 
+function removeOnlyMatches() {
+    $('#onlyMatches').remove();
+    document.getElementById("offset").value = 0;
+    document.getElementById("searchForm").submit();
+
+}
+
 
 function removeAdvField(field) {
     $("#" + field).val("");

@@ -28,6 +28,12 @@
 </li>
 #end
 
+#if($params.onlyMatches)
+<li>
+     <a class="usedFilter" href="javascript:removeOnlyMatches();"  title="$esc.html($i18n.filter.matches.desc)"><img border="0" src="img/x.png" alt="" />$i18n.filter.matches</a>
+</li>
+#end
+
 #foreach($demand in $params.getStrings('demand'))
    <li>
         <a class="usedFilter" href="javascript:removeDemand(${foreach.index});"><img border="0" src="img/x.png" alt="" />$i18n.filter.poptavka: ${demand}</a>
