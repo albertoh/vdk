@@ -167,7 +167,8 @@ public class Search {
         if (req.getParameterValues("fq") != null) {
             for (String fq : req.getParameterValues("fq")) {
                 String[] parts = fq.split(":");
-                query.addFilterQuery(parts[0] + ":" + ClientUtils.escapeQueryChars(parts[1]));
+                //query.addFilterQuery(parts[0] + ":" + ClientUtils.escapeQueryChars(parts[1]));
+                query.addFilterQuery(parts[0] + ":" + parts[1]);
                 if (req.getParameterValues("zdroj") != null && fq.contains("pocet_exemplaru")) {
                     
                     for (String zdroj : req.getParameterValues("zdroj")) {

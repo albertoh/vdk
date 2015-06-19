@@ -288,9 +288,6 @@ Offers.prototype = {
                     var to_datum = new Date(of_datum);
                     from_datum.setDate(of_datum.getDate() + from_days);
                     to_datum.setDate(of_datum.getDate() + to_days);
-                        
-                        
-
 
                     var text = val.knihovna + ' in offer ' + val.nazev +
                             ' (' + $.format.date(of_datum, 'dd.M.yy') + ' do ' + $.format.date(to_datum, 'dd.M.yy')+')';
