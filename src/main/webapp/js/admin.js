@@ -94,6 +94,7 @@ VDK_ADMIN.prototype = {
                         var cfgs = "";
                         var td= $("<td/>", {class: "settings"});
                         for(var key in val.conf.settings){
+                            var div = $("<div/>");
                             var setting = val.conf.settings[key];
                             if(typeof(setting) === 'boolean'){
                                 var chid = val.jobKey+"_"+key;
@@ -101,18 +102,19 @@ VDK_ADMIN.prototype = {
                                 check.prop('checked', setting);
                                 var label = $('<label/>', {for: chid});
                                 label.text(key);
-                                td.append(label);
-                                td.append(check);
+                                div.append(label);
+                                div.append(check);
                             }else if(typeof(setting) === 'string'){
                                 var chid = val.jobKey+"_"+key;
                                 var input = $("<input/>", {type: "text", class:"text", id: chid, name: key});
                                 input.val(setting);
                                 var label = $('<label/>', {for: chid});
                                 label.text(key);
-                                td.append(label);
-                                td.append(input);
+                                div.append(label);
+                                div.append(input);
                             }
                             cfgs += key + " -> " + val.conf.settings[key] + " ("  +  + ")";
+                            td.append(div);
                         }
                         tr.append(td);
                     }else{
@@ -146,10 +148,10 @@ VDK_ADMIN.prototype = {
                 action: "STARTJOB", key: jobKey
             };
         var data = {};
-        $(jq('job_' + jobKey) + " td.settings>input.check").each(function(){
+        $(jq('job_' + jobKey) + " td.settings input.check").each(function(){
             data[$(this).attr("name")] = $(this).is(":checked");
         });
-        $(jq('job_' + jobKey) + " td.settings>input.text").each(function(){
+        $(jq('job_' + jobKey) + " td.settings input.text").each(function(){
             data[$(this).attr("name")] = $(this).val();
         });
         opts['data'] = JSON.stringify(data); 
@@ -261,8 +263,13 @@ VDK_ADMIN.prototype = {
     
         $.getJSON("db", opts, _.bind(function (data) {
             if (data.error) {
-                alert("error ocurred: " + vdk.translate(data.error));
+                //alert("error ocurred: " + vdk.translate(data.error));
+                $("#tabs-conf>div.error").html(vdk.translate(data.error));
+                $("#tabs-conf>div.error").show();
+                $("#tabs-conf>div.content").hide();
             } else {
+                $("#tabs-conf>div.error").hide();
+                $("#tabs-conf>div.content").show();
                 this.conf = data;
                 $("#tabs-conf .exp").val(data.expirationDays);
                 $("#tabs-conf .email").val(data["admin.email"]);

@@ -32,17 +32,20 @@
         </table>
     </div>
     <div id="tabs-conf">
-        <button onclick="vdkAdmin.saveConf()">$i18n.user.save</button>
-        <div>
-        <label for="conf_exp">$i18n.conf.expiration: </label><input id="conf_exp" class="exp"></input>
+        <div class="content">
+            <button onclick="vdkAdmin.saveConf()">$i18n.user.save</button>
+            <div>
+            <label for="conf_exp">$i18n.conf.expiration: </label><input id="conf_exp" class="exp"></input>
+            </div>
+            <div>
+            <label for="conf_email">$i18n.conf.email: </label><input id="conf_email" class="email"></input>
+            </div>
+            <div>
+            <label for="conf_emailBody">$i18n.conf.emailBody: </label>
+            <textarea id="conf_emailBody" class="emailBody"></textarea>
+            </div>
         </div>
-        <div>
-        <label for="conf_email">$i18n.conf.email: </label><input id="conf_email" class="email"></input>
-        </div>
-        <div>
-        <label for="conf_emailBody">$i18n.conf.emailBody: </label>
-        <textarea id="conf_emailBody" class="emailBody"></textarea>
-        </div>
+        <div class="error"></div>
     </div>
 </div>
 </div>
