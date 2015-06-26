@@ -16,7 +16,12 @@
             <button onclick="vdkAdmin.addRole()">$i18n.user.role.add</button>
             <button onclick="vdkAdmin.saveUser()">$i18n.user.save</button>
             <div><input id="i_nazev" class="nazev" style="width: 50%;"></input></div>
-            <label for="i_priorita">$i18n.user.priorita: </label><input id="i_priorita" size="2" class="priorita"></input>
+            <label for="i_priorita">$i18n.user.priorita: </label>
+            <select id="i_priorita" class="priorita">
+#foreach($level in $opt.levels)
+                <option>$level</option>
+#end
+            </select>
             <label for="i_sigle">Sigla: </label><input id="i_sigla" class="sigla"></input>
             <label for="i_adresa">$i18n.user.adresa: </label><input id="i_adresa" class="adresa"></input>
             <label for="i_telefon">$i18n.user.telefon: </label><input id="i_telefon" class="telefon"></input>

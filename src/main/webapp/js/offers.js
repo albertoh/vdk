@@ -1,5 +1,5 @@
 
-/* global vdk */
+/* global vdk, _, dict */
 
 function Offers() {
     this.loaded = false;

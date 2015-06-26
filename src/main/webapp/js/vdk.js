@@ -1,4 +1,4 @@
-
+/* global vdk, _, dict */
 
 /** 
  * Simple event handler used in application 

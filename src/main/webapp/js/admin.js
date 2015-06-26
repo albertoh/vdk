@@ -1,3 +1,5 @@
+/* global vdk, _ */
+
 function VDK_ADMIN() {
     this.eventsHandler = new ApplicationEvents();
     this._init();

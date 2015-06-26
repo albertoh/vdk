@@ -20,6 +20,7 @@ import cz.incad.vdkcommon.Options;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.json.JSONArray;
 import org.json.JSONException;
 
 /**
@@ -33,6 +34,20 @@ public class OptionsTool {
         } catch (IOException | JSONException ex) {
             Logger.getLogger(OptionsTool.class.getName()).log(Level.SEVERE, null, ex);
             return key;
+        }
+    }
+    
+    public String[] getLevels(){
+        try {
+            JSONArray arr = Options.getInstance().getJSONArray("admin.users.levels");
+            String[] ret = new String[arr.length()];
+            for(int i = 0; i<arr.length(); i++){
+                ret[i] = Integer.toString(arr.getInt(i));
+            }      
+            return ret;
+        } catch (IOException | JSONException ex) {
+            Logger.getLogger(OptionsTool.class.getName()).log(Level.SEVERE, null, ex);
+            return null;
         }
     }
 }
