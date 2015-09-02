@@ -1,6 +1,7 @@
 package cz.incad.vdk.client;
 
 import cz.incad.vdkcommon.DbUtils;
+import cz.incad.vdkcommon.Knihovna;
 import cz.incad.vdkcommon.Options;
 import cz.incad.vdkcommon.solr.IndexerQuery;
 import java.io.IOException;

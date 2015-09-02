@@ -17,6 +17,7 @@
 package cz.incad.vdk.client;
 
 import cz.incad.vdkcommon.DbUtils;
+import cz.incad.vdkcommon.Knihovna;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -108,7 +109,7 @@ public class LoggedController {
             if (!this.isLogged()) {
                 return null;
             } else if (this.knihovna == null) {
-                cz.incad.vdk.client.Knihovna kn = new cz.incad.vdk.client.Knihovna(this.loggedName);
+                Knihovna kn = new Knihovna(this.loggedName);
                 this.knihovna = kn;
                 return kn;
             } else {

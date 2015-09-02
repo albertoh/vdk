@@ -2,6 +2,7 @@ package cz.incad.vdk.client;
 
 import au.com.bytecode.opencsv.CSVReader;
 import cz.incad.vdkcommon.DbUtils;
+import cz.incad.vdkcommon.Knihovna;
 import cz.incad.vdkcommon.Options;
 import cz.incad.vdkcommon.Slouceni;
 import cz.incad.vdkcommon.VDKScheduler;

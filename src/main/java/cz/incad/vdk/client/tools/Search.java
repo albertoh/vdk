@@ -16,7 +16,7 @@
  */
 package cz.incad.vdk.client.tools;
 
-import cz.incad.vdk.client.Knihovna;
+import cz.incad.vdkcommon.Knihovna;
 import cz.incad.vdk.client.LoggedController;
 import cz.incad.vdkcommon.Options;
 import cz.incad.vdkcommon.solr.IndexerQuery;

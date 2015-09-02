@@ -1,7 +1,7 @@
 package cz.incad.vdk.client.tools;
 
 import cz.incad.vdk.client.DbOperations;
-import cz.incad.vdk.client.Knihovna;
+import cz.incad.vdkcommon.Knihovna;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;

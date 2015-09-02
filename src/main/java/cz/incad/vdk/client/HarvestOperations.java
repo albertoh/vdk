@@ -1,6 +1,7 @@
 package cz.incad.vdk.client;
 
 import cz.incad.vdkcommon.DbUtils;
+import cz.incad.vdkcommon.Knihovna;
 import cz.incad.vdkcommon.VDKJobData;
 import cz.incad.vdkcommon.oai.HarvesterJob;
 import cz.incad.vdkcommon.oai.HarvesterJobData;
