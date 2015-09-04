@@ -55,6 +55,7 @@ public class LoggedController {
             logControl = new LoggedController(req);
             req.getSession().setAttribute(LoggedController.LOG_CONTROL_KEY, logControl);
         }
+        System.out.println(logControl);
         return logControl.getKnihovna();
     }
 

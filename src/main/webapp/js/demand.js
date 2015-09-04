@@ -185,14 +185,14 @@ Demand.prototype = {
             if (data.error) {
                 alert("error ocurred: " + vdk.translate(data.error));
                 return;
-            }
-            $.getJSON("index", {action: "ADDDEMAND", docCode: code, zaznam: id, ex: ex}, _.bind(function (resp) {
-                if (resp.error) {
-                    alert("error ocurred: " + vdk.translate(resp.error));
+//            }
+//            $.getJSON("index", {action: "ADDDEMAND", docCode: code, zaznam: id, ex: ex}, _.bind(function (resp) {
+//                if (resp.error) {
+//                    alert("error ocurred: " + vdk.translate(resp.error));
                 } else {
                     alert("Poptavka uspesne indexovana");
                 }
-            }, this));
+//            }, this));
         });
 
     },

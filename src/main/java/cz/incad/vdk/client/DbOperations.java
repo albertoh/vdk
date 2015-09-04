@@ -1565,11 +1565,19 @@ public class DbOperations extends HttpServlet {
                                 parts.put("comment", req.getParameter("comment"));
 
                                 insertToDemand(conn, kn.getId(), zaznam_id, exemplar_id, docCode, (new JSONObject(parts)).toString());
+                                String f = System.getProperty("user.home") + File.separator + ".vdkcr" + File.separator + "jobs" + File.separator + "indexer.json";
+                                Indexer indexer = new Indexer(f);
+                                indexer.indexDemand(kn.getCode(),
+                                        docCode,
+                                        zaznam_id,
+                                        exemplar_id);
+                                
                                 if (exists) {
                                     json.put("message", "Poptavka pridana. Generovany kod: " + docCode + " uz existuje");
                                 } else {
                                     json.put("message", "Poptavka pridana. Kod: " + docCode);
                                 }
+                                
                             } else {
                                 json.put("error", "rights.notlogged");
                             }
